@@ -5,7 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 // LEXICAL
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import type { LexicalNode } from "lexical";
 import { $getNodeByKey, $getRoot } from "lexical";
+import { $isToggleContainerNode } from "../nodes/ToggleContainerNode";
+import { $isToggleContentNode } from "../nodes/ToggleContentNode";
 
 // REACT DOM
 import { createPortal } from "react-dom";
@@ -26,7 +29,87 @@ interface BlockInfo {
 }
 
 /**
- * Finds the nearest top-level block to a given Y coordinate.
+ * Computes BlockInfo for a DOM element/Lexical node pair.
+ * Avoids getComputedStyle — uses a fixed approximation for first-line center.
+ */
+function getBlockInfo(
+  node: LexicalNode,
+  rect: DOMRect,
+): BlockInfo {
+  return {
+    key: node.getKey(),
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    firstLineCenter: rect.top + 14,
+  };
+}
+
+/**
+ * Searches children of an open toggle's content node for the nearest
+ * match at clientY. Returns null if the mouse isn't over the content area.
+ */
+function findToggleContentChildAtY(
+  clientY: number,
+  containerNode: LexicalNode,
+  editor: ReturnType<typeof useLexicalComposerContext>[0],
+): BlockInfo | null {
+  if (!$isToggleContainerNode(containerNode)) return null;
+
+  for (const sub of containerNode.getChildren()) {
+    if (!$isToggleContentNode(sub)) continue;
+
+    const contentEl = editor.getElementByKey(sub.getKey());
+    if (!contentEl) continue;
+    const contentRect = contentEl.getBoundingClientRect();
+    if (clientY < contentRect.top - 4 || clientY > contentRect.bottom + 4)
+      continue;
+
+    const children = sub.getChildren();
+
+    if (children.length === 0) {
+      return getBlockInfo(sub, contentRect);
+    }
+
+    let closestDist = Infinity;
+    let match: BlockInfo | null = null;
+
+    for (const contentChild of children) {
+      const el = editor.getElementByKey(contentChild.getKey());
+      if (!el) continue;
+
+      const rect = el.getBoundingClientRect();
+
+      if (clientY >= rect.top - 4 && clientY <= rect.bottom + 4) {
+        return getBlockInfo(contentChild, rect);
+      }
+
+      const dist = Math.min(
+        Math.abs(clientY - rect.top),
+        Math.abs(clientY - rect.bottom),
+      );
+      if (dist < closestDist) {
+        closestDist = dist;
+        match = getBlockInfo(contentChild, rect);
+      }
+    }
+
+    if (match) return match;
+
+    const firstChild = children[0]!;
+    const firstChildEl = editor.getElementByKey(firstChild.getKey());
+    if (firstChildEl)
+      return getBlockInfo(firstChild, firstChildEl.getBoundingClientRect());
+
+    return getBlockInfo(sub, contentRect);
+  }
+
+  return null;
+}
+
+/**
+ * Finds the nearest draggable block to a given Y coordinate.
+ * For open toggle containers, checks content children first.
  */
 function findBlockAtY(
   clientY: number,
@@ -44,39 +127,36 @@ function findBlockAtY(
       if (!el) continue;
 
       const rect = el.getBoundingClientRect();
-      const blockTop = rect.top;
-      const blockBottom = rect.bottom;
 
-      // Compute the vertical center of the first line of text
-      const computed = window.getComputedStyle(el);
-      const paddingTop = parseFloat(computed.paddingTop) || 0;
-      const lineHeight = parseFloat(computed.lineHeight) || parseFloat(computed.fontSize) * 1.2 || 20;
-      const firstLineCenter = rect.top + paddingTop + lineHeight / 2;
+      if (
+        $isToggleContainerNode(child) &&
+        child.getOpen() &&
+        clientY >= rect.top - 4 &&
+        clientY <= rect.bottom + 4
+      ) {
+        const innerMatch = findToggleContentChildAtY(
+          clientY,
+          child,
+          editor,
+        );
+        if (innerMatch) {
+          result = innerMatch;
+          return;
+        }
+      }
 
-      if (clientY >= blockTop - 4 && clientY <= blockBottom + 4) {
-        result = {
-          key: child.getKey(),
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          firstLineCenter,
-        };
+      if (clientY >= rect.top - 4 && clientY <= rect.bottom + 4) {
+        result = getBlockInfo(child, rect);
         return;
       }
 
       const dist = Math.min(
-        Math.abs(clientY - blockTop),
-        Math.abs(clientY - blockBottom),
+        Math.abs(clientY - rect.top),
+        Math.abs(clientY - rect.bottom),
       );
       if (dist < closestDist) {
         closestDist = dist;
-        result = {
-          key: child.getKey(),
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          firstLineCenter,
-        };
+        result = getBlockInfo(child, rect);
       }
     }
   });
@@ -112,6 +192,9 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
   const mousedownTimeRef = useRef(0);
   const mousedownPosRef = useRef({ x: 0, y: 0 });
 
+  // RAF throttle ref
+  const rafIdRef = useRef(0);
+
   // Turn Into menu state
   const [menuState, setMenuState] = useState<{
     open: boolean;
@@ -119,8 +202,7 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
     position: { top: number; left: number };
   } | null>(null);
 
-  // Detect touch device — use multiple signals for reliability
-  // Chrome DevTools device emulation doesn't always set pointer: coarse
+  // Detect touch device
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isTouch =
@@ -136,8 +218,6 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
     setPortalContainer(document.body);
   }, []);
 
-  // Position the handle imperatively (no state updates = no re-renders = no flicker)
-  // `firstLineCenter` is the vertical center of the first line of text in the block
   const showHandle = useCallback((firstLineCenter: number, left: number) => {
     if (!handleRef.current) return;
     handleRef.current.style.top = `${firstLineCenter - 12}px`;
@@ -169,11 +249,16 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
     indicatorRef.current.style.visibility = "hidden";
   }, []);
 
-  // Track mouse at document level
+  // Track mouse at document level — throttled to one RAF per frame
   useEffect(() => {
     if (isTouchDevice === null || isTouchDevice) return;
 
-    const onMouseMove = (e: MouseEvent) => {
+    let lastClientX = 0;
+    let lastClientY = 0;
+
+    const processMousePosition = () => {
+      rafIdRef.current = 0;
+
       if (isDraggingRef.current) return;
 
       const rootElement = editor.getRootElement();
@@ -188,17 +273,17 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
       const GUTTER = 40;
 
       const isNearEditor =
-        e.clientY >= wrapperRect.top &&
-        e.clientY <= wrapperRect.bottom &&
-        e.clientX >= wrapperRect.left - GUTTER &&
-        e.clientX <= wrapperRect.right;
+        lastClientY >= wrapperRect.top &&
+        lastClientY <= wrapperRect.bottom &&
+        lastClientX >= wrapperRect.left - GUTTER &&
+        lastClientX <= wrapperRect.right;
 
       if (!isNearEditor && !isMouseOverHandleRef.current) {
         hideHandle();
         return;
       }
 
-      const block = findBlockAtY(e.clientY, editor);
+      const block = findBlockAtY(lastClientY, editor);
       if (!block) {
         if (!isMouseOverHandleRef.current) {
           hideHandle();
@@ -210,12 +295,29 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
       showHandle(block.firstLineCenter, block.left);
     };
 
+    const onMouseMove = (e: MouseEvent) => {
+      lastClientX = e.clientX;
+      lastClientY = e.clientY;
+
+      if (isDraggingRef.current) return;
+
+      // Throttle: only schedule one RAF per frame
+      if (rafIdRef.current === 0) {
+        rafIdRef.current = requestAnimationFrame(processMousePosition);
+      }
+    };
+
     document.addEventListener("mousemove", onMouseMove);
-    return () => document.removeEventListener("mousemove", onMouseMove);
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = 0;
+      }
+    };
   }, [editor, isTouchDevice, showHandle, hideHandle]);
 
   // Attach native DOM events on the handle for mouseenter/mouseleave/mousedown
-  // (avoids React synthetic event issues with portalled elements)
   useEffect(() => {
     const handle = handleRef.current;
     if (!handle || isTouchDevice) return;
@@ -239,27 +341,18 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
       const key = hoveredKeyRef.current;
       if (!key) return;
 
-      // Track for click vs drag detection
       mousedownTimeRef.current = Date.now();
       mousedownPosRef.current = { x: e.clientX, y: e.clientY };
 
       dragSourceKeyRef.current = key;
       let hasMoved = false;
+      let dragRafId = 0;
+      let pendingMoveEvent: MouseEvent | null = null;
 
-      const onDragMove = (moveEvent: MouseEvent) => {
-        const dx = moveEvent.clientX - mousedownPosRef.current.x;
-        const dy = moveEvent.clientY - mousedownPosRef.current.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        // Only start dragging after 5px of movement
-        if (!hasMoved && dist < 5) return;
-        hasMoved = true;
-
-        if (!isDraggingRef.current) {
-          isDraggingRef.current = true;
-          handle.style.opacity = "0.3";
-          handle.style.cursor = "grabbing";
-        }
+      const processDragMove = () => {
+        dragRafId = 0;
+        const moveEvent = pendingMoveEvent;
+        if (!moveEvent) return;
 
         const target = findBlockAtY(moveEvent.clientY, editor);
         if (!target || target.key === dragSourceKeyRef.current) {
@@ -284,12 +377,34 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
         );
       };
 
-      const onDragEnd = (upEvent: MouseEvent) => {
+      const onDragMove = (moveEvent: MouseEvent) => {
+        const dx = moveEvent.clientX - mousedownPosRef.current.x;
+        const dy = moveEvent.clientY - mousedownPosRef.current.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (!hasMoved && dist < 5) return;
+        hasMoved = true;
+
+        if (!isDraggingRef.current) {
+          isDraggingRef.current = true;
+          handle.style.opacity = "0.3";
+          handle.style.cursor = "grabbing";
+        }
+
+        pendingMoveEvent = moveEvent;
+        if (dragRafId === 0) {
+          dragRafId = requestAnimationFrame(processDragMove);
+        }
+      };
+
+      const onDragEnd = () => {
         document.removeEventListener("mousemove", onDragMove);
         document.removeEventListener("mouseup", onDragEnd);
+        if (dragRafId) {
+          cancelAnimationFrame(dragRafId);
+        }
 
         if (!hasMoved) {
-          // This was a click, not a drag — open Turn Into menu
           isDraggingRef.current = false;
           const blockKey = dragSourceKeyRef.current;
           if (blockKey && handleRef.current) {
@@ -323,6 +438,21 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
             const targetNode = $getNodeByKey(targetKey);
 
             if (!sourceNode || !targetNode) return;
+
+            // Prevent circular drops
+            let ancestor: LexicalNode | null = targetNode;
+            while (ancestor !== null) {
+              if (ancestor.getKey() === sourceKey) return;
+              ancestor = ancestor.getParent();
+            }
+
+            // If target is a ToggleContentNode (empty content area),
+            // append source as first child
+            if ($isToggleContentNode(targetNode)) {
+              sourceNode.remove();
+              targetNode.append(sourceNode);
+              return;
+            }
 
             sourceNode.remove();
 
