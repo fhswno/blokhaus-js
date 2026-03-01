@@ -14,3 +14,4 @@ export const INSERT_CALLOUT_COMMAND = createCommand<{ emoji?: string; colorPrese
 export const INSERT_VIDEO_COMMAND = createCommand<{ file: File } | { url: string }>('INSERT_VIDEO_COMMAND');
 export const OPEN_VIDEO_INPUT_COMMAND = createCommand<void>('OPEN_VIDEO_INPUT_COMMAND');
 export const INSERT_TOGGLE_COMMAND = createCommand<{ isOpen?: boolean } | undefined>('INSERT_TOGGLE_COMMAND');
+export const SET_FONT_FAMILY_COMMAND = createCommand<string>('SET_FONT_FAMILY_COMMAND');
