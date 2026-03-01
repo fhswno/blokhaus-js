@@ -22,7 +22,9 @@
 
   /* Typography */
   --scribex-font-sans: ui-sans-serif, system-ui, sans-serif;
+  --scribex-font-serif: Georgia, "Times New Roman", serif;
   --scribex-font-mono: ui-monospace, monospace;
+  --scribex-font-hand: "Caveat", cursive;
 
   /* Text colors */
   --scribex-text-gray: #9b9a97;
