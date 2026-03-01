@@ -12,6 +12,9 @@ import { CalloutNode } from './CalloutNode';
 import { VideoNode } from './VideoNode';
 import { LoadingVideoNode } from './LoadingVideoNode';
 import { HorizontalRuleNode } from './HorizontalRuleNode';
+import { ToggleContainerNode } from './ToggleContainerNode';
+import { ToggleTitleNode } from './ToggleTitleNode';
+import { ToggleContentNode } from './ToggleContentNode';
 
 export const ALL_NODES: Array<Klass<LexicalNode>> = [
   HeadingNode,
@@ -32,4 +35,7 @@ export const ALL_NODES: Array<Klass<LexicalNode>> = [
   VideoNode,
   LoadingVideoNode,
   HorizontalRuleNode,
+  ToggleContainerNode,
+  ToggleTitleNode,
+  ToggleContentNode,
 ];
