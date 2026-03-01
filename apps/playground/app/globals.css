@@ -330,6 +330,107 @@ table.scribex-table[style*="outline"] {
 }
 
 /* ============================================
+   Toggle / Collapsible Block (Three-Node)
+   ============================================ */
+
+/* Container — transparent, no box appearance */
+.scribex-toggle-container {
+  margin: 0.25em 0;
+  border: none;
+  background: transparent;
+}
+
+/* Title (summary element) — editable inline text */
+.scribex-toggle-title {
+  display: block;
+  padding: 2px 8px 2px 24px;
+  border-radius: 3px;
+  cursor: text;
+  font-weight: 400;
+  font-size: 1em;
+  line-height: 1.5;
+  color: var(--scribex-foreground);
+  list-style: none;
+  position: relative;
+  min-height: 1.5em;
+  background: transparent;
+  caret-color: var(--scribex-foreground);
+}
+
+/* Hide native details marker */
+.scribex-toggle-title::-webkit-details-marker {
+  display: none;
+}
+
+/* Custom disclosure triangle */
+.scribex-toggle-title::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2364748b' d='M6 3l5 5-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+/* Rotated triangle when open — native <details> (Firefox/Safari) */
+details.scribex-toggle-container[open] > .scribex-toggle-title::before {
+  transform: rotate(90deg);
+}
+
+/* Rotated triangle when open — Chrome (div with data-open) */
+div.scribex-toggle-container[data-open="true"] > .scribex-toggle-title::before {
+  transform: rotate(90deg);
+}
+
+.scribex-toggle-title:hover {
+  background-color: var(--scribex-hover-bg, rgba(0, 0, 0, 0.04));
+}
+
+/* Placeholder for empty title */
+.scribex-toggle-title[data-placeholder]:has(> br:only-child)::after,
+.scribex-toggle-title[data-placeholder]:empty::after {
+  content: attr(data-placeholder);
+  color: var(--scribex-muted-foreground);
+  opacity: 0.4;
+  pointer-events: none;
+  font-weight: 400;
+  position: absolute;
+  left: 24px;
+  top: 2px;
+}
+
+/* Content area */
+.scribex-toggle-content {
+  padding: 2px 8px 4px 24px;
+}
+
+.scribex-toggle-content .scribex-paragraph {
+  margin: 0;
+  min-height: 1.5em;
+}
+
+/* Hide content when closed — native <details> (Firefox/Safari) */
+details.scribex-toggle-container:not([open]) > .scribex-toggle-content {
+  display: none;
+}
+
+/* Hide content when closed — Chrome (div with data-open) */
+div.scribex-toggle-container[data-open="false"] > .scribex-toggle-content {
+  display: none;
+}
+
+/* Dark mode triangle color */
+.dark .scribex-toggle-title::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2394a3b8' d='M6 3l5 5-5 5z'/%3E%3C/svg%3E");
+}
+
+/* ============================================
    JSON state panel — dark theme scrollbar
    ============================================ */
 .json-panel-scroll::-webkit-scrollbar {
