@@ -13,3 +13,4 @@ export const INSERT_TABLE_COMMAND_SCRIBEX = createCommand<{ rows: number; column
 export const INSERT_CALLOUT_COMMAND = createCommand<{ emoji?: string; colorPreset?: string }>('INSERT_CALLOUT_COMMAND');
 export const INSERT_VIDEO_COMMAND = createCommand<{ file: File } | { url: string }>('INSERT_VIDEO_COMMAND');
 export const OPEN_VIDEO_INPUT_COMMAND = createCommand<void>('OPEN_VIDEO_INPUT_COMMAND');
+export const INSERT_TOGGLE_COMMAND = createCommand<{ isOpen?: boolean } | undefined>('INSERT_TOGGLE_COMMAND');
