@@ -28,6 +28,9 @@ import {
 import { $isCalloutNode } from "../nodes/CalloutNode";
 import { $createCalloutNode } from "../nodes/CalloutNode";
 import { $isCodeBlockNode, $createCodeBlockNode } from "../nodes/CodeBlockNode";
+import { $isToggleContainerNode, $createToggleContainerNode } from "../nodes/ToggleContainerNode";
+import { $createToggleTitleNode } from "../nodes/ToggleTitleNode";
+import { $createToggleContentNode } from "../nodes/ToggleContentNode";
 
 // PHOSPHOR ICONS
 import type { IconWeight } from "@phosphor-icons/react";
@@ -43,6 +46,7 @@ import {
   CodeSimpleIcon,
   InfoIcon,
   CheckIcon,
+  CaretCircleDownIcon,
 } from "@phosphor-icons/react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -64,6 +68,7 @@ const TURN_INTO_ITEMS: TurnIntoItem[] = [
   { id: "check-list", label: "Checklist", icon: CheckSquareIcon },
   { id: "code", label: "Code Block", icon: CodeSimpleIcon },
   { id: "callout", label: "Callout", icon: InfoIcon },
+  { id: "toggle", label: "Toggle", icon: CaretCircleDownIcon },
 ];
 
 // ─── Block Type Detection ───────────────────────────────────────────────────
@@ -90,6 +95,8 @@ function getBlockType(
       type = "code";
     } else if ($isCalloutNode(node)) {
       type = "callout";
+    } else if ($isToggleContainerNode(node)) {
+      type = "toggle";
     } else if (node.getType() === "paragraph") {
       type = "paragraph";
     }
@@ -107,6 +114,9 @@ function convertBlock(
   editor.update(() => {
     const node = $getNodeByKey(blockKey);
     if (!node) return;
+
+    // Collect extra paragraphs from multi-item lists
+    const extraParagraphs: import("lexical").ParagraphNode[] = [];
 
     // Extract text content for conversion
     const extractChildren = () => {
@@ -127,12 +137,28 @@ function convertBlock(
       target: import("lexical").ElementNode,
     ) => {
       if ($isListNode(node)) {
-        // For lists, extract children from the first list item
-        const firstItem = node.getFirstChild();
-        if (firstItem && $isElementNode(firstItem)) {
-          const children = firstItem.getChildren();
-          for (const child of children) {
-            target.append(child);
+        // For lists, extract children from ALL list items as separate paragraphs
+        // (except the first — its children go directly into the target)
+        const items = node.getChildren();
+        let isFirst = true;
+        for (const item of items) {
+          if ($isElementNode(item)) {
+            if (isFirst) {
+              const children = item.getChildren();
+              for (const child of children) {
+                target.append(child);
+              }
+              isFirst = false;
+            } else {
+              // Subsequent list items become sibling paragraphs inserted after target later
+              // Store them to be inserted after the replacement
+              const p = $createParagraphNode();
+              const children = item.getChildren();
+              for (const child of children) {
+                p.append(child);
+              }
+              extraParagraphs.push(p);
+            }
           }
         }
       } else if ($isElementNode(node)) {
@@ -228,10 +254,25 @@ function convertBlock(
         newNode = callout;
         break;
       }
+      case "toggle": {
+        const container = $createToggleContainerNode({ open: true });
+        const title = $createToggleTitleNode();
+        const content = $createToggleContentNode();
+        moveChildrenTo(content);
+        container.append(title, content);
+        newNode = container;
+        break;
+      }
     }
 
     if (newNode) {
       node.replace(newNode);
+      // Insert any extra paragraphs from multi-item list conversion
+      let insertAfter: import("lexical").LexicalNode = newNode;
+      for (const p of extraParagraphs) {
+        insertAfter.insertAfter(p);
+        insertAfter = p;
+      }
       if ($isElementNode(newNode)) {
         newNode.selectEnd();
       }
