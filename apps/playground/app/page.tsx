@@ -21,6 +21,7 @@ import {
   TableHoverActions,
   CalloutPlugin,
   VideoPlugin,
+  TogglePlugin,
   $createMentionNode,
   useEditorState,
   sanitizePastedHTML,
@@ -37,27 +38,16 @@ import type {
   MentionProvider,
 } from "@scribex/core";
 
-/** Mock upload handler — simulates a 500ms upload and returns a usable URL.
- *  Videos use blob URLs (data URLs are too large for browsers to play).
- *  Images use data URLs for demo purposes. */
+/** Mock upload handler — simulates a 500ms upload and returns a blob URL.
+ *  In production, this would return a CDN URL from your upload service.
+ *  We use blob URLs instead of data URLs to keep the editor state lightweight —
+ *  a data URL embeds the entire file as base64, which makes JSON serialization
+ *  extremely expensive and causes typing lag. */
 const mockUploadHandler: UploadHandler = async (
   file: File,
 ): Promise<string> => {
   await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Video files: use a blob URL — browsers can stream and play these natively.
-  // In production, this would be a CDN URL returned by your upload service.
-  if (file.type.startsWith("video/")) {
-    return URL.createObjectURL(file);
-  }
-
-  // Images / other files: data URL works fine for small files
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
+  return URL.createObjectURL(file);
 };
 
 /**
@@ -240,6 +230,7 @@ function EditorPlugins({ namespace }: { namespace: string }) {
       <TableHoverActions />
       <CalloutPlugin />
       <VideoPlugin uploadHandler={mockUploadHandler} />
+      <TogglePlugin />
       <PastePlugin />
       <EmojiPickerPlugin />
       <LinkPlugin />
@@ -255,19 +246,29 @@ function HiddenStateDisplay({
 }: {
   onStateChange: (state: string) => void;
 }) {
+  const stateRef = useCallback(
+    (node: HTMLPreElement | null) => {
+      if (node) {
+        node.dataset.ready = "true";
+      }
+    },
+    [],
+  );
+
   const handleChange = useCallback(
     (json: string) => {
       onStateChange(json);
+      // Update the DOM directly to avoid React re-rendering the full JSON string
+      const el = document.querySelector('[data-testid="editor-state"]');
+      if (el) el.textContent = json;
     },
     [onStateChange],
   );
 
-  const { serializedState } = useEditorState({ onChange: handleChange });
+  useEditorState({ onChange: handleChange, debounceMs: 500 });
 
   return (
-    <pre className="sr-only" data-testid="editor-state">
-      {serializedState}
-    </pre>
+    <pre className="sr-only" data-testid="editor-state" ref={stateRef} />
   );
 }
 
@@ -348,7 +349,8 @@ export default function Page() {
     }
   }, [dark]);
 
-  const prettyJson = editorState
+  // Only compute pretty JSON when the panel is visible
+  const prettyJson = showJson && editorState
     ? (() => {
         try {
           return JSON.stringify(JSON.parse(editorState), null, 2);
@@ -358,8 +360,9 @@ export default function Page() {
       })()
     : "";
 
+  // Use string length as a fast size approximation (avoids Blob allocation)
   const sizeKb = editorState
-    ? (new Blob([editorState]).size / 1024).toFixed(1)
+    ? (editorState.length / 1024).toFixed(1)
     : "0.0";
 
   const handleCopy = () => {
