@@ -67,8 +67,14 @@ export function MentionPlugin({ providers }: MentionPluginProps) {
 
   // Track text changes to detect trigger characters and query text
   useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
+    let mentionRafId = 0;
+
+    const unregister = editor.registerUpdateListener(({ editorState }) => {
+      // Coalesce rapid updates into a single RAF frame
+      if (mentionRafId !== 0) cancelAnimationFrame(mentionRafId);
+      mentionRafId = requestAnimationFrame(() => {
+        mentionRafId = 0;
+        editorState.read(() => {
         const selection = $getSelection();
         if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
           if (isOpen) close();
@@ -85,6 +91,11 @@ export function MentionPlugin({ providers }: MentionPluginProps) {
         const text = node.getTextContent();
         const offset = anchor.offset;
 
+        // Fast path: if text has no trigger characters at all, skip scanning
+        if (!isOpen && !triggers.some((t) => text.includes(t))) {
+          return;
+        }
+
         // Look backwards from cursor to find a trigger character
         let triggerIndex = -1;
         let matchedTrigger = "";
@@ -93,9 +104,7 @@ export function MentionPlugin({ providers }: MentionPluginProps) {
           const char = text[i];
           if (char === undefined) break;
 
-          // Check if this char is a trigger
           if (triggers.includes(char)) {
-            // Valid trigger position: at start of text or preceded by whitespace
             if (i === 0 || text[i - 1] === " " || text[i - 1] === "\n") {
               triggerIndex = i;
               matchedTrigger = char;
@@ -103,7 +112,6 @@ export function MentionPlugin({ providers }: MentionPluginProps) {
             break;
           }
 
-          // If we hit a space before finding a trigger, stop looking
           if (char === " " || char === "\n") {
             break;
           }
@@ -114,17 +122,15 @@ export function MentionPlugin({ providers }: MentionPluginProps) {
           return;
         }
 
-        // Extract the query (text between trigger and cursor)
         const queryText = text.slice(triggerIndex + 1, offset);
 
-        // Find the matching provider
         const provider = providers.find((p) => p.trigger === matchedTrigger);
         if (!provider) {
           if (isOpen) close();
           return;
         }
 
-        // Update position from DOM
+        // Only measure DOM position when actually opening/updating the dropdown
         const domSelection = window.getSelection();
         if (domSelection && domSelection.rangeCount > 0) {
           const range = domSelection.getRangeAt(0);
@@ -140,7 +146,6 @@ export function MentionPlugin({ providers }: MentionPluginProps) {
         setQuery(queryText);
         setIsOpen(true);
 
-        // Debounced search
         if (searchTimeoutRef.current) {
           clearTimeout(searchTimeoutRef.current);
         }
@@ -151,7 +156,13 @@ export function MentionPlugin({ providers }: MentionPluginProps) {
           });
         }, 50);
       });
+      });
     });
+
+    return () => {
+      unregister();
+      if (mentionRafId !== 0) cancelAnimationFrame(mentionRafId);
+    };
   }, [editor, isOpen, close, triggers, providers]);
 
   // Select an item and replace trigger+query with a MentionNode
