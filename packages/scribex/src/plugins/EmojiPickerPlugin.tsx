@@ -121,7 +121,14 @@ export function EmojiPickerPlugin({
 
   // Track text changes to detect : trigger and query text
   useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }) => {
+    let emojiRafId = 0;
+
+    const unregister = editor.registerUpdateListener(({ editorState }) => {
+      // Coalesce rapid updates into a single RAF frame
+      if (emojiRafId !== 0) cancelAnimationFrame(emojiRafId);
+      emojiRafId = requestAnimationFrame(() => {
+        emojiRafId = 0;
+
       // Command-opened mode: use typed text as search query
       if (openedViaCommandRef.current) {
         editorState.read(() => {
@@ -172,6 +179,11 @@ export function EmojiPickerPlugin({
         const text = node.getTextContent();
         const offset = anchor.offset;
 
+        // Fast path: skip scanning if no colon in text at all
+        if (!isOpen && !text.includes(":")) {
+          return;
+        }
+
         // Look backwards from cursor for ':'
         let colonIndex = -1;
 
@@ -180,14 +192,12 @@ export function EmojiPickerPlugin({
           if (char === undefined) break;
 
           if (char === ":") {
-            // Valid trigger: at start of text or preceded by whitespace
             if (i === 0 || text[i - 1] === " " || text[i - 1] === "\n") {
               colonIndex = i;
             }
             break;
           }
 
-          // If we hit a space before finding :, stop
           if (char === " " || char === "\n") {
             break;
           }
@@ -198,23 +208,20 @@ export function EmojiPickerPlugin({
           return;
         }
 
-        // Extract query text after :
         const queryText = text.slice(colonIndex + 1, offset);
 
-        // Need at least 1 character to search
         if (queryText.length < 1) {
           if (isOpen) close();
           return;
         }
 
-        // Filter emojis
         const filtered = filterEmojis(queryText);
         if (filtered.length === 0) {
           if (isOpen) close();
           return;
         }
 
-        // Update position from DOM
+        // Only measure DOM when actually showing the picker
         const domSelection = window.getSelection();
         if (domSelection && domSelection.rangeCount > 0) {
           const range = domSelection.getRangeAt(0);
@@ -231,7 +238,14 @@ export function EmojiPickerPlugin({
         setSelectedIndex(0);
         setIsOpen(true);
       });
+
+      });
     });
+
+    return () => {
+      unregister();
+      if (emojiRafId !== 0) cancelAnimationFrame(emojiRafId);
+    };
   }, [editor, isOpen, close, filterEmojis]);
 
   // Select an emoji — either replace :query text or insert at cursor
