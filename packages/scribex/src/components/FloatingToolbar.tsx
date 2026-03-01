@@ -94,7 +94,11 @@ export function FloatingToolbar({ colorPalette }: FloatingToolbarProps = {}) {
       domSelection.rangeCount === 0 ||
       domSelection.isCollapsed
     ) {
-      setIsVisible(false);
+      // Fast path: collapsed selection (normal typing) — hide if visible, skip everything else
+      if (isVisibleRef.current) {
+        setIsVisible(false);
+        isVisibleRef.current = false;
+      }
       return;
     }
 
@@ -102,7 +106,10 @@ export function FloatingToolbar({ colorPalette }: FloatingToolbarProps = {}) {
     const rect = range.getBoundingClientRect();
 
     if (rect.width === 0 && rect.height === 0) {
-      setIsVisible(false);
+      if (isVisibleRef.current) {
+        setIsVisible(false);
+        isVisibleRef.current = false;
+      }
       return;
     }
 
@@ -113,11 +120,13 @@ export function FloatingToolbar({ colorPalette }: FloatingToolbarProps = {}) {
       // Hide toolbar when table selection is active (table has its own action menu)
       if ($isTableSelection(selection)) {
         setIsVisible(false);
+        isVisibleRef.current = false;
         return;
       }
 
       if (!$isRangeSelection(selection) || selection.isCollapsed()) {
         setIsVisible(false);
+        isVisibleRef.current = false;
         return;
       }
 
@@ -159,13 +168,24 @@ export function FloatingToolbar({ colorPalette }: FloatingToolbarProps = {}) {
       left: rect.left + rect.width / 2,
     });
     setIsVisible(true);
+    isVisibleRef.current = true;
   }, [editor]);
+
+  // RAF ref to throttle selection change updates
+  const selectionRafRef = useRef(0);
+  const isVisibleRef = useRef(false);
 
   useEffect(() => {
     return editor.registerCommand(
       SELECTION_CHANGE_COMMAND,
       () => {
-        updateToolbar();
+        // Throttle: coalesce rapid selection changes into one RAF
+        if (selectionRafRef.current === 0) {
+          selectionRafRef.current = requestAnimationFrame(() => {
+            selectionRafRef.current = 0;
+            updateToolbar();
+          });
+        }
         return false;
       },
       COMMAND_PRIORITY_LOW,
