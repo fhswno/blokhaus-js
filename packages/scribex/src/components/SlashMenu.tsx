@@ -41,6 +41,7 @@ import {
   InfoIcon,
   SmileyIcon,
   VideoCameraIcon,
+  CaretCircleDownIcon,
 } from "@phosphor-icons/react";
 
 // COMMANDS
@@ -52,6 +53,7 @@ import {
   INSERT_TABLE_COMMAND_SCRIBEX,
   INSERT_CALLOUT_COMMAND,
   OPEN_VIDEO_INPUT_COMMAND,
+  INSERT_TOGGLE_COMMAND,
 } from "../commands";
 
 import { $createCodeBlockNode } from "../nodes/CodeBlockNode";
@@ -104,6 +106,9 @@ const IconVideo = ({ size }: { size?: number }) => (
 const IconChecklist = ({ size }: { size?: number }) => (
   <CheckSquareIcon size={size} weight="duotone" />
 );
+const IconToggle = ({ size }: { size?: number }) => (
+  <CaretCircleDownIcon size={size} weight="duotone" />
+);
 
 // ── Public interface ────────────────────────────────────────────────────────
 
@@ -150,7 +155,7 @@ const CATEGORY_COLORS: Record<string, CategoryStyle> = {
 function getCategoryForId(id: string): string {
   if (id === "ai") return "ai";
   if (id.startsWith("heading")) return "headings";
-  if (id === "quote" || id === "divider" || id === "code" || id === "table" || id === "callout") return "blocks";
+  if (id === "quote" || id === "divider" || id === "code" || id === "table" || id === "callout" || id === "toggle") return "blocks";
   if (id === "bullet-list" || id === "numbered-list" || id === "check-list")
     return "lists";
   if (id === "image" || id === "emoji" || id === "video") return "media";
@@ -426,6 +431,24 @@ function getDefaultItems(
           }
         });
         editor.dispatchCommand(INSERT_CALLOUT_COMMAND, {});
+      },
+    },
+    {
+      id: "toggle",
+      label: "Toggle",
+      description: "Collapsible content block",
+      icon: IconToggle,
+      keywords: ["toggle", "collapse", "expand", "accordion", "dropdown", "details", "fold"],
+      onSelect: () => {
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return;
+          const anchor = selection.anchor.getNode();
+          if (anchor instanceof TextNode) {
+            anchor.remove();
+          }
+        });
+        editor.dispatchCommand(INSERT_TOGGLE_COMMAND, {});
       },
     },
     {
