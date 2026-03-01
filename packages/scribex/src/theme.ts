@@ -38,4 +38,7 @@ export const scribexTheme: EditorThemeClasses = {
   tableCellHeader: 'scribex-table-cell-header',
   tableSelection: 'scribex-table-selection',
   callout: 'scribex-callout',
+  toggleContainer: 'scribex-toggle-container',
+  toggleTitle: 'scribex-toggle-title',
+  toggleContent: 'scribex-toggle-content',
 };
