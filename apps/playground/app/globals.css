@@ -10,6 +10,14 @@
 @import "../../../packages/scribex/src/styles/tokens.css";
 
 /* ============================================
+   Map Scribex font tokens to loaded Google Fonts
+   ============================================ */
+:root {
+  --scribex-font-serif: var(--font-lora), Georgia, "Times New Roman", serif;
+  --scribex-font-hand: var(--font-caveat), "Caveat", cursive;
+}
+
+/* ============================================
    Tailwind v4 theme — font families
    ============================================ */
 @theme {
