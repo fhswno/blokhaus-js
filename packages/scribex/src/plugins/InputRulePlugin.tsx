@@ -160,6 +160,31 @@ export function InputRulePlugin({ rules = [] }: InputRulePluginProps) {
   useEffect(() => {
     const allRules = [...BUILTIN_RULES, ...rules];
 
+    // Pre-compute the set of first characters that can start a rule match.
+    // This lets us skip regex matching entirely for the vast majority of keystrokes.
+    const triggerFirstChars = new Set<string>();
+    for (const rule of allRules) {
+      // Extract the literal first char from each pattern's source.
+      // Patterns like /^# $/, /^## $/, /^> $/, /^[-*] $/, /^1\. $/ etc.
+      const src = rule.pattern.source;
+      // Skip the leading ^ if present
+      const start = src.startsWith("^") ? 1 : 0;
+      const ch = src[start];
+      if (ch && ch !== "[" && ch !== "(" && ch !== "\\") {
+        triggerFirstChars.add(ch);
+      } else if (ch === "[") {
+        // Character class like [-*] — extract individual chars
+        for (let i = start + 1; i < src.length; i++) {
+          if (src[i] === "]") break;
+          if (src[i] !== "-" || i === start + 1) triggerFirstChars.add(src[i]!);
+        }
+      } else if (ch === "\\") {
+        // Escaped char like \[
+        const next = src[start + 1];
+        if (next) triggerFirstChars.add(next);
+      }
+    }
+
     return editor.registerNodeTransform(TextNode, (textNode) => {
       // IME safety: skip transforms during composition
       const editorWithComposition = editor as unknown as {
@@ -168,6 +193,10 @@ export function InputRulePlugin({ rules = [] }: InputRulePluginProps) {
       if (editorWithComposition._compositionKey !== null) return;
 
       const text = textNode.getTextContent();
+
+      // Fast exit: skip everything for text longer than 6 chars.
+      // All built-in rules match patterns ≤ 6 chars (e.g. "### ", "[x] ", "```").
+      if (text.length > 6) return;
 
       // Slash menu trigger: "/" at start of an otherwise empty paragraph
       if (text === "/") {
@@ -180,6 +209,10 @@ export function InputRulePlugin({ rules = [] }: InputRulePluginProps) {
           return;
         }
       }
+
+      // Fast exit: if first char doesn't match any rule's trigger, skip regex
+      const firstChar = text[0];
+      if (!firstChar || !triggerFirstChars.has(firstChar)) return;
 
       // Check against all registered rules
       for (const rule of allRules) {
