@@ -266,7 +266,7 @@ export function LinkPlugin({ config = {} }: { config?: LinkPluginConfig } = {}) 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
-        // Only handle if our editor has focus
+        // Check if our editor has focus BEFORE manipulating the event
         const rootElement = editor.getRootElement();
         if (!rootElement) return;
         const activeElement = document.activeElement;
@@ -278,7 +278,7 @@ export function LinkPlugin({ config = {} }: { config?: LinkPluginConfig } = {}) 
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown, true);
+    document.addEventListener("keydown", handleKeyDown);
 
     // Signal that the link plugin's keyboard handler is ready
     const rootElement = editor.getRootElement();
@@ -287,7 +287,7 @@ export function LinkPlugin({ config = {} }: { config?: LinkPluginConfig } = {}) 
     }
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown, true);
+      document.removeEventListener("keydown", handleKeyDown);
       const el = editor.getRootElement();
       if (el) {
         el.removeAttribute("data-link-plugin-ready");
