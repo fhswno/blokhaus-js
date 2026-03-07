@@ -1,7 +1,7 @@
 "use client";
 
 // REACT
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // LEXICAL
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
@@ -679,7 +679,7 @@ export function SlashMenu({ items: externalItems }: SlashMenuProps) {
     setPortalContainer(document.body);
   }, []);
 
-  const defaultItems = getDefaultItems(editor);
+  const defaultItems = useMemo(() => getDefaultItems(editor), [editor]);
   const allItems = externalItems
     ? [...defaultItems, ...externalItems]
     : defaultItems;
