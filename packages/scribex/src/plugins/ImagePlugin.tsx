@@ -27,26 +27,64 @@ import { INSERT_IMAGE_COMMAND } from "../commands";
 // TYPES
 import type { UploadHandler } from "../types";
 
+const DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const DEFAULT_ALLOWED_FORMATS = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/svg+xml",
+];
+
 interface ImagePluginProps {
   uploadHandler: UploadHandler;
+  /** Maximum file size in bytes. Default: 10MB. */
+  maxFileSize?: number;
+  /** Allowed MIME types. Default: jpeg, png, gif, webp, svg+xml. */
+  allowedFormats?: string[];
+  /** Called when a file is rejected (too large or wrong format). */
+  onFileRejected?: (file: File, reason: "size" | "format") => void;
+  /** Called when an upload fails. */
+  onUploadError?: (file: File, error: unknown) => void;
 }
 
-export function ImagePlugin({ uploadHandler }: ImagePluginProps) {
+export function ImagePlugin({
+  uploadHandler,
+  maxFileSize = DEFAULT_MAX_FILE_SIZE,
+  allowedFormats = DEFAULT_ALLOWED_FORMATS,
+  onFileRejected,
+  onUploadError,
+}: ImagePluginProps) {
   const [editor] = useLexicalComposerContext();
   const uploadHandlerRef = useRef(uploadHandler);
   uploadHandlerRef.current = uploadHandler;
+  const onUploadErrorRef = useRef(onUploadError);
+  onUploadErrorRef.current = onUploadError;
+
+  const validateFile = (file: File): boolean => {
+    if (!allowedFormats.some((fmt) => file.type === fmt)) {
+      onFileRejected?.(file, "format");
+      return false;
+    }
+    if (file.size > maxFileSize) {
+      onFileRejected?.(file, "size");
+      return false;
+    }
+    return true;
+  };
 
   // Register INSERT_IMAGE_COMMAND handler
   useEffect(() => {
     return editor.registerCommand(
       INSERT_IMAGE_COMMAND,
       (file: File) => {
-        handleImageUpload(file, editor, uploadHandlerRef.current);
+        if (!validateFile(file)) return true;
+        handleImageUpload(file, editor, uploadHandlerRef.current, onUploadErrorRef.current);
         return true;
       },
       COMMAND_PRIORITY_LOW,
     );
-  }, [editor]);
+  }, [editor, maxFileSize, allowedFormats, onFileRejected]);
 
   // Handle drop events
   useEffect(() => {
@@ -66,13 +104,14 @@ export function ImagePlugin({ uploadHandler }: ImagePluginProps) {
       e.stopPropagation();
 
       for (const file of imageFiles) {
-        handleImageUpload(file, editor, uploadHandlerRef.current);
+        if (!validateFile(file)) continue;
+        handleImageUpload(file, editor, uploadHandlerRef.current, onUploadErrorRef.current);
       }
     };
 
     rootElement.addEventListener("drop", onDrop);
     return () => rootElement.removeEventListener("drop", onDrop);
-  }, [editor]);
+  }, [editor, maxFileSize, allowedFormats, onFileRejected]);
 
   // Handle paste events with image files
   useEffect(() => {
@@ -91,13 +130,14 @@ export function ImagePlugin({ uploadHandler }: ImagePluginProps) {
       e.preventDefault();
 
       for (const file of imageFiles) {
-        handleImageUpload(file, editor, uploadHandlerRef.current);
+        if (!validateFile(file)) continue;
+        handleImageUpload(file, editor, uploadHandlerRef.current, onUploadErrorRef.current);
       }
     };
 
     rootElement.addEventListener("paste", onPaste);
     return () => rootElement.removeEventListener("paste", onPaste);
-  }, [editor]);
+  }, [editor, maxFileSize, allowedFormats, onFileRejected]);
 
   return null;
 }
@@ -106,6 +146,7 @@ function handleImageUpload(
   file: File,
   editor: ReturnType<typeof useLexicalComposerContext>[0],
   uploadHandler: UploadHandler,
+  onUploadError?: (file: File, error: unknown) => void,
 ) {
   // Step 1: Create objectURL for optimistic preview
   const objectURL = URL.createObjectURL(file);
@@ -148,33 +189,42 @@ function handleImageUpload(
   uploadHandler(file)
     .then((remoteURL) => {
       // Step 4: Replace LoadingImageNode with ImageNode
-      editor.update(() => {
-        if (!loadingNodeKey) return;
+      try {
+        editor.update(() => {
+          if (!loadingNodeKey) return;
 
-        const loadingNode = $getNodeByKey(loadingNodeKey);
-        if (!loadingNode || !$isLoadingImageNode(loadingNode)) return;
+          const loadingNode = $getNodeByKey(loadingNodeKey);
+          if (!loadingNode || !$isLoadingImageNode(loadingNode)) return;
 
-        const imageNode = $createImageNode({
-          src: remoteURL,
-          altText: file.name,
+          const imageNode = $createImageNode({
+            src: remoteURL,
+            altText: file.name,
+          });
+
+          loadingNode.replace(imageNode);
         });
-
-        loadingNode.replace(imageNode);
-      });
+      } catch {
+        // Editor may have been disposed if component unmounted during upload
+      }
 
       URL.revokeObjectURL(objectURL);
     })
-    .catch(() => {
+    .catch((error: unknown) => {
       // Step 5: Remove LoadingImageNode on failure
-      editor.update(() => {
-        if (!loadingNodeKey) return;
+      try {
+        editor.update(() => {
+          if (!loadingNodeKey) return;
 
-        const loadingNode = $getNodeByKey(loadingNodeKey);
-        if (!loadingNode) return;
+          const loadingNode = $getNodeByKey(loadingNodeKey);
+          if (!loadingNode) return;
 
-        loadingNode.remove();
-      });
+          loadingNode.remove();
+        });
+      } catch {
+        // Editor may have been disposed if component unmounted during upload
+      }
 
+      onUploadError?.(file, error);
       URL.revokeObjectURL(objectURL);
     });
 }
