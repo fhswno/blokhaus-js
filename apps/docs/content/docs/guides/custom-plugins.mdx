@@ -15,10 +15,10 @@ A Scribex plugin is a React component that:
 4. Cleans up listeners by returning the unregister function from `useEffect`.
 
 ```tsx title="plugins/MyPlugin.tsx"
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useEffect } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 export function MyPlugin() {
   const [editor] = useLexicalComposerContext();
@@ -52,7 +52,7 @@ Then use it by passing it as a child of `EditorRoot`:
 Every plugin starts by calling `useLexicalComposerContext()`:
 
 ```tsx
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 const [editor] = useLexicalComposerContext();
 ```
@@ -64,11 +64,11 @@ This hook must be called inside a component that is a descendant of `EditorRoot`
 Lexical uses a command system for actions like formatting, inserting nodes, and handling keyboard shortcuts. Register a command listener to intercept or dispatch commands:
 
 ```tsx title="plugins/LogBoldPlugin.tsx"
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { FORMAT_TEXT_COMMAND, COMMAND_PRIORITY_LOW } from 'lexical';
+import { useEffect } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { FORMAT_TEXT_COMMAND, COMMAND_PRIORITY_LOW } from "lexical";
 
 export function LogBoldPlugin() {
   const [editor] = useLexicalComposerContext();
@@ -77,8 +77,8 @@ export function LogBoldPlugin() {
     return editor.registerCommand(
       FORMAT_TEXT_COMMAND,
       (format) => {
-        if (format === 'bold') {
-          console.log('Bold formatting applied');
+        if (format === "bold") {
+          console.log("Bold formatting applied");
         }
         // Return false to let other handlers also process this command
         return false;
@@ -95,20 +95,20 @@ export function LogBoldPlugin() {
 
 Lexical processes command handlers from highest to lowest priority. Once a handler returns `true`, subsequent handlers are skipped.
 
-| Priority | Use case |
-|---|---|
-| `COMMAND_PRIORITY_CRITICAL` | Framework-level interceptors (rarely used) |
-| `COMMAND_PRIORITY_HIGH` | Handlers that must override defaults (e.g., mention keyboard nav) |
-| `COMMAND_PRIORITY_NORMAL` | Standard feature handlers |
-| `COMMAND_PRIORITY_LOW` | Plugins that observe but do not block |
-| `COMMAND_PRIORITY_EDITOR` | Default editor behavior (lowest) |
+| Priority                    | Use case                                                          |
+| --------------------------- | ----------------------------------------------------------------- |
+| `COMMAND_PRIORITY_CRITICAL` | Framework-level interceptors (rarely used)                        |
+| `COMMAND_PRIORITY_HIGH`     | Handlers that must override defaults (e.g., mention keyboard nav) |
+| `COMMAND_PRIORITY_NORMAL`   | Standard feature handlers                                         |
+| `COMMAND_PRIORITY_LOW`      | Plugins that observe but do not block                             |
+| `COMMAND_PRIORITY_EDITOR`   | Default editor behavior (lowest)                                  |
 
 ### Dispatching commands
 
 To trigger a command from your own code:
 
 ```tsx
-editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
 ```
 
 ### Creating custom commands
@@ -116,10 +116,10 @@ editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
 Define your own commands using `createCommand`:
 
 ```tsx title="commands.ts"
-import { createCommand, type LexicalCommand } from 'lexical';
+import { createCommand, type LexicalCommand } from "lexical";
 
 export const MY_CUSTOM_COMMAND: LexicalCommand<{ message: string }> =
-  createCommand('MY_CUSTOM_COMMAND');
+  createCommand("MY_CUSTOM_COMMAND");
 ```
 
 Then register and dispatch it like any built-in command.
@@ -129,11 +129,11 @@ Then register and dispatch it like any built-in command.
 Node transforms run whenever a specific node type is created or modified. They are useful for input rules, auto-formatting, and validation:
 
 ```tsx title="plugins/AutoCapitalizePlugin.tsx"
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { TextNode } from 'lexical';
+import { useEffect } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { TextNode } from "lexical";
 
 export function AutoCapitalizePlugin() {
   const [editor] = useLexicalComposerContext();
@@ -166,11 +166,11 @@ Node transforms run inside an `editor.update()` context, so you can mutate the A
 Update listeners fire after every editor state change. They are read-only by design -- use them to observe the state, not to modify it.
 
 ```tsx title="plugins/WordCountPlugin.tsx"
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getRoot } from 'lexical';
+import { useEffect, useState } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $getRoot } from "lexical";
 
 export function WordCountPlugin({
   onCount,
@@ -207,10 +207,10 @@ export function WordCountPlugin({
 Here is a practical plugin that auto-saves the editor state to `localStorage` with debouncing:
 
 ```tsx title="plugins/AutoSavePlugin.tsx"
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useEffect, useRef } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 interface AutoSavePluginProps {
   /** localStorage key to save to */
@@ -241,7 +241,7 @@ export function AutoSavePlugin({
           localStorage.setItem(storageKey, json);
           onSave?.(json);
         } catch (error) {
-          console.error('[AutoSave] Failed to save:', error);
+          console.error("[AutoSave] Failed to save:", error);
         }
       }, debounceMs);
     });
@@ -257,15 +257,15 @@ Usage:
 <EditorRoot
   namespace="my-editor"
   initialState={
-    typeof window !== 'undefined'
-      ? localStorage.getItem('my-editor-state')
+    typeof window !== "undefined"
+      ? localStorage.getItem("my-editor-state")
       : null
   }
 >
   <AutoSavePlugin
     storageKey="my-editor-state"
     debounceMs={500}
-    onSave={() => console.log('Saved')}
+    onSave={() => console.log("Saved")}
   />
 </EditorRoot>
 ```
@@ -275,12 +275,12 @@ Usage:
 A plugin that prevents the user from typing beyond a character limit:
 
 ```tsx title="plugins/CharacterLimitPlugin.tsx"
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getRoot, $getSelection, $isRangeSelection } from 'lexical';
-import { trimTextContentFromAnchor } from '@lexical/selection';
+import { useEffect } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $getRoot, $getSelection, $isRangeSelection } from "lexical";
+import { trimTextContentFromAnchor } from "@lexical/selection";
 
 interface CharacterLimitPluginProps {
   maxLength: number;
@@ -382,11 +382,11 @@ Never access `window` or `document` at the top level of a module. This breaks se
 
 ```tsx
 // WRONG -- breaks SSR
-const isMobile = window.matchMedia('(pointer: coarse)').matches;
+const isMobile = window.matchMedia("(pointer: coarse)").matches;
 
 // CORRECT -- check inside useEffect
 useEffect(() => {
-  const isMobile = window.matchMedia('(pointer: coarse)').matches;
+  const isMobile = window.matchMedia("(pointer: coarse)").matches;
   // ...
 }, []);
 ```
