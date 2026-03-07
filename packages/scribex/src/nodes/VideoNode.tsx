@@ -1,10 +1,8 @@
 "use client";
 
-// REACT
 import { useCallback, useEffect, useRef } from "react";
 import type { ReactElement } from "react";
 
-// LEXICAL
 import type {
   DOMConversionMap,
   DOMConversionOutput,
@@ -26,8 +24,6 @@ import {
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useLexicalNodeSelection } from "@lexical/react/useLexicalNodeSelection";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 export interface VideoPayload {
   src: string;
   videoType: "embed" | "file";
@@ -45,8 +41,6 @@ export type SerializedVideoNode = Spread<
   },
   SerializedLexicalNode
 >;
-
-// ─── Node ───────────────────────────────────────────────────────────────────
 
 export class VideoNode extends DecoratorNode<ReactElement> {
   __src: string;
@@ -180,8 +174,6 @@ export class VideoNode extends DecoratorNode<ReactElement> {
   }
 }
 
-// ─── DOM Converters ─────────────────────────────────────────────────────────
-
 function convertVideoElement(domNode: Node): DOMConversionOutput | null {
   if (domNode instanceof HTMLElement) {
     const src = domNode.getAttribute("data-video-src");
@@ -220,8 +212,6 @@ function convertIframeElement(domNode: Node): DOMConversionOutput | null {
   return null;
 }
 
-// ─── React Component ────────────────────────────────────────────────────────
-
 function VideoComponent({
   src,
   videoType,
@@ -240,7 +230,6 @@ function VideoComponent({
     useLexicalNodeSelection(nodeKey);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Click to select
   useEffect(() => {
     return editor.registerCommand(
       CLICK_COMMAND,
@@ -258,7 +247,6 @@ function VideoComponent({
     );
   }, [editor, clearSelection, setSelected]);
 
-  // Delete/Backspace to remove
   const onDelete = useCallback(
     (event: KeyboardEvent) => {
       if (isSelected) {
@@ -354,8 +342,6 @@ function VideoComponent({
     </div>
   );
 }
-
-// ─── Factories ──────────────────────────────────────────────────────────────
 
 export function $createVideoNode(payload: VideoPayload): VideoNode {
   return new VideoNode(
