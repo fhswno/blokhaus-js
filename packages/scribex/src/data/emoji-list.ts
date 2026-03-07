@@ -828,6 +828,7 @@ export const DEFAULT_EMOJIS: EmojiItem[] = [
   { emoji: "\u{1F1F3}\u{1F1EC}", name: "flag_nigeria", keywords: ["flag", "nigeria", "nigerian"] },
   { emoji: "\u{1F1F8}\u{1F1E6}", name: "flag_saudi_arabia", keywords: ["flag", "saudi_arabia", "saudi"] },
   { emoji: "\u{1F1F9}\u{1F1F7}", name: "flag_turkey", keywords: ["flag", "turkey", "turkish"] },
+  { emoji: "\u{1F1EE}\u{1F1F1}", name: "flag_israel", keywords: ["flag", "israel", "israeli", "jerusalem"] },
   { emoji: "\u{1F3C1}", name: "chequered_flag", keywords: ["flag", "checkered", "race", "finish", "winner"] },
   { emoji: "\u{1F6A9}", name: "triangular_flag", keywords: ["flag", "triangle", "red", "mark"] },
   { emoji: "\u{1F3F3}\u{FE0F}", name: "white_flag", keywords: ["flag", "white", "surrender", "peace"] },
