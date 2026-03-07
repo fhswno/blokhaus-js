@@ -1,0 +1,207 @@
+---
+title: CalloutPlugin
+description: Styled callout blocks with emoji and color presets.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Import
+
+```tsx
+import { CalloutPlugin } from '@scribex/core';
+```
+
+## Overview
+
+The `CalloutPlugin` provides styled callout blocks (also known as admonitions or notices) with customizable emoji icons and color presets. Callouts are visually distinct blocks used to highlight important information, warnings, tips, or notes. Each callout has a leading emoji, a configurable background color, and supports rich text content inside.
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `presets` | `CalloutPreset[]` | Built-in presets | Custom color presets. When provided, replaces the built-in set. |
+| `defaultEmoji` | `string` | `"💡"` | Default emoji for new callouts when no emoji is specified. |
+| `defaultPreset` | `string` | `"default"` | The preset key to use for new callouts when no preset is specified. |
+
+## The `CalloutPreset` interface
+
+```ts
+interface CalloutPreset {
+  /** Unique identifier for this preset. */
+  key: string;
+  /** Display label shown in the preset selector. */
+  label: string;
+  /** CSS background color value or CSS variable reference. */
+  backgroundColor: string;
+  /** CSS border color value or CSS variable reference. */
+  borderColor: string;
+  /** CSS text color for the callout content. */
+  textColor?: string;
+}
+```
+
+## Built-in presets
+
+| Key | Label | Appearance |
+|---|---|---|
+| `"default"` | Default | Light gray background, subtle border |
+| `"info"` | Info | Light blue background, blue border |
+| `"success"` | Success | Light green background, green border |
+| `"warning"` | Warning | Light yellow background, yellow border |
+| `"danger"` | Danger | Light red background, red border |
+
+## Usage
+
+### Basic setup
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, CalloutPlugin, InputRulePlugin, SlashMenu } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <InputRulePlugin />
+      <SlashMenu />
+      <CalloutPlugin />
+    </EditorRoot>
+  );
+}
+```
+
+### With custom presets
+
+```tsx
+const customPresets = [
+  {
+    key: 'tip',
+    label: 'Tip',
+    backgroundColor: 'hsl(142 76% 96%)',
+    borderColor: 'hsl(142 76% 46%)',
+  },
+  {
+    key: 'important',
+    label: 'Important',
+    backgroundColor: 'hsl(262 83% 96%)',
+    borderColor: 'hsl(262 83% 58%)',
+  },
+  {
+    key: 'caution',
+    label: 'Caution',
+    backgroundColor: 'hsl(38 92% 95%)',
+    borderColor: 'hsl(38 92% 50%)',
+  },
+];
+
+<CalloutPlugin
+  presets={customPresets}
+  defaultEmoji="📝"
+  defaultPreset="tip"
+/>
+```
+
+## Registered commands
+
+| Command | Payload | Description |
+|---|---|---|
+| `INSERT_CALLOUT_COMMAND` | `{ emoji?: string; colorPreset?: string }` | Inserts a callout block at the current cursor position. |
+
+### Creating a callout programmatically
+
+```tsx
+import { INSERT_CALLOUT_COMMAND } from '@scribex/core';
+
+// Insert with defaults
+editor.dispatchCommand(INSERT_CALLOUT_COMMAND, {});
+
+// Insert with specific emoji and preset
+editor.dispatchCommand(INSERT_CALLOUT_COMMAND, {
+  emoji: '⚠️',
+  colorPreset: 'warning',
+});
+```
+
+## Floating toolbar
+
+When the cursor is inside a callout, a floating toolbar appears above the block with two controls:
+
+1. **Emoji picker** -- Click the current emoji to open a small emoji selector. Changing the emoji updates the `CalloutNode` via a single `editor.update()` call.
+2. **Color preset selector** -- A row of colored circles representing the available presets. Clicking a preset changes the callout's background and border colors.
+
+## Callout structure in JSON
+
+```json
+{
+  "type": "callout",
+  "emoji": "💡",
+  "colorPreset": "info",
+  "children": [
+    {
+      "type": "paragraph",
+      "children": [
+        { "type": "text", "text": "This is an informational callout." }
+      ]
+    }
+  ]
+}
+```
+
+## Content inside callouts
+
+Callout blocks support any block-level content: paragraphs, headings, lists, code blocks, and images. The callout acts as a container node in the AST.
+
+```tsx
+editor.update(() => {
+  const callout = $createCalloutNode('💡', 'info');
+  const heading = $createHeadingNode('h3');
+  heading.append($createTextNode('Pro tip'));
+  const paragraph = $createParagraphNode();
+  paragraph.append($createTextNode('You can put any content inside callouts.'));
+
+  callout.append(heading, paragraph);
+  $getRoot().append(callout);
+});
+```
+
+## Keyboard behavior
+
+| Key | Context | Action |
+|---|---|---|
+| Enter | End of last paragraph in callout | Create a new paragraph inside the callout |
+| Enter (x2) | Empty paragraph at end of callout | Exit the callout and create a paragraph below |
+| Backspace | Start of first paragraph, callout is empty | Delete the callout block |
+| Arrow Down | Last line of callout | Move cursor to the next block after the callout |
+| Arrow Up | First line of callout | Move cursor to the block before the callout |
+
+## Slash menu integration
+
+When `CalloutPlugin` is mounted, a "Callout" item appears in the slash menu. Selecting it inserts a new callout with the `defaultEmoji` and `defaultPreset`, with the cursor positioned inside the callout body.
+
+## Type guards and helpers
+
+```tsx
+import { $isCalloutNode, $createCalloutNode } from '@scribex/core';
+
+// Check if a node is a callout
+if ($isCalloutNode(node)) {
+  console.log('Emoji:', node.getEmoji());
+  console.log('Preset:', node.getColorPreset());
+}
+
+// Create a callout
+const callout = $createCalloutNode('🔥', 'danger');
+```
+
+<Callout type="info">
+Callout colors are applied via inline CSS custom properties on the callout container element. This allows the color presets to work without any additional CSS files, and ensures colors are consistent in both light and dark themes when using HSL values.
+</Callout>
+
+<Callout type="warn">
+When providing custom `presets`, the built-in presets are completely replaced. If you want to extend the defaults, import `DEFAULT_CALLOUT_PRESETS` from `@scribex/core` and spread it into your custom array.
+</Callout>
+
+## Related
+
+- [Callouts Guide](/docs/guides/callouts) -- Extended guide with theming
+- [Slash Menu Guide](/docs/guides/slash-menu) -- Configuring slash menu items
