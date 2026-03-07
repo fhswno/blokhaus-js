@@ -1,0 +1,187 @@
+---
+title: Code Blocks
+description: Syntax-highlighted code blocks with language selection.
+---
+
+Scribex includes a `CodeBlockNode` that provides editable code blocks with a language selector, copy button, and optional Shiki-powered syntax highlighting.
+
+## Quick start
+
+The `CodeBlockNode` is registered automatically by `EditorRoot`. To enable the markdown shortcut (` ``` `) and the slash menu entry, include `InputRulePlugin` and `SlashMenu`:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, InputRulePlugin, SlashMenu } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <InputRulePlugin />
+      <SlashMenu />
+    </EditorRoot>
+  );
+}
+```
+
+Now typing ` ``` ` at the start of an empty block converts it to a code block, and `/code` in the slash menu also inserts one.
+
+## The `CodeBlockNode`
+
+The `CodeBlockNode` is a Lexical `DecoratorNode` that stores two properties:
+
+```ts
+interface CodeBlockPayload {
+  code: string;      // The code content
+  language: string;  // The selected language (e.g., 'javascript')
+  key?: NodeKey;     // Optional Lexical node key
+  autoFocus?: boolean; // Focus the textarea on mount
+}
+```
+
+### Creating a code block programmatically
+
+```tsx
+import { $createCodeBlockNode } from '@scribex/core';
+
+editor.update(() => {
+  const codeBlock = $createCodeBlockNode({
+    code: 'console.log("Hello, world!");',
+    language: 'javascript',
+  });
+
+  const root = $getRoot();
+  root.append(codeBlock);
+});
+```
+
+### Type guard
+
+```tsx
+import { $isCodeBlockNode } from '@scribex/core';
+
+if ($isCodeBlockNode(node)) {
+  console.log('Language:', node.getLanguage());
+  console.log('Code:', node.getCode());
+}
+```
+
+## Supported languages
+
+The language selector includes the following languages:
+
+| Language | Value |
+|---|---|
+| JavaScript | `javascript` |
+| TypeScript | `typescript` |
+| Python | `python` |
+| CSS | `css` |
+| HTML | `html` |
+| JSON | `json` |
+| Bash | `bash` |
+| Go | `go` |
+| Rust | `rust` |
+| Java | `java` |
+| C | `c` |
+| C++ | `cpp` |
+| SQL | `sql` |
+| Markdown | `markdown` |
+| YAML | `yaml` |
+| Plain text | `text` |
+
+The default language for new code blocks is `javascript`.
+
+## UI features
+
+### Language selector
+
+A `<select>` dropdown in the top-left corner of the code block lets the user pick the language. Changing the language updates the `language` property in the AST and re-triggers syntax highlighting.
+
+### Copy button
+
+A "Copy" button in the top-right corner copies the code content to the clipboard. After copying, the button briefly shows a "Copied" confirmation with a checkmark icon.
+
+The copy operation writes both `text/plain` and `text/html` formats to the clipboard. The HTML format wraps the code in a `<pre><code>` block with a `language-xxx` class, so pasting into another editor that supports code blocks will recreate the block correctly.
+
+### Editing
+
+The code content is edited via a `<textarea>` element inside the decorator. This ensures:
+
+- No Lexical formatting is applied inside the code block (no bold, italic, etc.).
+- Standard text editing features work: cursor movement, selection, copy/paste.
+- The textarea auto-resizes to fit the content.
+
+Code changes are debounced (300ms) before writing back to the `CodeBlockNode` in the AST, preventing history stack flooding from rapid keystrokes.
+
+## Shiki syntax highlighting
+
+The code block supports server-side syntax highlighting via [Shiki](https://shiki.style). This requires a highlight API route in your application.
+
+### Setting up the highlight route
+
+```ts title="app/api/editor/highlight/route.ts"
+import { codeToHtml } from 'shiki';
+import { NextRequest } from 'next/server';
+
+export async function POST(request: NextRequest) {
+  const { code, language } = await request.json();
+
+  try {
+    const html = await codeToHtml(code, {
+      lang: language || 'text',
+      theme: 'github-dark',
+    });
+
+    return Response.json({ html });
+  } catch {
+    return Response.json({ html: '' }, { status: 200 });
+  }
+}
+```
+
+### How it works
+
+1. When the code or language changes, the `CodeBlockNode` component sends a debounced POST request to `/api/editor/highlight`.
+2. While the request is in flight, the raw code is displayed with a monospace font.
+3. When the response arrives, the highlighted HTML is rendered via `dangerouslySetInnerHTML`. Shiki output is sanitized HTML containing only `<span>` elements with inline styles, so this is safe.
+4. When the user clicks the highlighted view or focuses the textarea, the component switches to editing mode showing the raw textarea.
+
+The highlighting request is debounced at 500ms to avoid excessive API calls.
+
+## The ` ``` ` trigger
+
+The `InputRulePlugin` includes a built-in rule for the ` ``` ` pattern. When the user types three backticks at the start of an empty paragraph:
+
+1. The trigger text is removed.
+2. A `CodeBlockNode` with `language: 'javascript'` and `autoFocus: true` is inserted.
+3. A trailing paragraph is inserted after the code block (since DecoratorNodes cannot hold a cursor).
+4. The textarea inside the code block is focused automatically.
+
+## Slash menu
+
+The slash menu includes a "Code Block" item. Selecting it inserts a new empty code block at the cursor position.
+
+## Serialization
+
+The `CodeBlockNode` serializes to and from JSON:
+
+```json
+{
+  "type": "code-block",
+  "version": 1,
+  "code": "console.log('hello');",
+  "language": "typescript"
+}
+```
+
+It also exports to HTML as `<pre><code class="language-typescript">...</code></pre>` via `exportDOM()`, and can import from HTML `<pre>` elements via `importDOM()`.
+
+## Keyboard interaction
+
+| Key | Behavior |
+|---|---|
+| Type in textarea | Updates code content (debounced 300ms) |
+| Tab | Inserts spaces / standard textarea behavior |
+| Backspace / Delete (when node is selected, not editing) | Removes the entire code block |
+| Click on highlighted view | Switches to editing mode |
+| Blur textarea | Switches back to highlighted view |
