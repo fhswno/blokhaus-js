@@ -1,0 +1,132 @@
+---
+title: OverlayPortal
+description: Block drag handles and drop indicators for desktop drag-and-drop.
+---
+
+`OverlayPortal` renders a drag handle that appears when hovering over blocks in the editor, enabling Notion-style drag-and-drop block reordering. It is completely disabled on touch devices.
+
+## Import
+
+```tsx
+import { OverlayPortal } from '@scribex/core';
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `namespace` | `string` | **required** | Must match the `namespace` of the parent `EditorRoot`. Used to scope the portal and ensure multi-editor isolation. |
+
+## Basic usage
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, OverlayPortal, InputRulePlugin } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+      <OverlayPortal namespace="my-editor" />
+      <InputRulePlugin />
+    </EditorRoot>
+  );
+}
+```
+
+The `namespace` prop must match the `EditorRoot` namespace to ensure the overlay handles only interact with the correct editor instance in multi-editor scenarios.
+
+## Features
+
+### Drag handle
+
+A six-dot grip icon appears to the left of each block when the mouse hovers near it. The handle is vertically centered on the first line of text in the block.
+
+- The handle uses `position: fixed` and is positioned imperatively (via ref manipulation, not React state) for optimal performance.
+- Mouse tracking is throttled to one `requestAnimationFrame` per frame to avoid layout thrashing.
+- The handle appears when the mouse is within 40px of the editor's left edge (the "gutter" zone).
+- The handle's opacity transitions smoothly on hover.
+
+### RTL-aware positioning
+
+For blocks with `dir="rtl"` or computed RTL direction, the drag handle is positioned to the right of the block instead of the left. This is detected by reading the block element's `dir` attribute or computed `direction` style.
+
+### Drag-and-drop reordering
+
+When the user drags the handle:
+
+1. A mouse distance threshold of 5px prevents accidental drags on simple clicks.
+2. During the drag, a blue drop indicator line appears above or below the target block to show where the dragged block will land.
+3. On drop, the block is moved via `editor.update()` using Lexical's `insertBefore()` or `insertAfter()` APIs.
+4. The entire move is a single `editor.update()` call, creating exactly one undo history entry.
+5. Circular drops are prevented -- a block cannot be dropped inside itself.
+
+### Click-to-open Turn Into menu
+
+If the user clicks the drag handle without dragging (no mouse movement beyond 5px), a "Turn Into" menu opens. This menu allows converting the block to a different type (heading, quote, list, etc.).
+
+### Drop indicator
+
+A 2px blue line (`--scribex-accent` color) appears during drag to show the drop position:
+
+- Above the target block when the cursor is in the top half
+- Below the target block when the cursor is in the bottom half
+
+The indicator is always present in the DOM but hidden via `visibility: hidden` until needed, for performance.
+
+### Toggle support
+
+For open toggle/collapsible containers, the overlay portal can target individual children within the toggle's content area. This allows drag-and-drop reordering of blocks inside a toggle without having to drag the entire toggle container.
+
+## Touch device behavior
+
+`OverlayPortal` performs a touch device check on mount using multiple signals:
+
+```ts
+window.matchMedia('(pointer: coarse)').matches ||
+navigator.maxTouchPoints > 0 ||
+'ontouchstart' in window
+```
+
+If any of these signals indicate a touch device, the component renders nothing (`null`). This check runs once on mount -- it is not reactive.
+
+On touch devices, use `MobileToolbar` instead for formatting. Block reordering on mobile is not supported in the current version.
+
+## Multi-editor isolation
+
+Each `OverlayPortal` instance:
+- Renders into `document.body` via a React Portal
+- Tags its drag handle with `data-namespace={namespace}` for identification
+- Only tracks mouse events relative to its own editor's root element (found via `[data-scribex-root]`)
+- Will not show handles for blocks belonging to a different editor instance
+
+## Example: Multi-editor setup
+
+```tsx
+<div className="space-y-8">
+  <EditorRoot namespace="editor-a" className="p-4 border rounded">
+    <OverlayPortal namespace="editor-a" />
+    <InputRulePlugin />
+  </EditorRoot>
+
+  <EditorRoot namespace="editor-b" className="p-4 border rounded">
+    <OverlayPortal namespace="editor-b" />
+    <InputRulePlugin />
+  </EditorRoot>
+</div>
+```
+
+## Notes
+
+- `OverlayPortal` is a client component (`'use client'`).
+- The drag handle and drop indicator are always in the DOM (for performance), but are hidden via `visibility: hidden` when not active.
+- The handle uses `pointer-events: auto` only on the grip icon itself, preventing interference with text selection.
+- Native text selection across block boundaries is unaffected by the overlay. Scribex does not wrap blocks in custom container elements -- it uses the "Block Illusion" approach described in the architecture documentation.
+- The drag ghost image is kept simple by using native drag behavior rather than capturing the entire editor.
+- Block movement is performed via Lexical's own `node.insertBefore()` and `node.insertAfter()` APIs inside a single `editor.update()` call, ensuring a clean undo history.
+
+## Related
+
+- [MobileToolbar](/docs/api/components/mobile-toolbar) -- Formatting toolbar for touch devices
+- [Multi-Editor guide](/docs/guides/multi-editor) -- Setting up multiple editors on one page
+- [Mobile Support guide](/docs/guides/mobile-support) -- Mobile-specific considerations
