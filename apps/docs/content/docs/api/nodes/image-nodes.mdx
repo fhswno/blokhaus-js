@@ -3,7 +3,7 @@ title: Image Nodes
 description: ImageNode and LoadingImageNode for image content.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 Scribex provides two nodes for image handling: `ImageNode` for permanent images with remote URLs, and `LoadingImageNode` for optimistic previews during upload. Together they implement the upload flow described in the [Images & Uploads guide](/docs/guides/images-and-uploads).
 
@@ -16,8 +16,8 @@ A `DecoratorNode` that renders a responsive `<img>` element with click-to-select
 ### Import
 
 ```tsx
-import { ImageNode, $createImageNode, $isImageNode } from '@scribex/core';
-import type { ImagePayload } from '@scribex/core';
+import { ImageNode, $createImageNode, $isImageNode } from "@scribex/core";
+import type { ImagePayload } from "@scribex/core";
 ```
 
 ### ImagePayload
@@ -32,13 +32,13 @@ interface ImagePayload {
 }
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `src` | `string` | Yes | The image URL. Must be a remote URL, never a base64 string. |
-| `altText` | `string` | Yes | Alt text for accessibility. |
-| `width` | `number` | No | Intrinsic width in pixels. |
-| `height` | `number` | No | Intrinsic height in pixels. |
-| `key` | `NodeKey` | No | Explicit Lexical node key. Omit to let Lexical auto-generate one. |
+| Field     | Type      | Required | Description                                                       |
+| --------- | --------- | -------- | ----------------------------------------------------------------- |
+| `src`     | `string`  | Yes      | The image URL. Must be a remote URL, never a base64 string.       |
+| `altText` | `string`  | Yes      | Alt text for accessibility.                                       |
+| `width`   | `number`  | No       | Intrinsic width in pixels.                                        |
+| `height`  | `number`  | No       | Intrinsic height in pixels.                                       |
+| `key`     | `NodeKey` | No       | Explicit Lexical node key. Omit to let Lexical auto-generate one. |
 
 ### Functions
 
@@ -49,8 +49,8 @@ Creates a new `ImageNode`. Must be called inside `editor.update()` or a node tra
 ```ts
 editor.update(() => {
   const image = $createImageNode({
-    src: 'https://cdn.example.com/photo.jpg',
-    altText: 'A landscape photo',
+    src: "https://cdn.example.com/photo.jpg",
+    altText: "A landscape photo",
     width: 800,
     height: 600,
   });
@@ -71,7 +71,7 @@ editor.read(() => {
   const root = $getRoot();
   root.getChildren().forEach((child) => {
     if ($isImageNode(child)) {
-      console.log('Image source:', child.getSrc());
+      console.log("Image source:", child.getSrc());
     }
   });
 });
@@ -79,16 +79,16 @@ editor.read(() => {
 
 ### Instance methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `getSrc()` | `string` | Returns the image URL. |
-| `getAltText()` | `string` | Returns the alt text. |
+| Method         | Returns  | Description            |
+| -------------- | -------- | ---------------------- |
+| `getSrc()`     | `string` | Returns the image URL. |
+| `getAltText()` | `string` | Returns the alt text.  |
 
 ### Serialized format
 
 ```ts
 type SerializedImageNode = {
-  type: 'image';
+  type: "image";
   version: 1;
   src: string;
   altText: string;
@@ -115,7 +115,11 @@ A transient `DecoratorNode` used during the upload flow. It renders an optimisti
 ### Import
 
 ```tsx
-import { LoadingImageNode, $createLoadingImageNode, $isLoadingImageNode } from '@scribex/core';
+import {
+  LoadingImageNode,
+  $createLoadingImageNode,
+  $isLoadingImageNode,
+} from "@scribex/core";
 ```
 
 ### Functions
@@ -142,22 +146,26 @@ Type guard that returns `true` if the given node is a `LoadingImageNode`.
 
 ### Instance methods
 
-| Method | Returns | Description |
-|---|---|---|
+| Method           | Returns  | Description                        |
+| ---------------- | -------- | ---------------------------------- |
 | `getObjectURL()` | `string` | Returns the local blob object URL. |
 
 ### Serialized format
 
 ```ts
 type SerializedLoadingImageNode = {
-  type: 'loading-image';
+  type: "loading-image";
   version: 1;
   objectURL: string;
 };
 ```
 
 <Callout type="warn">
-`LoadingImageNode` is transient. It exists only while the upload is in progress. After the upload resolves or rejects, the `ImagePlugin` replaces or removes it in a single `editor.update()` call. You should not serialize this node to your database. Always call `URL.revokeObjectURL()` after the upload completes to prevent memory leaks.
+  `LoadingImageNode` is transient. It exists only while the upload is in
+  progress. After the upload resolves or rejects, the `ImagePlugin` replaces or
+  removes it in a single `editor.update()` call. You should not serialize this
+  node to your database. Always call `URL.revokeObjectURL()` after the upload
+  completes to prevent memory leaks.
 </Callout>
 
 ### Upload lifecycle

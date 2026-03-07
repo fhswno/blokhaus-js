@@ -3,7 +3,7 @@ title: Toggle Nodes
 description: ToggleContainerNode, ToggleTitleNode, and ToggleContentNode for collapsible content.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 Scribex's toggle (collapsible/accordion) feature is implemented with three cooperating `ElementNode` subclasses. They form a strict parent-child hierarchy in the AST:
 
@@ -28,8 +28,8 @@ import {
   ToggleContentNode,
   $createToggleContentNode,
   $isToggleContentNode,
-} from '@scribex/core';
-import type { ToggleContainerPayload } from '@scribex/core';
+} from "@scribex/core";
+import type { ToggleContainerPayload } from "@scribex/core";
 ```
 
 ---
@@ -47,10 +47,10 @@ interface ToggleContainerPayload {
 }
 ```
 
-| Field | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `open` | `boolean` | No | `true` | Whether the toggle is expanded on creation. |
-| `key` | `NodeKey` | No | auto | Explicit Lexical node key. |
+| Field  | Type      | Required | Default | Description                                 |
+| ------ | --------- | -------- | ------- | ------------------------------------------- |
+| `open` | `boolean` | No       | `true`  | Whether the toggle is expanded on creation. |
+| `key`  | `NodeKey` | No       | auto    | Explicit Lexical node key.                  |
 
 ### Functions
 
@@ -62,10 +62,10 @@ Creates a new `ToggleContainerNode`. Must be called inside `editor.update()`.
 editor.update(() => {
   const container = $createToggleContainerNode({ open: true });
   const title = $createToggleTitleNode();
-  title.append($createTextNode('Click to expand'));
+  title.append($createTextNode("Click to expand"));
   const content = $createToggleContentNode();
   const paragraph = $createParagraphNode();
-  paragraph.append($createTextNode('Hidden content here.'));
+  paragraph.append($createTextNode("Hidden content here."));
   content.append(paragraph);
   container.append(title, content);
   $getRoot().append(container);
@@ -78,13 +78,13 @@ Type guard that returns `true` if the given node is a `ToggleContainerNode`.
 
 ### Instance methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `getOpen()` | `boolean` | Returns whether the toggle is currently expanded. Uses `getLatest()`. |
-| `setOpen(open: boolean)` | `void` | Sets the open state. Uses `getWritable()`. Must be called inside `editor.update()`. |
-| `toggleOpen()` | `void` | Toggles the open state. Equivalent to `setOpen(!getOpen())`. |
-| `isShadowRoot()` | `true` | Always returns `true`. The container acts as a structural boundary in the AST, preventing block-level operations (like Enter to create a new paragraph) from escaping the toggle. |
-| `collapseAtStart(selection)` | `boolean` | Handles Backspace at the start of the first child: unwraps the entire container, moving all children to the parent level, then removes the empty container. |
+| Method                       | Returns   | Description                                                                                                                                                                       |
+| ---------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getOpen()`                  | `boolean` | Returns whether the toggle is currently expanded. Uses `getLatest()`.                                                                                                             |
+| `setOpen(open: boolean)`     | `void`    | Sets the open state. Uses `getWritable()`. Must be called inside `editor.update()`.                                                                                               |
+| `toggleOpen()`               | `void`    | Toggles the open state. Equivalent to `setOpen(!getOpen())`.                                                                                                                      |
+| `isShadowRoot()`             | `true`    | Always returns `true`. The container acts as a structural boundary in the AST, preventing block-level operations (like Enter to create a new paragraph) from escaping the toggle. |
+| `collapseAtStart(selection)` | `boolean` | Handles Backspace at the start of the first child: unwraps the entire container, moving all children to the parent level, then removes the empty container.                       |
 
 ### DOM rendering
 
@@ -97,7 +97,7 @@ The container renders differently based on the browser:
 
 ```ts
 type SerializedToggleContainerNode = SerializedElementNode & {
-  type: 'toggle-container';
+  type: "toggle-container";
   version: 1;
   open: boolean;
 };
@@ -126,10 +126,10 @@ Type guard.
 
 ### Keyboard behavior
 
-| Key | Behavior |
-|---|---|
-| **Enter** | If toggle is **open**: moves cursor into the content area (creates a paragraph if content is empty). If toggle is **closed**: inserts a new paragraph after the entire container. |
-| **Backspace** (at start) | Delegates to `ToggleContainerNode.collapseAtStart()`, which unwraps the entire toggle into flat content. |
+| Key                      | Behavior                                                                                                                                                                          |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Enter**                | If toggle is **open**: moves cursor into the content area (creates a paragraph if content is empty). If toggle is **closed**: inserts a new paragraph after the entire container. |
+| **Backspace** (at start) | Delegates to `ToggleContainerNode.collapseAtStart()`, which unwraps the entire toggle into flat content.                                                                          |
 
 ### Chrome click handling
 
@@ -144,7 +144,7 @@ On Chrome (where `<details>` is replaced by `<div>`), the title node registers a
 
 ```ts
 type SerializedToggleTitleNode = SerializedElementNode & {
-  type: 'toggle-title';
+  type: "toggle-title";
   version: 1;
 };
 ```
@@ -167,9 +167,9 @@ Type guard.
 
 ### Instance methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `isShadowRoot()` | `true` | Always returns `true`. Block-level operations are contained within the content area. |
+| Method           | Returns | Description                                                                          |
+| ---------------- | ------- | ------------------------------------------------------------------------------------ |
+| `isShadowRoot()` | `true`  | Always returns `true`. Block-level operations are contained within the content area. |
 
 ### DOM rendering
 
@@ -179,7 +179,7 @@ Renders as a `<div>` with `data-toggle-content="true"`. Themed via `config.theme
 
 ```ts
 type SerializedToggleContentNode = SerializedElementNode & {
-  type: 'toggle-content';
+  type: "toggle-content";
   version: 1;
 };
 ```
@@ -195,18 +195,20 @@ import {
   $createToggleContainerNode,
   $createToggleTitleNode,
   $createToggleContentNode,
-} from '@scribex/core';
-import { $createParagraphNode, $createTextNode, $getRoot } from 'lexical';
+} from "@scribex/core";
+import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
 
 editor.update(() => {
   const container = $createToggleContainerNode({ open: true });
 
   const title = $createToggleTitleNode();
-  title.append($createTextNode('FAQ: How does this work?'));
+  title.append($createTextNode("FAQ: How does this work?"));
 
   const content = $createToggleContentNode();
   const answer = $createParagraphNode();
-  answer.append($createTextNode('It works by combining three ElementNode subclasses.'));
+  answer.append(
+    $createTextNode("It works by combining three ElementNode subclasses."),
+  );
   content.append(answer);
 
   container.append(title, content);
@@ -215,7 +217,9 @@ editor.update(() => {
 ```
 
 <Callout type="warn">
-Always create the full three-node structure: `ToggleContainerNode` with both a `ToggleTitleNode` and a `ToggleContentNode` as children. A container without both children will behave unpredictably.
+  Always create the full three-node structure: `ToggleContainerNode` with both a
+  `ToggleTitleNode` and a `ToggleContentNode` as children. A container without
+  both children will behave unpredictably.
 </Callout>
 
 ## Markdown serialization
