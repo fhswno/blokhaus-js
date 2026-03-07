@@ -3,12 +3,12 @@ title: BlockSelectionPlugin
 description: Multi-block selection with marquee drag.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## Import
 
 ```tsx
-import { BlockSelectionPlugin } from '@scribex/core';
+import { BlockSelectionPlugin } from "@scribex/core";
 ```
 
 ## Overview
@@ -24,9 +24,9 @@ The `BlockSelectionPlugin` accepts no props. All behavior is automatic once the 
 ## Usage
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, BlockSelectionPlugin } from '@scribex/core';
+import { EditorRoot, BlockSelectionPlugin } from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -51,28 +51,29 @@ The marquee rectangle is rendered via a React portal (not as a Lexical node) to 
 ### Visual highlighting
 
 Selected blocks receive a visual highlight:
+
 - A colored overlay background using the `--scribex-accent` token at 10% opacity.
 - A left border accent using the `--scribex-accent` token.
 - The highlight is applied via CSS classes on the DOM elements, not via AST mutations.
 
 ### Keyboard actions on selected blocks
 
-| Key | Action |
-|---|---|
+| Key                | Action                                                                        |
+| ------------------ | ----------------------------------------------------------------------------- |
 | Delete / Backspace | Remove all selected blocks from the AST. Creates a single undo history entry. |
-| Escape | Clear the block selection. |
-| `Cmd+C` / `Ctrl+C` | Copy the selected blocks as both HTML and plain text to the clipboard. |
-| `Cmd+X` / `Ctrl+X` | Cut the selected blocks (copy + delete). |
-| Arrow Up | Extend or shrink the selection upward. |
-| Arrow Down | Extend or shrink the selection downward. |
+| Escape             | Clear the block selection.                                                    |
+| `Cmd+C` / `Ctrl+C` | Copy the selected blocks as both HTML and plain text to the clipboard.        |
+| `Cmd+X` / `Ctrl+X` | Cut the selected blocks (copy + delete).                                      |
+| Arrow Up           | Extend or shrink the selection upward.                                        |
+| Arrow Down         | Extend or shrink the selection downward.                                      |
 
 ### Click behavior
 
-| Click type | Action |
-|---|---|
-| Click on a block | Select that single block. Clears any existing block selection. |
-| Shift+Click | Extend the selection from the last selected block to the clicked block. |
-| Click on text | Clears block selection and enters normal text editing mode. |
+| Click type       | Action                                                                  |
+| ---------------- | ----------------------------------------------------------------------- |
+| Click on a block | Select that single block. Clears any existing block selection.          |
+| Shift+Click      | Extend the selection from the last selected block to the clicked block. |
+| Click on text    | Clears block selection and enters normal text editing mode.             |
 
 ## Internal hooks
 
@@ -104,7 +105,7 @@ import {
   BlockSelectionPlugin,
   OverlayPortal,
   FloatingToolbar,
-} from '@scribex/core';
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -118,15 +119,20 @@ export default function EditorPage() {
 ```
 
 <Callout type="info">
-The marquee selection is only active when the initial click lands in the gutter area (outside the text content). Clicking and dragging within text content performs a normal text selection, as expected.
+  The marquee selection is only active when the initial click lands in the
+  gutter area (outside the text content). Clicking and dragging within text
+  content performs a normal text selection, as expected.
 </Callout>
 
 <Callout type="info">
-On touch devices (`pointer: coarse`), the marquee selection is disabled. Multi-block selection on mobile is not supported in the current version.
+  On touch devices (`pointer: coarse`), the marquee selection is disabled.
+  Multi-block selection on mobile is not supported in the current version.
 </Callout>
 
 <Callout type="warn">
-Block selection operates on top-level block nodes only. Nested content (such as list items inside a list or paragraphs inside a toggle) cannot be individually selected via the marquee. The entire parent block is selected.
+  Block selection operates on top-level block nodes only. Nested content (such
+  as list items inside a list or paragraphs inside a toggle) cannot be
+  individually selected via the marquee. The entire parent block is selected.
 </Callout>
 
 ## Related

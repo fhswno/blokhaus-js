@@ -3,12 +3,12 @@ title: ColorPlugin
 description: Text color, highlight color, and font family commands.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## Import
 
 ```tsx
-import { ColorPlugin } from '@scribex/core';
+import { ColorPlugin } from "@scribex/core";
 ```
 
 ## Overview
@@ -22,9 +22,9 @@ The `ColorPlugin` accepts no props. It registers commands and handles their exec
 ## Usage
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, ColorPlugin, FloatingToolbar } from '@scribex/core';
+import { EditorRoot, ColorPlugin, FloatingToolbar } from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -38,54 +38,54 @@ export default function EditorPage() {
 
 ## Registered commands
 
-| Command | Payload | Description |
-|---|---|---|
-| `SET_TEXT_COLOR_COMMAND` | `string` | Sets the text (foreground) color on the current selection. Pass an empty string `""` to remove the text color and revert to the default. |
-| `SET_HIGHLIGHT_COLOR_COMMAND` | `string` | Sets the highlight (background) color on the current selection. Pass an empty string `""` to remove the highlight. |
-| `SET_FONT_FAMILY_COMMAND` | `string` | Sets the font family on the current selection. Pass an empty string `""` to remove the font family and revert to the default. |
+| Command                       | Payload  | Description                                                                                                                              |
+| ----------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `SET_TEXT_COLOR_COMMAND`      | `string` | Sets the text (foreground) color on the current selection. Pass an empty string `""` to remove the text color and revert to the default. |
+| `SET_HIGHLIGHT_COLOR_COMMAND` | `string` | Sets the highlight (background) color on the current selection. Pass an empty string `""` to remove the highlight.                       |
+| `SET_FONT_FAMILY_COMMAND`     | `string` | Sets the font family on the current selection. Pass an empty string `""` to remove the font family and revert to the default.            |
 
 ## Dispatching commands
 
 ### Setting text color
 
 ```tsx
-import { SET_TEXT_COLOR_COMMAND } from '@scribex/core';
+import { SET_TEXT_COLOR_COMMAND } from "@scribex/core";
 
 // Apply a red text color
-editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, '#ef4444');
+editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, "#ef4444");
 
 // Apply a color using CSS variable
-editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, 'var(--scribex-destructive)');
+editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, "var(--scribex-destructive)");
 
 // Remove text color (revert to default)
-editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, '');
+editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, "");
 ```
 
 ### Setting highlight color
 
 ```tsx
-import { SET_HIGHLIGHT_COLOR_COMMAND } from '@scribex/core';
+import { SET_HIGHLIGHT_COLOR_COMMAND } from "@scribex/core";
 
 // Apply a yellow highlight
-editor.dispatchCommand(SET_HIGHLIGHT_COLOR_COMMAND, '#fef08a');
+editor.dispatchCommand(SET_HIGHLIGHT_COLOR_COMMAND, "#fef08a");
 
 // Remove highlight
-editor.dispatchCommand(SET_HIGHLIGHT_COLOR_COMMAND, '');
+editor.dispatchCommand(SET_HIGHLIGHT_COLOR_COMMAND, "");
 ```
 
 ### Setting font family
 
 ```tsx
-import { SET_FONT_FAMILY_COMMAND } from '@scribex/core';
+import { SET_FONT_FAMILY_COMMAND } from "@scribex/core";
 
 // Apply a monospace font
-editor.dispatchCommand(SET_FONT_FAMILY_COMMAND, 'ui-monospace, monospace');
+editor.dispatchCommand(SET_FONT_FAMILY_COMMAND, "ui-monospace, monospace");
 
 // Apply a serif font
-editor.dispatchCommand(SET_FONT_FAMILY_COMMAND, 'Georgia, Times, serif');
+editor.dispatchCommand(SET_FONT_FAMILY_COMMAND, "Georgia, Times, serif");
 
 // Remove font family (revert to default)
-editor.dispatchCommand(SET_FONT_FAMILY_COMMAND, '');
+editor.dispatchCommand(SET_FONT_FAMILY_COMMAND, "");
 ```
 
 ## Building a color picker toolbar
@@ -93,27 +93,30 @@ editor.dispatchCommand(SET_FONT_FAMILY_COMMAND, '');
 The `ColorPlugin` provides the commands but not the UI. Here is an example of a custom color picker that dispatches the commands:
 
 ```tsx title="components/ColorPicker.tsx"
-'use client';
+"use client";
 
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { SET_TEXT_COLOR_COMMAND, SET_HIGHLIGHT_COLOR_COMMAND } from '@scribex/core';
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import {
+  SET_TEXT_COLOR_COMMAND,
+  SET_HIGHLIGHT_COLOR_COMMAND,
+} from "@scribex/core";
 
 const TEXT_COLORS = [
-  { label: 'Default', value: '' },
-  { label: 'Red', value: '#ef4444' },
-  { label: 'Orange', value: '#f97316' },
-  { label: 'Green', value: '#22c55e' },
-  { label: 'Blue', value: '#3b82f6' },
-  { label: 'Purple', value: '#a855f7' },
+  { label: "Default", value: "" },
+  { label: "Red", value: "#ef4444" },
+  { label: "Orange", value: "#f97316" },
+  { label: "Green", value: "#22c55e" },
+  { label: "Blue", value: "#3b82f6" },
+  { label: "Purple", value: "#a855f7" },
 ];
 
 const HIGHLIGHT_COLORS = [
-  { label: 'None', value: '' },
-  { label: 'Yellow', value: '#fef08a' },
-  { label: 'Green', value: '#bbf7d0' },
-  { label: 'Blue', value: '#bfdbfe' },
-  { label: 'Pink', value: '#fbcfe8' },
-  { label: 'Purple', value: '#e9d5ff' },
+  { label: "None", value: "" },
+  { label: "Yellow", value: "#fef08a" },
+  { label: "Green", value: "#bbf7d0" },
+  { label: "Blue", value: "#bfdbfe" },
+  { label: "Pink", value: "#fbcfe8" },
+  { label: "Purple", value: "#e9d5ff" },
 ];
 
 export function ColorPicker() {
@@ -128,8 +131,12 @@ export function ColorPicker() {
             <button
               key={color.label}
               className="w-5 h-5 rounded-full border"
-              style={{ backgroundColor: color.value || 'var(--scribex-foreground)' }}
-              onClick={() => editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, color.value)}
+              style={{
+                backgroundColor: color.value || "var(--scribex-foreground)",
+              }}
+              onClick={() =>
+                editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, color.value)
+              }
               aria-label={`Text color: ${color.label}`}
             />
           ))}
@@ -142,8 +149,10 @@ export function ColorPicker() {
             <button
               key={color.label}
               className="w-5 h-5 rounded-full border"
-              style={{ backgroundColor: color.value || 'transparent' }}
-              onClick={() => editor.dispatchCommand(SET_HIGHLIGHT_COLOR_COMMAND, color.value)}
+              style={{ backgroundColor: color.value || "transparent" }}
+              onClick={() =>
+                editor.dispatchCommand(SET_HIGHLIGHT_COLOR_COMMAND, color.value)
+              }
               aria-label={`Highlight: ${color.label}`}
             />
           ))}
@@ -172,7 +181,7 @@ When the text color is removed (by passing an empty string), the `color` propert
 ## Reading current color values
 
 ```tsx
-import { $getSelection, $isRangeSelection } from 'lexical';
+import { $getSelection, $isRangeSelection } from "lexical";
 
 editor.read(() => {
   const selection = $getSelection();
@@ -184,18 +193,24 @@ editor.read(() => {
   const highlightMatch = style.match(/background-color:\s*([^;]+)/);
   const fontMatch = style.match(/font-family:\s*([^;]+)/);
 
-  console.log('Text color:', colorMatch?.[1] ?? 'default');
-  console.log('Highlight:', highlightMatch?.[1] ?? 'none');
-  console.log('Font family:', fontMatch?.[1] ?? 'default');
+  console.log("Text color:", colorMatch?.[1] ?? "default");
+  console.log("Highlight:", highlightMatch?.[1] ?? "none");
+  console.log("Font family:", fontMatch?.[1] ?? "default");
 });
 ```
 
 <Callout type="info">
-Passing an empty string `""` as the command payload removes the corresponding style property. This is the correct way to "reset to default" -- do not pass `"inherit"` or `"initial"`.
+  Passing an empty string `""` as the command payload removes the corresponding
+  style property. This is the correct way to "reset to default" -- do not pass
+  `"inherit"` or `"initial"`.
 </Callout>
 
 <Callout type="warn">
-The `ColorPlugin` stores colors as inline styles on `TextNode`. This means colors survive copy-paste within the same editor but may be stripped by the `PastePlugin` when pasting from external sources (since `PastePlugin` strips all `style` attributes). This is intentional -- external formatting should not leak into the editor.
+  The `ColorPlugin` stores colors as inline styles on `TextNode`. This means
+  colors survive copy-paste within the same editor but may be stripped by the
+  `PastePlugin` when pasting from external sources (since `PastePlugin` strips
+  all `style` attributes). This is intentional -- external formatting should not
+  leak into the editor.
 </Callout>
 
 ## Related
