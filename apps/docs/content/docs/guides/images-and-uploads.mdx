@@ -1,0 +1,219 @@
+---
+title: Images & Uploads
+description: Handle image uploads with optimistic UI and the UploadHandler interface.
+---
+
+Scribex provides a complete image upload pipeline with optimistic UI. When a user drops or pastes an image, they see an instant preview with a loading spinner. Once the upload completes, the preview is replaced with the permanent image. No base64 encoding is ever used.
+
+## The `UploadHandler` type
+
+```ts
+type UploadHandler = (file: File) => Promise<string>;
+// Resolves to the final remote URL (e.g., https://cdn.example.com/image.png)
+// Rejects with an error if the upload fails.
+```
+
+Scribex provides no default implementation. You provide your own upload logic as a function. This keeps the library decoupled from any specific storage backend.
+
+## Basic setup
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, ImagePlugin } from '@scribex/core';
+
+const uploadHandler = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error('Upload failed');
+  }
+
+  const { url } = await response.json();
+  return url; // e.g., "https://cdn.example.com/image.png"
+};
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <ImagePlugin uploadHandler={uploadHandler} />
+    </EditorRoot>
+  );
+}
+```
+
+## `ImagePlugin` props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `uploadHandler` | `UploadHandler` | (required) | Function that uploads a file and returns the remote URL |
+| `maxFileSize` | `number` | `10485760` (10MB) | Maximum file size in bytes |
+| `allowedFormats` | `string[]` | `['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']` | Allowed MIME types |
+| `onFileRejected` | `(file: File, reason: 'size' \| 'format') => void` | -- | Called when a file is rejected |
+| `onUploadError` | `(file: File, error: unknown) => void` | -- | Called when an upload fails |
+
+## The upload flow
+
+The upload flow is a non-negotiable sequence that guarantees optimistic UI and clean history management:
+
+### 1. File is dropped or pasted
+
+The `ImagePlugin` intercepts `drop` and `paste` events on the editor's root DOM element. It validates the file against `maxFileSize` and `allowedFormats`. If validation fails, it calls `onFileRejected` and stops.
+
+### 2. Create a local preview
+
+A local object URL is created immediately via `URL.createObjectURL(file)`. This gives the user an instant preview without waiting for the upload.
+
+### 3. Insert `LoadingImageNode`
+
+A `LoadingImageNode` is inserted into the AST with the object URL as its `src`. This DecoratorNode renders the image with a semi-transparent spinner overlay, indicating that the upload is in progress.
+
+### 4. Call the `UploadHandler`
+
+Your upload function is called with the `File` object. This happens asynchronously while the user continues editing.
+
+### 5a. On success: Replace with `ImageNode`
+
+When the upload resolves, the `LoadingImageNode` is replaced with a permanent `ImageNode` using the remote URL. `URL.revokeObjectURL()` is called to release the local blob. This is a single `editor.update()` call, creating a clean history entry.
+
+### 5b. On failure: Remove `LoadingImageNode`
+
+When the upload rejects, the `LoadingImageNode` is removed from the AST. `URL.revokeObjectURL()` is called to release the local blob. `onUploadError` is called so you can surface a toast or error message.
+
+```
+Drop/Paste file
+  |
+  v
+URL.createObjectURL(file) --> instant local preview
+  |
+  v
+Insert LoadingImageNode (spinner overlay)
+  |
+  v
+Call uploadHandler(file)
+  |
+  +--[resolves]--> Replace with ImageNode(remoteURL)
+  |                + URL.revokeObjectURL()
+  |
+  +--[rejects]---> Remove LoadingImageNode
+                   + URL.revokeObjectURL()
+                   + call onUploadError()
+```
+
+## Handling file rejections
+
+Use `onFileRejected` to show user-friendly error messages:
+
+```tsx
+<ImagePlugin
+  uploadHandler={uploadHandler}
+  maxFileSize={5 * 1024 * 1024} // 5MB limit
+  allowedFormats={['image/jpeg', 'image/png', 'image/webp']}
+  onFileRejected={(file, reason) => {
+    if (reason === 'size') {
+      alert(`${file.name} is too large. Maximum size is 5MB.`);
+    }
+    if (reason === 'format') {
+      alert(`${file.name} is not a supported format. Use JPEG, PNG, or WebP.`);
+    }
+  }}
+  onUploadError={(file, error) => {
+    console.error(`Upload failed for ${file.name}:`, error);
+    alert('Upload failed. Please try again.');
+  }}
+/>
+```
+
+## Slash menu integration
+
+When `ImagePlugin` is included, an "Image" item appears in the slash menu. Selecting it opens a native file picker via a hidden `<input type="file" accept="image/*">`. The selected file goes through the same upload flow.
+
+You can also trigger image insertion programmatically:
+
+```tsx
+import { INSERT_IMAGE_COMMAND } from '@scribex/core';
+
+// From a file input or drag event
+editor.dispatchCommand(INSERT_IMAGE_COMMAND, file);
+```
+
+## The `ImageNode`
+
+The `ImageNode` is a Lexical DecoratorNode that stores:
+
+```ts
+interface ImagePayload {
+  src: string;      // Remote URL of the uploaded image
+  altText: string;   // Alt text for accessibility
+  width?: number;    // Optional width constraint
+  height?: number;   // Optional height constraint
+}
+```
+
+It renders a responsive `<img>` element and supports click-to-select with a selection ring (using the `--scribex-ring` token).
+
+### Creating an image node programmatically
+
+```tsx
+import { $createImageNode } from '@scribex/core';
+
+editor.update(() => {
+  const imageNode = $createImageNode({
+    src: 'https://cdn.example.com/photo.jpg',
+    altText: 'A beautiful landscape',
+  });
+
+  const root = $getRoot();
+  root.append(imageNode);
+});
+```
+
+### Type guard
+
+```tsx
+import { $isImageNode } from '@scribex/core';
+
+if ($isImageNode(node)) {
+  console.log('Image src:', node.getSrc());
+}
+```
+
+## Example: S3 upload handler
+
+```ts title="lib/upload.ts"
+export const s3UploadHandler = async (file: File): Promise<string> => {
+  // 1. Get a presigned URL from your backend
+  const presignResponse = await fetch('/api/upload/presign', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filename: file.name,
+      contentType: file.type,
+    }),
+  });
+
+  const { uploadUrl, publicUrl } = await presignResponse.json();
+
+  // 2. Upload directly to S3
+  await fetch(uploadUrl, {
+    method: 'PUT',
+    body: file,
+    headers: { 'Content-Type': file.type },
+  });
+
+  // 3. Return the public URL
+  return publicUrl;
+};
+```
+
+## Important rules
+
+- **No base64 encoding.** Base64 bloats the JSON state, hits database column size limits, and makes serialized state unreadable. Always upload to a remote URL.
+- **Blob URLs are always revoked.** After the upload resolves or rejects, `URL.revokeObjectURL()` is called to release memory. Failing to do so causes memory leaks.
+- **Each upload step is a single `editor.update()`.** The LoadingImageNode insertion, the ImageNode replacement, and the LoadingImageNode removal are each one atomic update. This keeps the undo history clean.
