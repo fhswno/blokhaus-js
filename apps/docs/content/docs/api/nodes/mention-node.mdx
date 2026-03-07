@@ -1,0 +1,162 @@
+---
+title: MentionNode
+description: Inline mention chip for @users, #tags, and custom triggers.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`MentionNode` is a `DecoratorNode` that renders as a non-editable inline chip inside the editor. It supports any trigger character (`@`, `#`, or custom) and stores the referenced entity's ID, label, and trigger for serialization.
+
+## Import
+
+```tsx
+import { MentionNode, $createMentionNode, $isMentionNode } from '@scribex/core';
+import type { MentionPayload } from '@scribex/core';
+```
+
+## MentionPayload
+
+```ts
+interface MentionPayload {
+  id: string;
+  label: string;
+  trigger: string;
+  key?: NodeKey;
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | `string` | Yes | Unique identifier of the mentioned entity (user ID, tag ID, etc.). |
+| `label` | `string` | Yes | Display text for the mention chip (e.g., "Alice", "feature-request"). |
+| `trigger` | `string` | Yes | The trigger character that created this mention (`"@"`, `"#"`, etc.). |
+| `key` | `NodeKey` | No | Explicit Lexical node key. |
+
+## Functions
+
+### `$createMentionNode(payload: MentionPayload): MentionNode`
+
+Creates a new `MentionNode`. Must be called inside `editor.update()`. Typically invoked by a `MentionProvider`'s `onSelect` callback.
+
+```ts
+import { $createMentionNode } from '@scribex/core';
+
+// Inside a MentionProvider's onSelect:
+const onSelect = (item: MentionItem) => {
+  return $createMentionNode({
+    id: item.id,
+    label: item.label,
+    trigger: '@',
+  });
+};
+```
+
+### `$isMentionNode(node: LexicalNode | null | undefined): node is MentionNode`
+
+Type guard that returns `true` if the given node is a `MentionNode`.
+
+```ts
+editor.read(() => {
+  const root = $getRoot();
+  const mentions: MentionNode[] = [];
+
+  function collectMentions(node: LexicalNode) {
+    if ($isMentionNode(node)) {
+      mentions.push(node);
+    }
+    if ($isElementNode(node)) {
+      node.getChildren().forEach(collectMentions);
+    }
+  }
+
+  root.getChildren().forEach(collectMentions);
+  console.log('Found mentions:', mentions.map(m => m.getTextContent()));
+});
+```
+
+## Instance methods
+
+| Method | Returns | Description |
+|---|---|---|
+| `isInline()` | `true` | Always returns `true`. Mention nodes are inline elements. |
+| `getTextContent()` | `string` | Returns `trigger + label` (e.g., `"@Alice"`). |
+
+## Serialized format
+
+The JSON serialization uses `mentionId` (not `id`) to avoid collisions with Lexical's internal `id` field:
+
+```ts
+type SerializedMentionNode = {
+  type: 'mention';
+  version: 1;
+  mentionId: string;
+  label: string;
+  trigger: string;
+};
+```
+
+## DOM behavior
+
+- **exportDOM**: Produces a `<span>` with `data-mention-id` and `data-mention-trigger` attributes, and text content of `trigger + label`.
+- **importDOM**: Converts pasted `<span>` elements that have a `data-mention-id` attribute back into `MentionNode` instances.
+
+## Keyboard behavior
+
+The mention chip is focusable but not editable. When the node is selected (via Lexical's node selection):
+
+- Pressing `Backspace` removes the mention from the AST.
+- Pressing `Delete` removes the mention from the AST.
+
+## Visual styling
+
+The chip color is determined by the trigger character:
+
+- `#` triggers use the `--scribex-accent` token (blue by default).
+- All other triggers (including `@`) use the `--scribex-ai-stream` token.
+
+The chip renders with a subtle background tint derived from the accent color using CSS `color-mix()`.
+
+## Usage with MentionPlugin
+
+`MentionNode` is typically created by `MentionPlugin` based on `MentionProvider` configuration:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  MentionPlugin,
+  $createMentionNode,
+} from '@scribex/core';
+import type { MentionProvider, MentionItem } from '@scribex/core';
+
+const userProvider: MentionProvider = {
+  trigger: '@',
+  onSearch: async (query) => {
+    const res = await fetch(`/api/users?q=${query}`);
+    return res.json();
+  },
+  renderItem: (item) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span>{item.label}</span>
+      <span style={{ opacity: 0.5 }}>{item.meta}</span>
+    </div>
+  ),
+  onSelect: (item) =>
+    $createMentionNode({ id: item.id, label: item.label, trigger: '@' }),
+};
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <MentionPlugin providers={[userProvider]} />
+    </EditorRoot>
+  );
+}
+```
+
+## Related
+
+- [MentionPlugin](/docs/api/plugins/mention-plugin) -- Plugin that manages the mention dropdown
+- [Mentions guide](/docs/guides/mentions) -- Full tutorial with async data resolution
+- [MentionProvider type](/docs/api/types#mentionprovider) -- The provider interface
