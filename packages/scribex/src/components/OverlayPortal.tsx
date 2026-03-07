@@ -26,6 +26,8 @@ interface BlockInfo {
   width: number;
   /** Vertical center of the first line of text in the block */
   firstLineCenter: number;
+  /** Text direction of this block (read from the DOM `dir` attribute) */
+  direction: "ltr" | "rtl" | null;
 }
 
 /**
@@ -35,13 +37,30 @@ interface BlockInfo {
 function getBlockInfo(
   node: LexicalNode,
   rect: DOMRect,
+  element?: HTMLElement | null,
 ): BlockInfo {
+  let dir: "ltr" | "rtl" | null = null;
+  if (element) {
+    const d = element.getAttribute("dir") || element.dir;
+    if (d === "rtl") {
+      dir = "rtl";
+    } else if (d === "ltr") {
+      dir = "ltr";
+    } else {
+      // For dir="auto" or inherited direction, use the computed direction
+      // so auto-detected RTL text gets the handle on the right side
+      const computed = getComputedStyle(element).direction;
+      if (computed === "rtl") dir = "rtl";
+      else if (computed === "ltr") dir = "ltr";
+    }
+  }
   return {
     key: node.getKey(),
     top: rect.top,
     left: rect.left,
     width: rect.width,
     firstLineCenter: rect.top + 14,
+    direction: dir,
   };
 }
 
@@ -68,7 +87,7 @@ function findToggleContentChildAtY(
     const children = sub.getChildren();
 
     if (children.length === 0) {
-      return getBlockInfo(sub, contentRect);
+      return getBlockInfo(sub, contentRect, contentEl);
     }
 
     let closestDist = Infinity;
@@ -81,7 +100,7 @@ function findToggleContentChildAtY(
       const rect = el.getBoundingClientRect();
 
       if (clientY >= rect.top - 4 && clientY <= rect.bottom + 4) {
-        return getBlockInfo(contentChild, rect);
+        return getBlockInfo(contentChild, rect, el);
       }
 
       const dist = Math.min(
@@ -90,7 +109,7 @@ function findToggleContentChildAtY(
       );
       if (dist < closestDist) {
         closestDist = dist;
-        match = getBlockInfo(contentChild, rect);
+        match = getBlockInfo(contentChild, rect, el);
       }
     }
 
@@ -99,9 +118,9 @@ function findToggleContentChildAtY(
     const firstChild = children[0]!;
     const firstChildEl = editor.getElementByKey(firstChild.getKey());
     if (firstChildEl)
-      return getBlockInfo(firstChild, firstChildEl.getBoundingClientRect());
+      return getBlockInfo(firstChild, firstChildEl.getBoundingClientRect(), firstChildEl);
 
-    return getBlockInfo(sub, contentRect);
+    return getBlockInfo(sub, contentRect, contentEl);
   }
 
   return null;
@@ -146,7 +165,7 @@ function findBlockAtY(
       }
 
       if (clientY >= rect.top - 4 && clientY <= rect.bottom + 4) {
-        result = getBlockInfo(child, rect);
+        result = getBlockInfo(child, rect, el);
         return;
       }
 
@@ -156,7 +175,7 @@ function findBlockAtY(
       );
       if (dist < closestDist) {
         closestDist = dist;
-        result = getBlockInfo(child, rect);
+        result = getBlockInfo(child, rect, el);
       }
     }
   });
@@ -218,13 +237,20 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
     setPortalContainer(document.body);
   }, []);
 
-  const showHandle = useCallback((firstLineCenter: number, left: number) => {
-    if (!handleRef.current) return;
-    handleRef.current.style.top = `${firstLineCenter - 12}px`;
-    handleRef.current.style.left = `${left - 28}px`;
-    handleRef.current.style.visibility = "visible";
-    handleVisibleRef.current = true;
-  }, []);
+  const showHandle = useCallback(
+    (firstLineCenter: number, left: number, width: number, direction: "ltr" | "rtl" | null) => {
+      if (!handleRef.current) return;
+      handleRef.current.style.top = `${firstLineCenter - 12}px`;
+      if (direction === "rtl") {
+        handleRef.current.style.left = `${left + width + 4}px`;
+      } else {
+        handleRef.current.style.left = `${left - 28}px`;
+      }
+      handleRef.current.style.visibility = "visible";
+      handleVisibleRef.current = true;
+    },
+    [],
+  );
 
   const hideHandle = useCallback(() => {
     if (!handleRef.current) return;
@@ -276,7 +302,7 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
         lastClientY >= wrapperRect.top &&
         lastClientY <= wrapperRect.bottom &&
         lastClientX >= wrapperRect.left - GUTTER &&
-        lastClientX <= wrapperRect.right;
+        lastClientX <= wrapperRect.right + GUTTER;
 
       if (!isNearEditor && !isMouseOverHandleRef.current) {
         hideHandle();
@@ -292,7 +318,7 @@ export function OverlayPortal({ namespace }: OverlayPortalProps) {
       }
 
       hoveredKeyRef.current = block.key;
-      showHandle(block.firstLineCenter, block.left);
+      showHandle(block.firstLineCenter, block.left, block.width, block.direction);
     };
 
     const onMouseMove = (e: MouseEvent) => {
