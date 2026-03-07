@@ -263,7 +263,7 @@ function AIPreviewComponent({
         borderRadius: "8px",
         padding: "16px 20px",
         margin: "8px 0",
-        backgroundColor: "rgba(51, 102, 204, 0.05)",
+        backgroundColor: "var(--scribex-ai-stream-bg, rgba(51, 102, 204, 0.05))",
         fontFamily: "var(--scribex-font-sans, system-ui, sans-serif)",
       }}
     >
