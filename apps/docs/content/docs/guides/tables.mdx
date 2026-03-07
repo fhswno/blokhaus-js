@@ -1,0 +1,194 @@
+---
+title: Tables
+description: Create and edit tables with cell merging, resize, and contextual menus.
+---
+
+Scribex includes a full-featured table system built on Lexical's `@lexical/table` module. It provides cell merging, column resize, contextual right-click menus, and hover actions for adding rows and columns.
+
+## Basic setup
+
+Three components work together to provide the complete table experience:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  TablePlugin,
+  TableActionMenu,
+  TableHoverActions,
+  InputRulePlugin,
+  SlashMenu,
+} from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <InputRulePlugin />
+      <SlashMenu />
+      <TablePlugin />
+      <TableActionMenu />
+      <TableHoverActions />
+    </EditorRoot>
+  );
+}
+```
+
+| Component | Purpose |
+|---|---|
+| `TablePlugin` | Registers the table node, handles insertion commands, and manages selection/tab behavior |
+| `TableActionMenu` | Right-click context menu for table operations (insert/delete rows/columns, merge cells, etc.) |
+| `TableHoverActions` | Visual handles on hover: row/column handles, add row/column buttons, column resize, table grip |
+
+## `TablePlugin` props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `hasCellMerge` | `boolean` | `true` | Enable cell merging/unmerging |
+| `hasTabHandler` | `boolean` | `true` | Enable Tab key to move between cells |
+
+```tsx
+<TablePlugin
+  hasCellMerge={true}
+  hasTabHandler={true}
+/>
+```
+
+When `hasCellMerge` is `false`, a transform is registered that automatically unmerges any merged cells, effectively disabling the feature.
+
+When `hasTabHandler` is `true`, pressing Tab moves focus to the next cell and Shift+Tab moves to the previous cell.
+
+## Inserting a table
+
+### Via the slash menu
+
+Type `/table` in the editor. The slash menu shows a "Table" item. Selecting it inserts a default 3x3 table at the cursor position.
+
+### Via a command
+
+Use the `INSERT_TABLE_COMMAND_SCRIBEX` command to insert a table programmatically:
+
+```tsx
+import { INSERT_TABLE_COMMAND_SCRIBEX } from '@scribex/core';
+
+editor.dispatchCommand(INSERT_TABLE_COMMAND_SCRIBEX, {
+  rows: 4,
+  columns: 3,
+});
+```
+
+This inserts a table with the specified dimensions after the current block. If the current block is an empty paragraph, it is replaced by the table. The cursor is moved to the first cell of the new table.
+
+## `TableActionMenu` -- right-click context menu
+
+Right-clicking inside a table cell opens a context menu with the following actions:
+
+| Action | Description |
+|---|---|
+| **Insert row above** | Adds a new row above the current row |
+| **Insert row below** | Adds a new row below the current row |
+| **Insert column left** | Adds a new column to the left of the current column |
+| **Insert column right** | Adds a new column to the right of the current column |
+| **Delete row** | Removes the current row |
+| **Delete column** | Removes the current column |
+| **Merge cells** | Merges selected cells (when multiple cells are selected) |
+| **Unmerge cells** | Splits a previously merged cell back into individual cells |
+| **Cell background** | Opens a color picker to set the background color of selected cells |
+| **Delete table** | Removes the entire table |
+
+### Cell background colors
+
+The cell background picker uses tokens from `tokens.css`:
+
+| Color | Token |
+|---|---|
+| Default (clear) | -- |
+| Gray | `--scribex-cell-bg-gray` |
+| Brown | `--scribex-cell-bg-brown` |
+| Orange | `--scribex-cell-bg-orange` |
+| Yellow | `--scribex-cell-bg-yellow` |
+| Green | `--scribex-cell-bg-green` |
+| Blue | `--scribex-cell-bg-blue` |
+| Purple | `--scribex-cell-bg-purple` |
+| Pink | `--scribex-cell-bg-pink` |
+| Red | `--scribex-cell-bg-red` |
+
+## `TableHoverActions` -- visual handles
+
+When the user hovers over a table, several interactive handles appear:
+
+### Row handles
+
+Small handles appear to the left of each row. Hovering over a row handle highlights the row and provides a click target for row-level operations.
+
+### Column handles
+
+Handles appear above each column, providing click targets for column-level operations.
+
+### Add row/column buttons
+
+A "+" button appears below the last row and to the right of the last column. Clicking these buttons appends a new row or column to the table.
+
+### Column resize
+
+Dragging the border between column handles resizes columns. A visual guide line follows the cursor during the drag, and the column width is updated on drop.
+
+### Table grip
+
+A small grip icon appears at the top-left corner of the table. Clicking it selects the entire table (as a NodeSelection), which allows the table to be deleted with Backspace/Delete.
+
+## Table selection
+
+Lexical's table module provides a built-in cell selection system. Click and drag across cells to select a range. The selected cells are highlighted with the `--scribex-table-selection` overlay color.
+
+When multiple cells are selected:
+- The "Merge cells" action becomes available in the context menu.
+- The "Cell background" action applies to all selected cells.
+
+## Keyboard navigation
+
+| Key | Behavior |
+|---|---|
+| Tab | Move to the next cell (left to right, top to bottom) |
+| Shift + Tab | Move to the previous cell |
+| Arrow keys | Navigate between cells |
+| Backspace / Delete (when table is selected) | Delete the entire table |
+
+## Table tokens
+
+The table appearance is controlled by CSS custom properties:
+
+```css
+:root {
+  --scribex-table-border: hsl(214.3 31.8% 91.4%);
+  --scribex-table-header-bg: hsl(210 40% 96.1%);
+  --scribex-table-selection: hsla(221.2 83.2% 53.3% / 0.1);
+  --scribex-table-resize-handle: hsl(221.2 83.2% 53.3%);
+}
+```
+
+Override these in your theme to customize the table appearance. See the [Theming guide](/docs/guides/theming) for details.
+
+## Example: Read-only table with custom data
+
+```tsx
+import { $createTableNodeWithDimensions } from '@lexical/table';
+
+editor.update(() => {
+  // Create a 3-column, 2-row table
+  const table = $createTableNodeWithDimensions(2, 3, false);
+
+  const root = $getRoot();
+  root.append(table);
+});
+```
+
+## Deleting a table
+
+Tables can be deleted in several ways:
+
+- **Keyboard**: Select the table (click the table grip or use NodeSelection), then press Backspace or Delete.
+- **Context menu**: Right-click inside the table and select "Delete table".
+- **Programmatically**: Remove the table node via `editor.update()`.
+
+When a table is deleted, a new empty paragraph is inserted at its position to prevent the editor from becoming empty.
