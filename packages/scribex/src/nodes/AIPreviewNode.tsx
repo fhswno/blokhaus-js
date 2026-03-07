@@ -259,8 +259,8 @@ function AIPreviewComponent({
       data-testid="ai-preview-node"
       style={{
         position: "relative",
-        borderLeft: "3px solid var(--scribex-ai-stream, #3366cc)",
-        borderRadius: "0 8px 8px 0",
+        borderInlineStart: "3px solid var(--scribex-ai-stream, #3366cc)",
+        borderRadius: "8px",
         padding: "16px 20px",
         margin: "8px 0",
         backgroundColor: "rgba(51, 102, 204, 0.05)",
@@ -326,7 +326,7 @@ function AIPreviewComponent({
                 display: "inline-block",
                 width: "2px",
                 height: "1em",
-                marginLeft: "1px",
+                marginInlineStart: "1px",
                 backgroundColor: "var(--scribex-ai-stream, #3366cc)",
                 animation: "scribex-cursor-blink 1s step-end infinite",
                 verticalAlign: "text-bottom",
