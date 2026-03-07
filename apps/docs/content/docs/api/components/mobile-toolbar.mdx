@@ -1,0 +1,117 @@
+---
+title: MobileToolbar
+description: Fixed-position formatting toolbar for touch devices.
+---
+
+`MobileToolbar` renders a fixed-position formatting toolbar at the bottom of the viewport, designed specifically for touch devices. It appears when the user selects text inside the editor and hides when the selection is collapsed.
+
+## Import
+
+```tsx
+import { MobileToolbar } from '@scribex/core';
+```
+
+## Props
+
+`MobileToolbar` accepts no props. Its behavior is fully automatic.
+
+## Basic usage
+
+Add `MobileToolbar` as a child of `EditorRoot`:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  FloatingToolbar,
+  MobileToolbar,
+  InputRulePlugin,
+} from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+      <FloatingToolbar />
+      <MobileToolbar />
+      <InputRulePlugin />
+    </EditorRoot>
+  );
+}
+```
+
+It is safe to include both `FloatingToolbar` and `MobileToolbar` in the same editor. Only the appropriate one renders based on device type:
+
+- **Desktop** (non-touch): `FloatingToolbar` renders, `MobileToolbar` renders nothing
+- **Touch device**: `MobileToolbar` renders, `FloatingToolbar` also renders but the mobile toolbar provides a more touch-friendly experience
+
+## Toolbar buttons
+
+The mobile toolbar provides five formatting buttons:
+
+| Button | Format | Icon |
+|---|---|---|
+| Bold | `bold` | B (bold) |
+| Italic | `italic` | I (italic) |
+| Underline | `underline` | U (underline) |
+| Strikethrough | `strikethrough` | S (strikethrough) |
+| Inline Code | `code` | Code brackets |
+
+Each button dispatches the corresponding `FORMAT_TEXT_COMMAND` to the Lexical editor.
+
+## Touch device detection
+
+The component detects touch devices on mount using multiple signals for reliability:
+
+```ts
+window.matchMedia('(pointer: coarse)').matches ||
+navigator.maxTouchPoints > 0 ||
+'ontouchstart' in window
+```
+
+If none of these signals indicate a touch device, the component renders nothing (`null`). This check runs once on mount and is not reactive.
+
+## Visibility behavior
+
+The toolbar listens to the `selectionchange` DOM event:
+
+- **Shows** when the user has a non-collapsed text selection inside the editor
+- **Hides** when the selection is collapsed (no text selected) or when the selection is outside the editor
+
+The toolbar verifies that the selection's anchor node is contained within the editor's root element before showing.
+
+## Positioning
+
+The toolbar uses `position: fixed` with the following layout:
+
+- Anchored to `bottom: 0`, spanning the full viewport width
+- Respects the safe area inset for devices with home indicators: `padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px))`
+- Uses `z-index: 50` to appear above editor content
+
+## Button interaction
+
+Buttons support both `onMouseDown` and `onTouchStart` handlers, with `e.preventDefault()` on both to maintain the editor selection during formatting. Each button is 44x44px, meeting the minimum touch target size recommendation.
+
+## Styling
+
+The toolbar uses inline styles with CSS custom properties:
+
+- `--scribex-popover-bg` -- background color
+- `--scribex-popover-border` -- top border color
+- `--scribex-icon-secondary` -- button icon color
+
+A frosted glass effect is applied via `backdrop-filter: blur(20px) saturate(180%)`.
+
+## Notes
+
+- `MobileToolbar` is a client component (`'use client'`).
+- It renders into a React Portal on `document.body`.
+- The toolbar does not include drag-and-drop controls. Block reordering on mobile is not supported in the current version.
+- The toolbar does not include link, color, or font controls. For a richer mobile editing experience, these features may be added in future versions.
+- Unlike `FloatingToolbar`, the mobile toolbar does not show active format states. It provides a simpler, touch-optimized interface.
+
+## Related
+
+- [FloatingToolbar](/docs/api/components/floating-toolbar) -- Desktop floating format toolbar
+- [OverlayPortal](/docs/api/components/overlay-portal) -- Desktop-only drag handles (disabled on touch)
+- [Mobile Support guide](/docs/guides/mobile-support) -- Mobile-specific considerations
