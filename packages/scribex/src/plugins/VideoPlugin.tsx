@@ -146,28 +146,36 @@ export function VideoPlugin({
 
       handler(file)
         .then((remoteURL) => {
-          editor.update(() => {
-            if (!loadingNodeKey) return;
-            const loadingNode = $getNodeByKey(loadingNodeKey);
-            if (!loadingNode || !$isLoadingVideoNode(loadingNode)) return;
+          try {
+            editor.update(() => {
+              if (!loadingNodeKey) return;
+              const loadingNode = $getNodeByKey(loadingNodeKey);
+              if (!loadingNode || !$isLoadingVideoNode(loadingNode)) return;
 
-            const videoNode = $createVideoNode({
-              src: remoteURL,
-              videoType: "file",
-              provider: "upload",
-              title: file.name,
+              const videoNode = $createVideoNode({
+                src: remoteURL,
+                videoType: "file",
+                provider: "upload",
+                title: file.name,
+              });
+              loadingNode.replace(videoNode);
             });
-            loadingNode.replace(videoNode);
-          });
+          } catch {
+            // Editor may have been disposed if component unmounted during upload
+          }
           URL.revokeObjectURL(objectURL);
         })
         .catch(() => {
-          editor.update(() => {
-            if (!loadingNodeKey) return;
-            const loadingNode = $getNodeByKey(loadingNodeKey);
-            if (!loadingNode) return;
-            loadingNode.remove();
-          });
+          try {
+            editor.update(() => {
+              if (!loadingNodeKey) return;
+              const loadingNode = $getNodeByKey(loadingNodeKey);
+              if (!loadingNode) return;
+              loadingNode.remove();
+            });
+          } catch {
+            // Editor may have been disposed if component unmounted during upload
+          }
           URL.revokeObjectURL(objectURL);
         });
     },
