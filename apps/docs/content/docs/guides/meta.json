@@ -1,0 +1,22 @@
+{
+  "title": "Guides",
+  "pages": [
+    "theming",
+    "custom-plugins",
+    "ai-integration",
+    "mentions",
+    "images-and-uploads",
+    "video-embeds",
+    "code-blocks",
+    "tables",
+    "callouts",
+    "toggles",
+    "slash-menu",
+    "input-rules",
+    "paste-handling",
+    "mobile-support",
+    "multi-editor",
+    "serialization",
+    "text-direction"
+  ]
+}
