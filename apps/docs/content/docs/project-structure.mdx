@@ -1,0 +1,100 @@
+---
+title: Project Structure
+description: Understand how the Scribex library is organized.
+---
+
+## Library layout
+
+```
+packages/scribex/src/
+├── index.ts              # Public API surface — all exports
+├── types.ts              # TypeScript interfaces and types
+├── commands.ts           # Lexical command definitions
+├── theme.ts              # Editor theme configuration
+│
+├── components/           # Composable React UI components
+│   ├── EditorRoot.tsx    # Main editor wrapper
+│   ├── FloatingToolbar.tsx
+│   ├── SlashMenu.tsx
+│   ├── OverlayPortal.tsx
+│   ├── MobileToolbar.tsx
+│   ├── ColorPicker.tsx
+│   ├── FontPicker.tsx
+│   ├── TableActionMenu.tsx
+│   └── TableHoverActions.tsx
+│
+├── plugins/              # Headless Lexical plugins (render null)
+│   ├── InputRulePlugin.tsx
+│   ├── ImagePlugin.tsx
+│   ├── AIPlugin.tsx
+│   ├── MentionPlugin.tsx
+│   ├── PastePlugin.tsx
+│   ├── LinkPlugin.tsx
+│   ├── ListPlugin.tsx
+│   ├── TablePlugin.tsx
+│   ├── VideoPlugin.tsx
+│   ├── TogglePlugin.tsx
+│   ├── CalloutPlugin.tsx
+│   ├── EmojiPickerPlugin.tsx
+│   ├── ColorPlugin.tsx
+│   ├── DirectionPlugin.tsx
+│   └── BlockSelectionPlugin.tsx
+│
+├── nodes/                # Custom Lexical nodes
+│   ├── index.ts          # ALL_NODES registry
+│   ├── ImageNode.tsx
+│   ├── LoadingImageNode.tsx
+│   ├── AIPreviewNode.tsx
+│   ├── MentionNode.tsx
+│   ├── CodeBlockNode.tsx
+│   ├── CalloutNode.tsx
+│   ├── VideoNode.tsx
+│   ├── LoadingVideoNode.tsx
+│   ├── HorizontalRuleNode.tsx
+│   ├── ToggleContainerNode.tsx
+│   ├── ToggleTitleNode.tsx
+│   └── ToggleContentNode.tsx
+│
+├── hooks/                # React hooks
+│   ├── useEditorState.ts
+│   └── useWordCount.ts
+│
+├── utils/                # Pure utility functions
+│   ├── markdown.ts       # Markdown serialization
+│   ├── sanitize.ts       # HTML paste sanitization
+│   └── video-embeds.ts   # Video URL parsing
+│
+├── data/                 # Default configuration data
+│   ├── color-palette.ts
+│   ├── font-families.ts
+│   ├── callout-presets.ts
+│   └── emoji-list.ts
+│
+└── styles/
+    └── tokens.css        # CSS custom property design tokens
+```
+
+## Key principles
+
+### Components vs Plugins
+
+**Components** render visible UI (toolbars, menus, pickers). They are React components you place as children of `EditorRoot`.
+
+**Plugins** are headless — they render `null` and register Lexical listeners, transforms, or command handlers. They extend editor behavior without adding visible elements.
+
+### Nodes
+
+Custom Lexical nodes define new content types in the editor's AST. Every node must be registered in the `ALL_NODES` array. Scribex pre-registers all built-in nodes automatically.
+
+### The public API
+
+Everything you need is exported from `@scribex/core`. The `index.ts` file is the single entry point:
+
+```ts
+import { EditorRoot, FloatingToolbar, ImagePlugin } from '@scribex/core';
+import type { UploadHandler, AIProvider } from '@scribex/core';
+```
+
+### Zero imports from apps
+
+The library (`packages/scribex/`) has zero imports from `apps/`. It is fully self-contained. The playground and docs apps import from the library, never the other way around.
