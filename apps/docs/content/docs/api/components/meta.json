@@ -1,0 +1,14 @@
+{
+  "title": "Components",
+  "pages": [
+    "editor-root",
+    "floating-toolbar",
+    "slash-menu",
+    "overlay-portal",
+    "mobile-toolbar",
+    "color-picker",
+    "font-picker",
+    "table-action-menu",
+    "table-hover-actions"
+  ]
+}
