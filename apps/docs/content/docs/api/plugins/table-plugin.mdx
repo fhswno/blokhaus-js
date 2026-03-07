@@ -3,12 +3,12 @@ title: TablePlugin
 description: Table creation and management.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## Import
 
 ```tsx
-import { TablePlugin } from '@scribex/core';
+import { TablePlugin } from "@scribex/core";
 ```
 
 ## Overview
@@ -17,19 +17,24 @@ The `TablePlugin` provides table creation, cell editing, row/column management, 
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `hasCellMerge` | `boolean` | `true` | Enable cell merge/unmerge functionality. Set to `false` for simpler table editing. |
-| `hasTabHandler` | `boolean` | `true` | Enable Tab key navigation between cells. When `true`, Tab moves to the next cell and Shift+Tab moves to the previous cell. |
+| Prop            | Type      | Default | Description                                                                                                                |
+| --------------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `hasCellMerge`  | `boolean` | `true`  | Enable cell merge/unmerge functionality. Set to `false` for simpler table editing.                                         |
+| `hasTabHandler` | `boolean` | `true`  | Enable Tab key navigation between cells. When `true`, Tab moves to the next cell and Shift+Tab moves to the previous cell. |
 
 ## Usage
 
 ### Basic setup
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, TablePlugin, InputRulePlugin, SlashMenu } from '@scribex/core';
+import {
+  EditorRoot,
+  TablePlugin,
+  InputRulePlugin,
+  SlashMenu,
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -50,14 +55,14 @@ export default function EditorPage() {
 
 ## Registered commands
 
-| Command | Payload | Description |
-|---|---|---|
+| Command                        | Payload                             | Description                                                                       |
+| ------------------------------ | ----------------------------------- | --------------------------------------------------------------------------------- |
 | `INSERT_TABLE_COMMAND_SCRIBEX` | `{ rows: number; columns: number }` | Inserts a new table at the current cursor position with the specified dimensions. |
 
 ### Creating a table programmatically
 
 ```tsx
-import { INSERT_TABLE_COMMAND_SCRIBEX } from '@scribex/core';
+import { INSERT_TABLE_COMMAND_SCRIBEX } from "@scribex/core";
 
 // Insert a 3x4 table (3 rows, 4 columns)
 editor.dispatchCommand(INSERT_TABLE_COMMAND_SCRIBEX, {
@@ -68,14 +73,14 @@ editor.dispatchCommand(INSERT_TABLE_COMMAND_SCRIBEX, {
 
 ## Keyboard navigation
 
-| Key | Action |
-|---|---|
-| Tab | Move to the next cell. If at the last cell, create a new row. |
-| Shift+Tab | Move to the previous cell. |
-| Arrow keys | Move to the adjacent cell in the corresponding direction. |
-| Enter | Insert a new line within the current cell. |
-| Backspace (empty cell at 1,1) | Delete the entire table if all cells are empty. |
-| Delete | Delete selected content within the cell. |
+| Key                           | Action                                                        |
+| ----------------------------- | ------------------------------------------------------------- |
+| Tab                           | Move to the next cell. If at the last cell, create a new row. |
+| Shift+Tab                     | Move to the previous cell.                                    |
+| Arrow keys                    | Move to the adjacent cell in the corresponding direction.     |
+| Enter                         | Insert a new line within the current cell.                    |
+| Backspace (empty cell at 1,1) | Delete the entire table if all cells are empty.               |
+| Delete                        | Delete selected content within the cell.                      |
 
 ## Cell merge and unmerge
 
@@ -85,7 +90,7 @@ When `hasCellMerge` is `true`, cells can be merged and unmerged:
 import {
   TABLE_MERGE_CELLS_COMMAND,
   TABLE_UNMERGE_CELL_COMMAND,
-} from '@scribex/core';
+} from "@scribex/core";
 
 // Merge selected cells
 editor.dispatchCommand(TABLE_MERGE_CELLS_COMMAND, undefined);
@@ -109,15 +114,15 @@ Merged cells store their row and column span in the node data:
 
 The plugin provides context menu actions (via right-click on a table cell) for common operations:
 
-| Action | Description |
-|---|---|
-| Insert row above | Add a new row above the current row |
-| Insert row below | Add a new row below the current row |
-| Insert column left | Add a new column to the left of the current column |
+| Action              | Description                                         |
+| ------------------- | --------------------------------------------------- |
+| Insert row above    | Add a new row above the current row                 |
+| Insert row below    | Add a new row below the current row                 |
+| Insert column left  | Add a new column to the left of the current column  |
 | Insert column right | Add a new column to the right of the current column |
-| Delete row | Remove the current row |
-| Delete column | Remove the current column |
-| Delete table | Remove the entire table |
+| Delete row          | Remove the current row                              |
+| Delete column       | Remove the current column                           |
+| Delete table        | Remove the entire table                             |
 
 These actions are also available programmatically via Lexical's table utility functions.
 
@@ -155,11 +160,16 @@ A table is represented in the Lexical JSON state as nested nodes:
 ```
 
 <Callout type="info">
-The `TablePlugin` automatically registers `TableNode`, `TableRowNode`, and `TableCellNode` with Lexical. You do not need to add them to `ALL_NODES` manually.
+  The `TablePlugin` automatically registers `TableNode`, `TableRowNode`, and
+  `TableCellNode` with Lexical. You do not need to add them to `ALL_NODES`
+  manually.
 </Callout>
 
 <Callout type="warn">
-When `hasTabHandler` is `true`, the Tab key is captured by the table for cell navigation. This means Tab will not trigger indentation while the cursor is inside a table. Set `hasTabHandler` to `false` if you need Tab to pass through to other handlers.
+  When `hasTabHandler` is `true`, the Tab key is captured by the table for cell
+  navigation. This means Tab will not trigger indentation while the cursor is
+  inside a table. Set `hasTabHandler` to `false` if you need Tab to pass through
+  to other handlers.
 </Callout>
 
 ## Related

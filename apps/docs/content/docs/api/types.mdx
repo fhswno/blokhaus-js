@@ -40,7 +40,7 @@ import type {
   VideoEmbedInfo,
   VideoEmbedRenderProps,
   VideoFileRenderProps,
-} from '@scribex/core';
+} from "@scribex/core";
 ```
 
 ---
@@ -190,14 +190,18 @@ interface InputRule {
   /** The trigger pattern. Must include a trailing space or newline to fire. */
   pattern: RegExp;
   /** The node type this rule produces. Used for categorization. */
-  type: 'heading' | 'quote' | 'code' | 'divider' | 'custom';
+  type: "heading" | "quote" | "code" | "divider" | "custom";
   /**
    * Called when the pattern matches. Receives the matched text and the current TextNode.
    * The engine clears the trigger text before calling this.
    *
    * IMPORTANT: Runs inside a Lexical node transform. Do NOT wrap in editor.update().
    */
-  onMatch: (match: RegExpMatchArray, node: TextNode, editor: LexicalEditor) => void;
+  onMatch: (
+    match: RegExpMatchArray,
+    node: TextNode,
+    editor: LexicalEditor,
+  ) => void;
 }
 ```
 
@@ -320,7 +324,7 @@ interface CalloutPayload {
 ```ts
 interface VideoPayload {
   src: string;
-  videoType: 'embed' | 'file';
+  videoType: "embed" | "file";
   provider: string;
   title?: string;
   key?: NodeKey;
@@ -497,7 +501,7 @@ Information about a parsed video embed URL. Returned by `parseVideoEmbed()`.
 
 ```ts
 interface VideoEmbedInfo {
-  provider: 'youtube' | 'vimeo' | 'loom' | 'generic';
+  provider: "youtube" | "vimeo" | "loom" | "generic";
   embedUrl: string;
   /** Thumbnail URL when available (YouTube, Vimeo). */
   thumbnailUrl?: string;
