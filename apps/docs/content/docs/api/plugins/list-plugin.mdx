@@ -3,12 +3,12 @@ title: ListPlugin
 description: Bullet lists, numbered lists, and checklists.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## Import
 
 ```tsx
-import { ListPlugin } from '@scribex/core';
+import { ListPlugin } from "@scribex/core";
 ```
 
 ## Overview
@@ -22,9 +22,9 @@ The `ListPlugin` accepts no props. All list behavior is handled automatically on
 ## Usage
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, ListPlugin, InputRulePlugin } from '@scribex/core';
+import { EditorRoot, ListPlugin, InputRulePlugin } from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -42,22 +42,22 @@ Including `InputRulePlugin` alongside `ListPlugin` enables the markdown-style tr
 
 These triggers are handled by the `InputRulePlugin` when `ListPlugin` is mounted:
 
-| Trigger | Produces |
-|---|---|
+| Trigger      | Produces                     |
+| ------------ | ---------------------------- |
 | `- ` or `* ` | Unordered (bullet) list item |
-| `1. ` | Ordered (numbered) list item |
-| `[] ` | Task list item (unchecked) |
-| `[x] ` | Task list item (checked) |
+| `1. `        | Ordered (numbered) list item |
+| `[] `        | Task list item (unchecked)   |
+| `[x] `       | Task list item (checked)     |
 
 ## Keyboard behavior
 
-| Key | Context | Action |
-|---|---|---|
-| Enter | Non-empty list item | Create a new list item below |
-| Enter | Empty list item | Exit the list and create a paragraph |
-| Tab | Any list item | Indent the item (increase nesting level) |
-| Shift+Tab | Any list item | Outdent the item (decrease nesting level) |
-| Backspace | Start of first list item | Convert back to a paragraph |
+| Key       | Context                  | Action                                    |
+| --------- | ------------------------ | ----------------------------------------- |
+| Enter     | Non-empty list item      | Create a new list item below              |
+| Enter     | Empty list item          | Exit the list and create a paragraph      |
+| Tab       | Any list item            | Indent the item (increase nesting level)  |
+| Shift+Tab | Any list item            | Outdent the item (decrease nesting level) |
+| Backspace | Start of first list item | Convert back to a paragraph               |
 
 ### Nesting example
 
@@ -76,7 +76,7 @@ Lists can be nested up to 10 levels deep. Attempting to indent beyond the maximu
 Task list items render a checkbox alongside the text content. Clicking the checkbox toggles the checked state via a single `editor.update()` call, creating a clean undo history entry.
 
 ```tsx title="Creating task lists programmatically"
-import { INSERT_CHECK_LIST_COMMAND } from '@lexical/list';
+import { INSERT_CHECK_LIST_COMMAND } from "@lexical/list";
 
 editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
 ```
@@ -89,9 +89,7 @@ The checked state is persisted in the Lexical JSON state as part of the `ListIte
 {
   "type": "listitem",
   "checked": true,
-  "children": [
-    { "type": "text", "text": "Buy groceries" }
-  ]
+  "children": [{ "type": "text", "text": "Buy groceries" }]
 }
 ```
 
@@ -102,7 +100,7 @@ import {
   INSERT_UNORDERED_LIST_COMMAND,
   INSERT_ORDERED_LIST_COMMAND,
   INSERT_CHECK_LIST_COMMAND,
-} from '@lexical/list';
+} from "@lexical/list";
 
 // Create a bullet list
 editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
@@ -118,11 +116,11 @@ editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
 
 When `ListPlugin` is mounted, the following items appear in the slash menu:
 
-| Item | Description |
-|---|---|
-| Bullet List | Insert an unordered list |
-| Numbered List | Insert an ordered list |
-| Task List | Insert a checklist with toggleable items |
+| Item          | Description                              |
+| ------------- | ---------------------------------------- |
+| Bullet List   | Insert an unordered list                 |
+| Numbered List | Insert an ordered list                   |
+| Task List     | Insert a checklist with toggleable items |
 
 ## Converting between list types
 
@@ -134,11 +132,16 @@ editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
 ```
 
 <Callout type="info">
-The `ListPlugin` wraps `@lexical/list` and registers the necessary list nodes (`ListNode` and `ListItemNode`) automatically. You do not need to add them to the `ALL_NODES` array manually.
+  The `ListPlugin` wraps `@lexical/list` and registers the necessary list nodes
+  (`ListNode` and `ListItemNode`) automatically. You do not need to add them to
+  the `ALL_NODES` array manually.
 </Callout>
 
 <Callout type="info">
-Pressing Enter on an empty list item at any nesting level first outdents the item. Only when the item is at the top level and empty does Enter exit the list entirely. This matches the behavior of editors like Notion and Google Docs.
+  Pressing Enter on an empty list item at any nesting level first outdents the
+  item. Only when the item is at the top level and empty does Enter exit the
+  list entirely. This matches the behavior of editors like Notion and Google
+  Docs.
 </Callout>
 
 ## Related

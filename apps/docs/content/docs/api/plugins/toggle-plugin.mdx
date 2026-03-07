@@ -3,12 +3,12 @@ title: TogglePlugin
 description: Collapsible toggle block management.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## Import
 
 ```tsx
-import { TogglePlugin } from '@scribex/core';
+import { TogglePlugin } from "@scribex/core";
 ```
 
 ## Overview
@@ -22,9 +22,14 @@ The `TogglePlugin` accepts no props. Toggle behavior is managed automatically on
 ## Usage
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, TogglePlugin, InputRulePlugin, SlashMenu } from '@scribex/core';
+import {
+  EditorRoot,
+  TogglePlugin,
+  InputRulePlugin,
+  SlashMenu,
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -39,14 +44,14 @@ export default function EditorPage() {
 
 ## Registered commands
 
-| Command | Payload | Description |
-|---|---|---|
-| `INSERT_TOGGLE_COMMAND` | `void` | Inserts a new toggle block at the current cursor position. |
+| Command                 | Payload | Description                                                |
+| ----------------------- | ------- | ---------------------------------------------------------- |
+| `INSERT_TOGGLE_COMMAND` | `void`  | Inserts a new toggle block at the current cursor position. |
 
 ### Creating a toggle programmatically
 
 ```tsx
-import { INSERT_TOGGLE_COMMAND } from '@scribex/core';
+import { INSERT_TOGGLE_COMMAND } from "@scribex/core";
 
 editor.dispatchCommand(INSERT_TOGGLE_COMMAND, undefined);
 ```
@@ -73,18 +78,14 @@ ToggleContainerNode (root container)
   "children": [
     {
       "type": "toggle-title",
-      "children": [
-        { "type": "text", "text": "Click to expand" }
-      ]
+      "children": [{ "type": "text", "text": "Click to expand" }]
     },
     {
       "type": "toggle-content",
       "children": [
         {
           "type": "paragraph",
-          "children": [
-            { "type": "text", "text": "Hidden content here" }
-          ]
+          "children": [{ "type": "text", "text": "Hidden content here" }]
         }
       ]
     }
@@ -102,14 +103,14 @@ ToggleContainerNode (root container)
 
 ### Keyboard navigation
 
-| Key | Context | Action |
-|---|---|---|
-| Enter | End of toggle title | Move cursor into the toggle content body |
-| Enter | End of last paragraph in content | Create a new paragraph inside the content |
-| Backspace | Start of empty toggle title | Delete the entire toggle block |
-| Arrow Down | End of toggle title | Move into the toggle content (if open) or skip to next sibling (if closed) |
-| Arrow Up | Start of first content paragraph | Move cursor back to the toggle title |
-| Escape | Inside toggle content | Move cursor to the toggle title |
+| Key        | Context                          | Action                                                                     |
+| ---------- | -------------------------------- | -------------------------------------------------------------------------- |
+| Enter      | End of toggle title              | Move cursor into the toggle content body                                   |
+| Enter      | End of last paragraph in content | Create a new paragraph inside the content                                  |
+| Backspace  | Start of empty toggle title      | Delete the entire toggle block                                             |
+| Arrow Down | End of toggle title              | Move into the toggle content (if open) or skip to next sibling (if closed) |
+| Arrow Up   | Start of first content paragraph | Move cursor back to the toggle title                                       |
+| Escape     | Inside toggle content            | Move cursor to the toggle title                                            |
 
 ### Content inside toggles
 
@@ -142,7 +143,7 @@ When `TogglePlugin` is mounted, a "Toggle" item appears in the slash menu. Selec
 ### Toggle open/close state
 
 ```tsx
-import { $isToggleContainerNode } from '@scribex/core';
+import { $isToggleContainerNode } from "@scribex/core";
 
 editor.update(() => {
   // Find and collapse all toggles
@@ -162,15 +163,20 @@ import {
   $isToggleContainerNode,
   $isToggleTitleNode,
   $isToggleContentNode,
-} from '@scribex/core';
+} from "@scribex/core";
 ```
 
 <Callout type="info">
-When a toggle is collapsed, its content remains in the AST and is included in serialized JSON. Collapsing a toggle is purely a visual operation -- it does not delete or hide content from the document state.
+  When a toggle is collapsed, its content remains in the AST and is included in
+  serialized JSON. Collapsing a toggle is purely a visual operation -- it does
+  not delete or hide content from the document state.
 </Callout>
 
 <Callout type="warn">
-Do not attempt to remove `ToggleTitleNode` or `ToggleContentNode` independently. A `ToggleContainerNode` must always contain exactly one title and one content node. Removing either will corrupt the toggle structure. To delete a toggle, remove the entire `ToggleContainerNode`.
+  Do not attempt to remove `ToggleTitleNode` or `ToggleContentNode`
+  independently. A `ToggleContainerNode` must always contain exactly one title
+  and one content node. Removing either will corrupt the toggle structure. To
+  delete a toggle, remove the entire `ToggleContainerNode`.
 </Callout>
 
 ## Related
