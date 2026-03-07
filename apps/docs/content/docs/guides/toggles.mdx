@@ -1,0 +1,238 @@
+---
+title: Toggles
+description: Add collapsible toggle blocks to organize content.
+---
+
+Toggles (also known as accordions or collapsible sections) let users hide and reveal content. They are ideal for FAQs, supplementary details, or any content that benefits from progressive disclosure.
+
+## Setup
+
+Add the `TogglePlugin` as a child of `EditorRoot`:
+
+```tsx title="app/editor/page.tsx"
+import { EditorRoot, TogglePlugin, InputRulePlugin, SlashMenu } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+      <TogglePlugin />
+      <InputRulePlugin />
+      <SlashMenu />
+    </EditorRoot>
+  );
+}
+```
+
+`TogglePlugin` takes no props. It registers the node transforms and keyboard handlers that make toggles work.
+
+## Inserting a toggle
+
+There are three ways to insert a toggle:
+
+### Slash menu
+
+Type `/toggle` (or `/collapse`, `/accordion`, `/details`, `/fold`) to find the Toggle item in the slash menu. Selecting it inserts a new toggle block at the cursor position.
+
+### Programmatic insertion
+
+Dispatch the `INSERT_TOGGLE_COMMAND` to insert a toggle from your own UI:
+
+```tsx
+import { INSERT_TOGGLE_COMMAND } from '@scribex/core';
+
+function InsertToggleButton() {
+  const [editor] = useLexicalComposerContext();
+
+  return (
+    <button
+      onClick={() => {
+        editor.dispatchCommand(INSERT_TOGGLE_COMMAND, { isOpen: true });
+      }}
+    >
+      Insert Toggle
+    </button>
+  );
+}
+```
+
+The command payload is optional. Pass `{ isOpen: false }` to insert a closed toggle, or `{ isOpen: true }` (the default) to insert it open.
+
+### Drag from another block
+
+When the `OverlayPortal` is active, you can drag any existing block into a toggle's content area.
+
+## Node structure
+
+A toggle consists of three Lexical nodes arranged in a strict parent-child hierarchy:
+
+```
+ToggleContainerNode
+  ├── ToggleTitleNode     (the clickable summary line)
+  └── ToggleContentNode   (the collapsible body)
+        ├── ParagraphNode
+        ├── ...any block-level nodes
+        └── ParagraphNode
+```
+
+The `ToggleContainerNode` is an `ElementNode` that acts as a **shadow root** in the Lexical AST. This means block-level operations like Enter and Backspace are contained within the toggle and do not leak out to sibling nodes.
+
+The `ToggleContentNode` is also a shadow root, so nested block operations inside the content area stay isolated.
+
+### Structural integrity
+
+The plugin enforces the `[ToggleTitleNode, ToggleContentNode]` structure via node transforms:
+
+- If a `ToggleContentNode` is found outside a `ToggleContainerNode`, its children are unwrapped and the content node is removed.
+- If a `ToggleTitleNode` is found outside a `ToggleContainerNode`, it is replaced with a `ParagraphNode` containing its children.
+- If a `ToggleContainerNode` does not have exactly two children (title + content) in the correct order, the entire container is unwrapped.
+
+This means you cannot accidentally corrupt the toggle structure through normal editing operations.
+
+## Keyboard behaviors
+
+### Enter in the title
+
+Pressing Enter while the cursor is in the `ToggleTitleNode`:
+
+1. If the toggle is **closed**, it opens the container first.
+2. The cursor moves into the `ToggleContentNode`, focusing the first child element.
+3. If the content area is empty, a new `ParagraphNode` is created inside it.
+
+### Arrow key navigation
+
+Arrow keys handle boundary escaping:
+
+- **ArrowUp / ArrowLeft** at the very start of the toggle's first descendant: inserts a new paragraph **before** the container (only when the toggle is the first child of its parent).
+- **ArrowDown / ArrowRight** at the very end of the toggle's last descendant: inserts a new paragraph **after** the container (only when the toggle is the last child of its parent).
+
+This prevents the cursor from getting trapped inside a toggle.
+
+### Backspace at the start of the title
+
+Pressing Backspace when the cursor is at the beginning of the `ToggleTitleNode` triggers `collapseAtStart`, which unwraps the entire toggle container. The title and content children are lifted into the parent, replacing the toggle.
+
+## Creating toggle nodes programmatically
+
+Use the factory functions inside an `editor.update()` call:
+
+```tsx
+import {
+  $createToggleContainerNode,
+  $createToggleTitleNode,
+  $createToggleContentNode,
+} from '@scribex/core';
+import { $createParagraphNode, $createTextNode, $getRoot } from 'lexical';
+
+editor.update(() => {
+  const title = $createToggleTitleNode();
+  title.append($createTextNode('Click to expand'));
+
+  const content = $createToggleContentNode();
+  const paragraph = $createParagraphNode();
+  paragraph.append($createTextNode('Hidden content goes here.'));
+  content.append(paragraph);
+
+  const container = $createToggleContainerNode({ open: false });
+  container.append(title, content);
+
+  $getRoot().append(container);
+});
+```
+
+## Type guard functions
+
+Use these to check node types safely:
+
+```tsx
+import {
+  $isToggleContainerNode,
+  $isToggleTitleNode,
+  $isToggleContentNode,
+} from '@scribex/core';
+
+editor.read(() => {
+  const node = /* ... */;
+
+  if ($isToggleContainerNode(node)) {
+    console.log('Open state:', node.getOpen());
+  }
+});
+```
+
+## Toggling open/closed state
+
+The `ToggleContainerNode` exposes methods to control its open state:
+
+```tsx
+editor.update(() => {
+  const container = /* find the ToggleContainerNode */;
+
+  container.getOpen();      // returns boolean
+  container.setOpen(true);  // set explicitly
+  container.toggleOpen();   // flip the current state
+});
+```
+
+## DOM rendering
+
+The toggle renders differently depending on the browser:
+
+- **Non-Chrome browsers**: Uses native `<details>` and `<summary>` HTML elements. The browser handles the open/close animation natively.
+- **Chrome**: Uses `<div data-toggle-container>` and `<summary>` due to Chrome's issues with `<details>` inside `contenteditable` contexts. The click-to-toggle behavior is handled manually via a click listener on the disclosure triangle area (first 28px from inline-start).
+
+In both cases, RTL direction is respected. The disclosure triangle appears on the correct side based on the computed `direction` CSS property.
+
+## Serialization
+
+Toggles serialize to Lexical JSON with the following structure:
+
+```json
+{
+  "type": "toggle-container",
+  "open": true,
+  "children": [
+    {
+      "type": "toggle-title",
+      "children": [{ "type": "text", "text": "Title text" }]
+    },
+    {
+      "type": "toggle-content",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [{ "type": "text", "text": "Content text" }]
+        }
+      ]
+    }
+  ]
+}
+```
+
+For Markdown serialization (used by the AI context system), toggles are converted to HTML `<details>` blocks:
+
+```markdown
+<details>
+<summary>Title text</summary>
+
+Content text
+
+</details>
+```
+
+## Theming
+
+Toggle nodes use Lexical's theme class system. Configure styles in your Lexical theme:
+
+```ts
+const theme = {
+  toggleContainer: 'my-toggle-container',
+  toggleTitle: 'my-toggle-title',
+  toggleContent: 'my-toggle-content',
+};
+```
+
+## Related
+
+- [Slash Menu](/docs/guides/slash-menu) -- The `/toggle` command
+- [Input Rules](/docs/guides/input-rules) -- Markdown shortcuts
+- [API: TogglePlugin](/docs/api/plugins/toggle-plugin) -- Full API reference
