@@ -1,0 +1,179 @@
+---
+title: TogglePlugin
+description: Collapsible toggle block management.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Import
+
+```tsx
+import { TogglePlugin } from '@scribex/core';
+```
+
+## Overview
+
+The `TogglePlugin` provides collapsible toggle blocks (also known as accordion or disclosure blocks). Each toggle block has a summary line that is always visible, and a body section that expands or collapses when clicked. The plugin manages the `ToggleContainerNode` structure and handles keyboard navigation at toggle boundaries.
+
+## Props
+
+The `TogglePlugin` accepts no props. Toggle behavior is managed automatically once the plugin is mounted.
+
+## Usage
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, TogglePlugin, InputRulePlugin, SlashMenu } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <InputRulePlugin />
+      <SlashMenu />
+      <TogglePlugin />
+    </EditorRoot>
+  );
+}
+```
+
+## Registered commands
+
+| Command | Payload | Description |
+|---|---|---|
+| `INSERT_TOGGLE_COMMAND` | `void` | Inserts a new toggle block at the current cursor position. |
+
+### Creating a toggle programmatically
+
+```tsx
+import { INSERT_TOGGLE_COMMAND } from '@scribex/core';
+
+editor.dispatchCommand(INSERT_TOGGLE_COMMAND, undefined);
+```
+
+## Toggle structure
+
+A toggle block consists of three node types:
+
+```
+ToggleContainerNode (root container)
+  ├── ToggleTitleNode (always visible summary line)
+  │     └── TextNode ("Click to expand")
+  └── ToggleContentNode (collapsible body)
+        └── ParagraphNode
+              └── TextNode ("Hidden content here")
+```
+
+### In JSON
+
+```json
+{
+  "type": "toggle-container",
+  "open": true,
+  "children": [
+    {
+      "type": "toggle-title",
+      "children": [
+        { "type": "text", "text": "Click to expand" }
+      ]
+    },
+    {
+      "type": "toggle-content",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            { "type": "text", "text": "Hidden content here" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Behavior
+
+### Expanding and collapsing
+
+- Clicking the toggle indicator (triangle/chevron) toggles the `open` state on the `ToggleContainerNode`.
+- When collapsed, the `ToggleContentNode` is visually hidden but remains in the AST. This preserves content during serialization and undo/redo.
+- The toggle state is persisted in the JSON state via the `open` boolean property.
+
+### Keyboard navigation
+
+| Key | Context | Action |
+|---|---|---|
+| Enter | End of toggle title | Move cursor into the toggle content body |
+| Enter | End of last paragraph in content | Create a new paragraph inside the content |
+| Backspace | Start of empty toggle title | Delete the entire toggle block |
+| Arrow Down | End of toggle title | Move into the toggle content (if open) or skip to next sibling (if closed) |
+| Arrow Up | Start of first content paragraph | Move cursor back to the toggle title |
+| Escape | Inside toggle content | Move cursor to the toggle title |
+
+### Content inside toggles
+
+The toggle content body supports any block-level content: paragraphs, headings, lists, code blocks, images, and even nested toggles. There is no restriction on what can be placed inside a toggle.
+
+```tsx
+// Nested toggles
+editor.update(() => {
+  const outerToggle = $createToggleContainerNode(true);
+  const outerTitle = $createToggleTitleNode();
+  const outerContent = $createToggleContentNode();
+
+  const innerToggle = $createToggleContainerNode(false);
+  const innerTitle = $createToggleTitleNode();
+  const innerContent = $createToggleContentNode();
+
+  // Build the nested structure
+  innerToggle.append(innerTitle, innerContent);
+  outerContent.append(innerToggle);
+  outerToggle.append(outerTitle, outerContent);
+});
+```
+
+## Slash menu integration
+
+When `TogglePlugin` is mounted, a "Toggle" item appears in the slash menu. Selecting it inserts a new toggle block with the cursor positioned in the title.
+
+## Programmatic control
+
+### Toggle open/close state
+
+```tsx
+import { $isToggleContainerNode } from '@scribex/core';
+
+editor.update(() => {
+  // Find and collapse all toggles
+  const root = $getRoot();
+  root.getChildren().forEach((node) => {
+    if ($isToggleContainerNode(node)) {
+      node.setOpen(false);
+    }
+  });
+});
+```
+
+### Type guards
+
+```tsx
+import {
+  $isToggleContainerNode,
+  $isToggleTitleNode,
+  $isToggleContentNode,
+} from '@scribex/core';
+```
+
+<Callout type="info">
+When a toggle is collapsed, its content remains in the AST and is included in serialized JSON. Collapsing a toggle is purely a visual operation -- it does not delete or hide content from the document state.
+</Callout>
+
+<Callout type="warn">
+Do not attempt to remove `ToggleTitleNode` or `ToggleContentNode` independently. A `ToggleContainerNode` must always contain exactly one title and one content node. Removing either will corrupt the toggle structure. To delete a toggle, remove the entire `ToggleContainerNode`.
+</Callout>
+
+## Related
+
+- [Toggles Guide](/docs/guides/toggles) -- Extended usage guide
+- [Slash Menu Guide](/docs/guides/slash-menu) -- Configuring slash menu items
