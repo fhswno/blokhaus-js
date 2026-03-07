@@ -10,11 +10,14 @@ The slash menu is a command palette that opens when the user types `/` at the st
 Add the `SlashMenu` component as a child of `EditorRoot`:
 
 ```tsx title="app/editor/page.tsx"
-import { EditorRoot, SlashMenu, InputRulePlugin } from '@scribex/core';
+import { EditorRoot, SlashMenu, InputRulePlugin } from "@scribex/core";
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <SlashMenu />
       <InputRulePlugin />
     </EditorRoot>
@@ -51,72 +54,72 @@ The slash menu ships with a comprehensive set of default items, organized by cat
 
 ### AI
 
-| Item | Description | Keywords |
-|---|---|---|
-| Ask AI | Generate content with AI | -- |
+| Item   | Description              | Keywords |
+| ------ | ------------------------ | -------- |
+| Ask AI | Generate content with AI | --       |
 
 ### Headings
 
-| Item | Description | Shortcut hint | Keywords |
-|---|---|---|---|
-| Heading 1 | Large heading | `#` | h1 |
-| Heading 2 | Medium heading | `##` | h2 |
-| Heading 3 | Small heading | `###` | h3 |
+| Item      | Description    | Shortcut hint | Keywords |
+| --------- | -------------- | ------------- | -------- |
+| Heading 1 | Large heading  | `#`           | h1       |
+| Heading 2 | Medium heading | `##`          | h2       |
+| Heading 3 | Small heading  | `###`         | h3       |
 
 ### Blocks
 
-| Item | Description | Shortcut hint |
-|---|---|---|
-| Quote | Blockquote | `>` |
-| Divider | Horizontal rule | `---` |
-| Code Block | Syntax highlighted code | ` ``` ` |
-| Table | Insert a table | -- |
-| Callout | Highlighted block with icon | -- |
-| Toggle | Collapsible content block | -- |
+| Item       | Description                 | Shortcut hint |
+| ---------- | --------------------------- | ------------- |
+| Quote      | Blockquote                  | `>`           |
+| Divider    | Horizontal rule             | `---`         |
+| Code Block | Syntax highlighted code     | ` ``` `       |
+| Table      | Insert a table              | --            |
+| Callout    | Highlighted block with icon | --            |
+| Toggle     | Collapsible content block   | --            |
 
 ### Lists
 
-| Item | Description | Shortcut hint | Keywords |
-|---|---|---|---|
-| Bullet List | Unordered list | `-` | -- |
-| Numbered List | Ordered list | `1.` | -- |
-| Checklist | Task list with checkboxes | `[]` | todo, task, checkbox, check |
+| Item          | Description               | Shortcut hint | Keywords                    |
+| ------------- | ------------------------- | ------------- | --------------------------- |
+| Bullet List   | Unordered list            | `-`           | --                          |
+| Numbered List | Ordered list              | `1.`          | --                          |
+| Checklist     | Task list with checkboxes | `[]`          | todo, task, checkbox, check |
 
 ### Media
 
-| Item | Description | Keywords |
-|---|---|---|
-| Image | Upload an image | -- |
-| Emoji | Insert an emoji | smiley, face, emoticon |
+| Item  | Description             | Keywords                                 |
+| ----- | ----------------------- | ---------------------------------------- |
+| Image | Upload an image         | --                                       |
+| Emoji | Insert an emoji         | smiley, face, emoticon                   |
 | Video | Embed or upload a video | youtube, vimeo, loom, embed, movie, clip |
 
 ### Format
 
-| Item | Description | Keywords |
-|---|---|---|
-| *Font family* items | Switch to a specific typeface | font, typeface, typography |
-| Left to Right | Set paragraph direction to LTR | ltr, direction, english, latin |
-| Right to Left | Set paragraph direction to RTL | rtl, direction, hebrew, arabic |
+| Item                | Description                    | Keywords                       |
+| ------------------- | ------------------------------ | ------------------------------ |
+| _Font family_ items | Switch to a specific typeface  | font, typeface, typography     |
+| Left to Right       | Set paragraph direction to LTR | ltr, direction, english, latin |
+| Right to Left       | Set paragraph direction to RTL | rtl, direction, hebrew, arabic |
 
 ## Adding custom items
 
 Pass additional items via the `items` prop. Custom items are appended after the default items:
 
 ```tsx
-import { SlashMenu } from '@scribex/core';
-import type { SlashMenuItem } from '@scribex/core';
-import { Wand2 } from 'lucide-react';
+import { SlashMenu } from "@scribex/core";
+import type { SlashMenuItem } from "@scribex/core";
+import { Wand2 } from "lucide-react";
 
 const customItems: SlashMenuItem[] = [
   {
-    id: 'magic-block',
-    label: 'Magic Block',
-    description: 'Insert a custom magic block',
+    id: "magic-block",
+    label: "Magic Block",
+    description: "Insert a custom magic block",
     icon: ({ size }) => <Wand2 size={size} />,
-    keywords: ['magic', 'custom', 'special'],
+    keywords: ["magic", "custom", "special"],
     onSelect: () => {
       // Your custom logic here
-      console.log('Magic block selected!');
+      console.log("Magic block selected!");
     },
   },
 ];
@@ -135,21 +138,27 @@ function Editor() {
 Most useful custom items will mutate the editor state. Access the editor instance via `useLexicalComposerContext`:
 
 ```tsx
-'use client';
+"use client";
 
-import { useLexicalComposerContext } from '@scribex/core';
-import { $getSelection, $isRangeSelection, $getRoot, $createParagraphNode, $createTextNode } from 'lexical';
+import { useLexicalComposerContext } from "@scribex/core";
+import {
+  $getSelection,
+  $isRangeSelection,
+  $getRoot,
+  $createParagraphNode,
+  $createTextNode,
+} from "lexical";
 
 function useCustomSlashItems(): SlashMenuItem[] {
   const [editor] = useLexicalComposerContext();
 
   return [
     {
-      id: 'timestamp',
-      label: 'Timestamp',
-      description: 'Insert the current date and time',
+      id: "timestamp",
+      label: "Timestamp",
+      description: "Insert the current date and time",
       icon: ({ size }) => <ClockIcon size={size} />,
-      keywords: ['date', 'time', 'now'],
+      keywords: ["date", "time", "now"],
       onSelect: () => {
         editor.update(() => {
           const selection = $getSelection();
@@ -191,12 +200,12 @@ When no items match the query, the menu displays "No matching commands".
 
 The slash menu supports full keyboard navigation:
 
-| Key | Action |
-|---|---|
-| ArrowDown | Move selection to the next item |
-| ArrowUp | Move selection to the previous item |
-| Enter | Select the highlighted item |
-| Escape | Close the menu without selecting |
+| Key       | Action                              |
+| --------- | ----------------------------------- |
+| ArrowDown | Move selection to the next item     |
+| ArrowUp   | Move selection to the previous item |
+| Enter     | Select the highlighted item         |
+| Escape    | Close the menu without selecting    |
 
 The selected item is highlighted with the `--scribex-accent` color and auto-scrolls into view when navigating with arrow keys.
 
@@ -221,7 +230,7 @@ Each category has a distinct icon color scheme for visual differentiation.
 You can open the slash menu from your own code by dispatching the command:
 
 ```tsx
-import { OPEN_SLASH_MENU_COMMAND } from '@scribex/core';
+import { OPEN_SLASH_MENU_COMMAND } from "@scribex/core";
 
 editor.dispatchCommand(OPEN_SLASH_MENU_COMMAND, undefined);
 ```
@@ -232,17 +241,17 @@ The menu positions itself at the current DOM selection's caret position.
 
 Several items display a markdown shortcut hint on the right side of the row. These hints show the equivalent markdown shortcut that can be typed directly (via `InputRulePlugin`) without opening the slash menu:
 
-| Item | Shortcut hint |
-|---|---|
-| Heading 1 | `#` |
-| Heading 2 | `##` |
-| Heading 3 | `###` |
-| Quote | `>` |
-| Bullet List | `-` |
-| Numbered List | `1.` |
-| Checklist | `[]` |
-| Divider | `---` |
-| Code Block | ` ``` ` |
+| Item          | Shortcut hint |
+| ------------- | ------------- |
+| Heading 1     | `#`           |
+| Heading 2     | `##`          |
+| Heading 3     | `###`         |
+| Quote         | `>`           |
+| Bullet List   | `-`           |
+| Numbered List | `1.`          |
+| Checklist     | `[]`          |
+| Divider       | `---`         |
+| Code Block    | ` ``` `       |
 
 ## Styling
 
@@ -261,8 +270,8 @@ The menu has a frosted glass effect via `backdrop-filter: blur(24px) saturate(19
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
+| Prop    | Type              | Default     | Description                                  |
+| ------- | ----------------- | ----------- | -------------------------------------------- |
 | `items` | `SlashMenuItem[]` | `undefined` | Additional items appended after the defaults |
 
 ## Related
