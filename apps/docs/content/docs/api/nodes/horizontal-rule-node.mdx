@@ -1,0 +1,89 @@
+---
+title: HorizontalRuleNode
+description: Horizontal divider/separator line.
+---
+
+`HorizontalRuleNode` is a `DecoratorNode` that renders a horizontal divider line (`<hr>`) in the editor. It takes no payload, supports click-to-select, and is triggered by the `---` input rule.
+
+## Import
+
+```tsx
+import {
+  HorizontalRuleNode,
+  $createHorizontalRuleNode,
+  $isHorizontalRuleNode,
+} from '@scribex/core';
+```
+
+## Functions
+
+### `$createHorizontalRuleNode(): HorizontalRuleNode`
+
+Creates a new `HorizontalRuleNode`. Takes no arguments. Must be called inside `editor.update()`.
+
+```ts
+editor.update(() => {
+  const divider = $createHorizontalRuleNode();
+  const selection = $getSelection();
+  if ($isRangeSelection(selection)) {
+    const topLevel = selection.anchor.getNode().getTopLevelElement();
+    if (topLevel) {
+      topLevel.insertAfter(divider);
+      // Add a paragraph after the divider for continued typing
+      const paragraph = $createParagraphNode();
+      divider.insertAfter(paragraph);
+      paragraph.selectEnd();
+    }
+  }
+});
+```
+
+### `$isHorizontalRuleNode(node: LexicalNode | null | undefined): node is HorizontalRuleNode`
+
+Type guard that returns `true` if the given node is a `HorizontalRuleNode`.
+
+## Serialized format
+
+```ts
+type SerializedHorizontalRuleNode = {
+  type: 'horizontal-rule';
+  version: 1;
+};
+```
+
+The node has no data fields -- it is purely structural.
+
+## DOM behavior
+
+- **exportDOM**: Produces an `<hr>` element.
+- **importDOM**: Converts pasted `<hr>` elements back into `HorizontalRuleNode` instances.
+
+## Selection behavior
+
+The horizontal rule is click-selectable. When selected:
+
+- A `2px solid` line in the `--scribex-ring` color replaces the default `1px solid` `--scribex-border` line.
+- Pressing `Backspace` or `Delete` removes the divider from the AST.
+
+The divider has `12px` vertical padding to provide a comfortable click target.
+
+## Visual styling
+
+The divider renders as:
+
+- **Default state**: `1px solid` using the `--scribex-border` CSS variable.
+- **Selected state**: `2px solid` using the `--scribex-ring` CSS variable.
+- A `0.15s` CSS transition on `border-color` provides a smooth selection feedback.
+
+## Input rule trigger
+
+Typing `---` at the start of a paragraph triggers the input rule engine to replace the paragraph with a `HorizontalRuleNode`, followed by a new empty paragraph. The cursor moves to the new paragraph automatically.
+
+## Markdown serialization
+
+The `serializeNodesToMarkdown` utility outputs `HorizontalRuleNode` as `---`, which is standard Markdown for a horizontal rule.
+
+## Related
+
+- [InputRulePlugin](/docs/api/plugins/input-rule-plugin) -- The `---` trigger
+- [Utilities](/docs/api/utilities#serializenodestomarkdown) -- Markdown serialization
