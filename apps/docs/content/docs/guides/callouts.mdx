@@ -1,0 +1,253 @@
+---
+title: Callouts
+description: Add styled callout blocks with customizable emoji and color presets.
+---
+
+Scribex includes a `CalloutPlugin` that provides Notion-style callout blocks. Each callout has a customizable emoji icon and a color preset that controls its background and border accent. A floating toolbar appears when the cursor is inside a callout, allowing quick changes to the emoji and color.
+
+## Basic setup
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  CalloutPlugin,
+  InputRulePlugin,
+  SlashMenu,
+} from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <InputRulePlugin />
+      <SlashMenu />
+      <CalloutPlugin />
+    </EditorRoot>
+  );
+}
+```
+
+## `CalloutPlugin` props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `presets` | `CalloutPreset[]` | `DEFAULT_CALLOUT_PRESETS` | Override the available color presets |
+| `defaultEmoji` | `string` | `"💡"` | Default emoji for newly created callouts |
+| `defaultPreset` | `string` | `"default"` | Default color preset ID for new callouts |
+
+## The `CalloutPreset` interface
+
+Each preset defines a visual style for the callout block:
+
+```ts
+interface CalloutPreset {
+  /** Unique identifier used in serialization and CSS */
+  id: string;
+  /** Human-readable label shown in the toolbar */
+  label: string;
+  /** Default emoji for this preset */
+  emoji: string;
+  /** Raw background color for the color picker dot */
+  bgSwatch: string;
+  /** Raw border color for the color picker dot */
+  borderSwatch: string;
+}
+```
+
+The preset's `id` maps to CSS custom properties in `tokens.css`:
+- `--scribex-callout-{id}-bg` -- the callout's background color
+- `--scribex-callout-{id}-border` -- the callout's left border accent color
+
+## Default presets
+
+Scribex ships with six built-in presets:
+
+| Preset | ID | Emoji | Background | Border |
+|---|---|---|---|---|
+| Default | `default` | 💡 | `#f1f1ef` | `#d4d4d4` |
+| Info | `info` | ℹ️ | `#ddebf1` | `#0b6e99` |
+| Warning | `warning` | ⚠️ | `#fbf3db` | `#dfab01` |
+| Error | `error` | 🚫 | `#fbe4e4` | `#e03e3e` |
+| Success | `success` | ✅ | `#ddedea` | `#0f7b6c` |
+| Note | `purple` | 📝 | `#eae4f2` | `#6940a5` |
+
+Access these presets programmatically:
+
+```tsx
+import { DEFAULT_CALLOUT_PRESETS } from '@scribex/core';
+
+console.log(DEFAULT_CALLOUT_PRESETS);
+// [{ id: 'default', label: 'Default', emoji: '💡', ... }, ...]
+```
+
+## Custom presets
+
+Override the default presets by passing your own array:
+
+```tsx
+import type { CalloutPreset } from '@scribex/core';
+
+const customPresets: CalloutPreset[] = [
+  {
+    id: 'tip',
+    label: 'Tip',
+    emoji: '💡',
+    bgSwatch: '#e8f5e9',
+    borderSwatch: '#4caf50',
+  },
+  {
+    id: 'danger',
+    label: 'Danger',
+    emoji: '🔥',
+    bgSwatch: '#ffebee',
+    borderSwatch: '#f44336',
+  },
+  {
+    id: 'note',
+    label: 'Note',
+    emoji: '📌',
+    bgSwatch: '#e3f2fd',
+    borderSwatch: '#2196f3',
+  },
+];
+
+<CalloutPlugin presets={customPresets} defaultPreset="tip" />
+```
+
+When using custom presets, add corresponding CSS custom properties to your theme:
+
+```css title="styles/scribex-tokens.css"
+:root {
+  --scribex-callout-tip-bg: #e8f5e9;
+  --scribex-callout-tip-border: #4caf50;
+  --scribex-callout-danger-bg: #ffebee;
+  --scribex-callout-danger-border: #f44336;
+  --scribex-callout-note-bg: #e3f2fd;
+  --scribex-callout-note-border: #2196f3;
+}
+```
+
+## Inserting a callout
+
+### Via the slash menu
+
+Type `/callout` in the editor. The slash menu shows a "Callout" item. Selecting it inserts a callout with the `defaultEmoji` and `defaultPreset`.
+
+### Via a command
+
+```tsx
+import { INSERT_CALLOUT_COMMAND } from '@scribex/core';
+
+editor.dispatchCommand(INSERT_CALLOUT_COMMAND, {
+  emoji: '⚠️',
+  colorPreset: 'warning',
+});
+```
+
+Both `emoji` and `colorPreset` are optional. If omitted, the `defaultEmoji` and `defaultPreset` from `CalloutPlugin` props are used.
+
+### Programmatically
+
+```tsx
+import { $createCalloutNode } from '@scribex/core';
+import { $createParagraphNode, $getRoot } from 'lexical';
+
+editor.update(() => {
+  const callout = $createCalloutNode({
+    emoji: '💡',
+    colorPreset: 'default',
+  });
+
+  // A callout needs at least one child paragraph
+  const paragraph = $createParagraphNode();
+  callout.append(paragraph);
+
+  $getRoot().append(callout);
+  paragraph.selectStart();
+});
+```
+
+## The floating callout toolbar
+
+When the cursor is inside a callout block, a floating toolbar appears in the top-right area of the callout. The toolbar provides:
+
+### Emoji picker
+
+Click the current emoji to open a searchable emoji grid. Type to search by name or keyword, or click an emoji to apply it. Press Enter to select the first result, or Escape to close the picker.
+
+### Color selector
+
+A row of circular color swatches represents each preset. The active preset has an accent ring. Click a swatch to change the callout's color.
+
+### Delete button
+
+An "X" button removes the callout and unwraps its content back into the editor as regular blocks.
+
+## Keyboard behavior
+
+### Escaping a callout
+
+There are two ways to move the cursor out of a callout:
+
+1. **Enter on an empty last paragraph**: If the last paragraph inside the callout is empty and the user presses Enter, the empty paragraph moves outside the callout (below it), effectively "escaping" the callout.
+
+2. **Arrow Down at the end**: If the cursor is at the very end of the callout's last paragraph and the user presses Arrow Down, the cursor moves to the next sibling block (or a new paragraph is created below the callout).
+
+### Unwrapping with Backspace
+
+If the cursor is at the very beginning of the first paragraph inside the callout (offset 0) and the user presses Backspace, the callout is unwrapped: all its children are moved out of the callout and the callout container is removed. The cursor stays at the beginning of the first child.
+
+### Deleting a selected callout
+
+If the callout is selected as a NodeSelection (e.g., via programmatic selection), pressing Backspace or Delete removes the callout and inserts an empty paragraph in its place.
+
+## Type guards
+
+```tsx
+import { $isCalloutNode } from '@scribex/core';
+
+editor.read(() => {
+  const root = $getRoot();
+  root.getChildren().forEach((child) => {
+    if ($isCalloutNode(child)) {
+      console.log('Emoji:', child.getEmoji());
+      console.log('Preset:', child.getColorPreset());
+    }
+  });
+});
+```
+
+## Callout tokens
+
+The callout appearance is controlled by CSS custom properties defined in `tokens.css`. Each preset has two tokens:
+
+```css
+:root {
+  /* Default preset */
+  --scribex-callout-default-bg: #f1f1ef;
+  --scribex-callout-default-border: #d4d4d4;
+
+  /* Info preset */
+  --scribex-callout-info-bg: #ddebf1;
+  --scribex-callout-info-border: #0b6e99;
+
+  /* Warning preset */
+  --scribex-callout-warning-bg: #fbf3db;
+  --scribex-callout-warning-border: #dfab01;
+
+  /* Error preset */
+  --scribex-callout-error-bg: #fbe4e4;
+  --scribex-callout-error-border: #e03e3e;
+
+  /* Success preset */
+  --scribex-callout-success-bg: #ddedea;
+  --scribex-callout-success-border: #0f7b6c;
+
+  /* Purple / Note preset */
+  --scribex-callout-purple-bg: #eae4f2;
+  --scribex-callout-purple-border: #6940a5;
+}
+```
+
+These are redefined in the `.dark` block for dark mode support. Override them in your own CSS to customize callout colors. See the [Theming guide](/docs/guides/theming) for details.
