@@ -9,6 +9,8 @@ import {
   $getSelection,
   $isRangeSelection,
   $isTextNode,
+  $isElementNode,
+  $isRootNode,
   COMMAND_PRIORITY_LOW,
   FORMAT_TEXT_COMMAND,
   KEY_ESCAPE_COMMAND,
@@ -28,6 +30,8 @@ import {
   CodeIcon,
   LinkIcon,
   TextAaIcon,
+  TextAlignLeftIcon,
+  TextAlignRightIcon,
 } from "@phosphor-icons/react";
 import type { IconWeight } from "@phosphor-icons/react";
 
@@ -35,7 +39,7 @@ import type { IconWeight } from "@phosphor-icons/react";
 import { $isLinkNode } from "@lexical/link";
 
 // INTERNAL
-import { OPEN_LINK_INPUT_COMMAND } from "../commands";
+import { OPEN_LINK_INPUT_COMMAND, SET_BLOCK_DIRECTION_COMMAND } from "../commands";
 import { getInlineStyleProperty } from "../utils/style";
 import { ColorPicker } from "./ColorPicker";
 import { FontPicker } from "./FontPicker";
@@ -77,6 +81,7 @@ export function FloatingToolbar({ colorPalette, fontFamilies }: FloatingToolbarP
   const [activeTextColor, setActiveTextColor] = useState<string | null>(null);
   const [activeHighlightColor, setActiveHighlightColor] = useState<string | null>(null);
   const [activeFont, setActiveFont] = useState<string | null>(null);
+  const [blockDirection, setBlockDirection] = useState<"ltr" | "rtl" | null>(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showFontPicker, setShowFontPicker] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -161,6 +166,17 @@ export function FloatingToolbar({ colorPalette, fontFamilies }: FloatingToolbarP
         setActiveTextColor(null);
         setActiveHighlightColor(null);
         setActiveFont(null);
+      }
+
+      // Read block direction from the top-level element
+      let block = $isElementNode(anchorNode) ? anchorNode : anchorNode.getParent();
+      while (block && block.getParent() && !$isRootNode(block.getParent())) {
+        block = block.getParent();
+      }
+      if (block && $isElementNode(block) && !$isRootNode(block)) {
+        setBlockDirection(block.getDirection());
+      } else {
+        setBlockDirection(null);
       }
 
       setActiveFormats(formats);
@@ -522,6 +538,50 @@ export function FloatingToolbar({ colorPalette, fontFamilies }: FloatingToolbarP
           </div>
         )}
       </div>
+
+      {/* Separator */}
+      <div
+        style={{
+          width: "1px",
+          height: "18px",
+          backgroundColor: "var(--scribex-separator)",
+          margin: "0 2px",
+        }}
+      />
+
+      {/* Direction toggle button */}
+      <button
+        type="button"
+        title={blockDirection === "rtl" ? "Switch to LTR" : "Switch to RTL"}
+        aria-label={blockDirection === "rtl" ? "Switch to left-to-right" : "Switch to right-to-left"}
+        data-testid="toolbar-direction"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          const newDir = blockDirection === "rtl" ? "ltr" : "rtl";
+          editor.dispatchCommand(SET_BLOCK_DIRECTION_COMMAND, newDir);
+          setBlockDirection(newDir);
+          editor.focus();
+        }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "30px",
+          height: "30px",
+          borderRadius: "7px",
+          border: "none",
+          cursor: "default",
+          backgroundColor: "transparent",
+          color: "var(--scribex-icon-secondary)",
+          transition: "background-color 80ms ease, color 80ms ease",
+        }}
+      >
+        {blockDirection === "rtl" ? (
+          <TextAlignLeftIcon size={15} weight="regular" />
+        ) : (
+          <TextAlignRightIcon size={15} weight="regular" />
+        )}
+      </button>
     </div>,
     portalContainer,
   );
