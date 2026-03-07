@@ -1,0 +1,13 @@
+{
+  "title": "Nodes",
+  "pages": [
+    "image-nodes",
+    "ai-preview-node",
+    "mention-node",
+    "code-block-node",
+    "callout-node",
+    "video-nodes",
+    "horizontal-rule-node",
+    "toggle-nodes"
+  ]
+}
