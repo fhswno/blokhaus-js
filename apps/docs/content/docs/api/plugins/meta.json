@@ -1,0 +1,20 @@
+{
+  "title": "Plugins",
+  "pages": [
+    "input-rule-plugin",
+    "image-plugin",
+    "ai-plugin",
+    "mention-plugin",
+    "paste-plugin",
+    "emoji-picker-plugin",
+    "link-plugin",
+    "list-plugin",
+    "table-plugin",
+    "video-plugin",
+    "toggle-plugin",
+    "callout-plugin",
+    "block-selection-plugin",
+    "color-plugin",
+    "direction-plugin"
+  ]
+}
