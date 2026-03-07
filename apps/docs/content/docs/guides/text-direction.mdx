@@ -15,11 +15,14 @@ import {
   DirectionPlugin,
   FloatingToolbar,
   SlashMenu,
-} from '@scribex/core';
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <DirectionPlugin />
       <FloatingToolbar />
       <SlashMenu />
@@ -35,25 +38,33 @@ export default function EditorPage() {
 Set a default direction for the entire editor using the `dir` prop on `EditorRoot`:
 
 ```tsx
-{/* Default LTR (most common) */}
+{
+  /* Default LTR (most common) */
+}
 <EditorRoot namespace="editor" dir="ltr">
   <DirectionPlugin />
-</EditorRoot>
+</EditorRoot>;
 
-{/* Default RTL for Hebrew/Arabic content */}
+{
+  /* Default RTL for Hebrew/Arabic content */
+}
 <EditorRoot namespace="editor" dir="rtl">
   <DirectionPlugin />
-</EditorRoot>
+</EditorRoot>;
 
-{/* Auto-detection (browser default) */}
+{
+  /* Auto-detection (browser default) */
+}
 <EditorRoot namespace="editor" dir="auto">
   <DirectionPlugin />
-</EditorRoot>
+</EditorRoot>;
 
-{/* No explicit direction (default behavior) */}
+{
+  /* No explicit direction (default behavior) */
+}
 <EditorRoot namespace="editor">
   <DirectionPlugin />
-</EditorRoot>
+</EditorRoot>;
 ```
 
 When `dir` is set to `"ltr"` or `"rtl"`, the `EditorRoot` component renders an internal `SetInitialDirection` plugin that calls `$getRoot().setDirection(dir)` on mount. This sets the direction on the root Lexical node, which child nodes inherit by default.
@@ -67,13 +78,13 @@ The `dir` attribute is also set on the editor's wrapper `<div>`, so CSS layout r
 Dispatch the `SET_BLOCK_DIRECTION_COMMAND` to change the direction of the currently selected block(s):
 
 ```tsx
-import { SET_BLOCK_DIRECTION_COMMAND } from '@scribex/core';
+import { SET_BLOCK_DIRECTION_COMMAND } from "@scribex/core";
 
 // Set the current block to RTL
-editor.dispatchCommand(SET_BLOCK_DIRECTION_COMMAND, 'rtl');
+editor.dispatchCommand(SET_BLOCK_DIRECTION_COMMAND, "rtl");
 
 // Set the current block to LTR
-editor.dispatchCommand(SET_BLOCK_DIRECTION_COMMAND, 'ltr');
+editor.dispatchCommand(SET_BLOCK_DIRECTION_COMMAND, "ltr");
 ```
 
 The command handler walks up from the selection's anchor node to find the top-level block element (the nearest child of the root node), then calls `block.setDirection(direction)` on it. If the selection spans multiple blocks, all of them are updated.
@@ -90,7 +101,11 @@ editor.update(() => {
   for (const node of nodes) {
     // Walk up to the top-level block
     let current = $isElementNode(node) ? node : node.getParent();
-    while (current && current.getParent() && !$isRootNode(current.getParent())) {
+    while (
+      current &&
+      current.getParent() &&
+      !$isRootNode(current.getParent())
+    ) {
       current = current.getParent();
     }
     if (current && $isElementNode(current) && !$isRootNode(current)) {
@@ -117,8 +132,8 @@ The toolbar reads the current block's direction and dispatches `SET_BLOCK_DIRECT
 
 The slash menu includes two direction items:
 
-| Item | Description | Keywords |
-|---|---|---|
+| Item          | Description                    | Keywords                       |
+| ------------- | ------------------------------ | ------------------------------ |
 | Left to Right | Set paragraph direction to LTR | ltr, direction, english, latin |
 | Right to Left | Set paragraph direction to RTL | rtl, direction, hebrew, arabic |
 
@@ -142,10 +157,10 @@ The plugin uses a regex to detect RTL text content:
 
 ```ts
 // Unicode ranges for RTL scripts
-const RTL = '\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC';
-const LTR = 'A-Za-z\u00C0-\u00D6\u00D8-\u00F6...'; // Latin and extended
+const RTL = "\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC";
+const LTR = "A-Za-z\u00C0-\u00D6\u00D8-\u00F6..."; // Latin and extended
 
-const RTL_REGEX = new RegExp('^[^' + LTR + ']*[' + RTL + ']');
+const RTL_REGEX = new RegExp("^[^" + LTR + "]*[" + RTL + "]");
 ```
 
 This regex checks whether the first "directional" character in the previous block's text is from an RTL script. This is the same approach Lexical uses internally for its `dir="auto"` resolution.
@@ -164,12 +179,12 @@ This regex checks whether the first "directional" character in the previous bloc
 
 ## The `dir` prop on `EditorRoot`
 
-| Value | Behavior |
-|---|---|
-| `"ltr"` | Sets root direction to LTR on mount. Adds `dir="ltr"` to wrapper div. |
-| `"rtl"` | Sets root direction to RTL on mount. Adds `dir="rtl"` to wrapper div. |
-| `"auto"` | Adds `dir="auto"` to wrapper div. No explicit Lexical root direction set. |
-| `undefined` | No `dir` attribute on wrapper div. Default browser behavior. |
+| Value       | Behavior                                                                  |
+| ----------- | ------------------------------------------------------------------------- |
+| `"ltr"`     | Sets root direction to LTR on mount. Adds `dir="ltr"` to wrapper div.     |
+| `"rtl"`     | Sets root direction to RTL on mount. Adds `dir="rtl"` to wrapper div.     |
+| `"auto"`    | Adds `dir="auto"` to wrapper div. No explicit Lexical root direction set. |
+| `undefined` | No `dir` attribute on wrapper div. Default browser behavior.              |
 
 The direction is set only on mount. Changing the `dir` prop after mount does not retroactively update existing paragraphs -- it would override per-block direction settings that the user has explicitly changed. Use `SET_BLOCK_DIRECTION_COMMAND` for runtime direction changes.
 
@@ -180,12 +195,12 @@ A single document can mix LTR and RTL paragraphs. Each block stores its directio
 ```tsx
 editor.update(() => {
   const p1 = $createParagraphNode();
-  p1.setDirection('ltr');
-  p1.append($createTextNode('Hello World'));
+  p1.setDirection("ltr");
+  p1.append($createTextNode("Hello World"));
 
   const p2 = $createParagraphNode();
-  p2.setDirection('rtl');
-  p2.append($createTextNode('שלום עולם'));
+  p2.setDirection("rtl");
+  p2.append($createTextNode("שלום עולם"));
 
   const root = $getRoot();
   root.append(p1, p2);
@@ -234,12 +249,12 @@ The direction toggle button in the floating toolbar updates its icon based on th
 To change direction for a specific block node programmatically:
 
 ```tsx
-import { $isElementNode, $getNodeByKey } from 'lexical';
+import { $isElementNode, $getNodeByKey } from "lexical";
 
 editor.update(() => {
   const node = $getNodeByKey(nodeKey);
   if (node && $isElementNode(node)) {
-    node.setDirection('rtl');
+    node.setDirection("rtl");
   }
 });
 ```
@@ -251,7 +266,7 @@ editor.read(() => {
   const node = $getNodeByKey(nodeKey);
   if (node && $isElementNode(node)) {
     const dir = node.getDirection(); // 'ltr' | 'rtl' | null
-    console.log('Block direction:', dir);
+    console.log("Block direction:", dir);
   }
 });
 ```

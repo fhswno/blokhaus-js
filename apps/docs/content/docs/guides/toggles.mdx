@@ -10,11 +10,19 @@ Toggles (also known as accordions or collapsible sections) let users hide and re
 Add the `TogglePlugin` as a child of `EditorRoot`:
 
 ```tsx title="app/editor/page.tsx"
-import { EditorRoot, TogglePlugin, InputRulePlugin, SlashMenu } from '@scribex/core';
+import {
+  EditorRoot,
+  TogglePlugin,
+  InputRulePlugin,
+  SlashMenu,
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <TogglePlugin />
       <InputRulePlugin />
       <SlashMenu />
@@ -38,7 +46,7 @@ Type `/toggle` (or `/collapse`, `/accordion`, `/details`, `/fold`) to find the T
 Dispatch the `INSERT_TOGGLE_COMMAND` to insert a toggle from your own UI:
 
 ```tsx
-import { INSERT_TOGGLE_COMMAND } from '@scribex/core';
+import { INSERT_TOGGLE_COMMAND } from "@scribex/core";
 
 function InsertToggleButton() {
   const [editor] = useLexicalComposerContext();
@@ -120,16 +128,16 @@ import {
   $createToggleContainerNode,
   $createToggleTitleNode,
   $createToggleContentNode,
-} from '@scribex/core';
-import { $createParagraphNode, $createTextNode, $getRoot } from 'lexical';
+} from "@scribex/core";
+import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
 
 editor.update(() => {
   const title = $createToggleTitleNode();
-  title.append($createTextNode('Click to expand'));
+  title.append($createTextNode("Click to expand"));
 
   const content = $createToggleContentNode();
   const paragraph = $createParagraphNode();
-  paragraph.append($createTextNode('Hidden content goes here.'));
+  paragraph.append($createTextNode("Hidden content goes here."));
   content.append(paragraph);
 
   const container = $createToggleContainerNode({ open: false });
@@ -225,9 +233,9 @@ Toggle nodes use Lexical's theme class system. Configure styles in your Lexical 
 
 ```ts
 const theme = {
-  toggleContainer: 'my-toggle-container',
-  toggleTitle: 'my-toggle-title',
-  toggleContent: 'my-toggle-content',
+  toggleContainer: "my-toggle-container",
+  toggleTitle: "my-toggle-title",
+  toggleContent: "my-toggle-content",
 };
 ```
 
