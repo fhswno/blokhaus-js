@@ -1,0 +1,207 @@
+---
+title: Paste Handling
+description: Sanitize pasted HTML from external sources like Google Docs and Word.
+---
+
+When users paste content from external sources -- Google Docs, Microsoft Word, web pages, emails -- the clipboard typically contains HTML with extensive inline styles, proprietary class names, and non-semantic markup. The `PastePlugin` intercepts paste events, sanitizes the HTML, and converts it into clean Lexical nodes.
+
+## Setup
+
+Add the `PastePlugin` as a child of `EditorRoot`:
+
+```tsx title="app/editor/page.tsx"
+import { EditorRoot, PastePlugin, ImagePlugin } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+      <PastePlugin />
+      <ImagePlugin uploadHandler={uploadHandler} />
+    </EditorRoot>
+  );
+}
+```
+
+`PastePlugin` takes no props. It registers a `PASTE_COMMAND` listener at `COMMAND_PRIORITY_EDITOR` priority (the highest level), ensuring it intercepts paste events before any other handler.
+
+## The sanitization pipeline
+
+When the user pastes content, the following steps execute in order:
+
+### 1. Intercept the paste event
+
+The plugin registers a `PASTE_COMMAND` listener. When a paste occurs, it checks the `ClipboardData` for content.
+
+### 2. Check for image files
+
+If the clipboard contains image files (`clipboardData.files` with an `image/*` MIME type), the plugin returns `false` to let the `ImagePlugin` handle the paste instead. This ensures image pastes follow the correct upload pipeline.
+
+### 3. Extract HTML
+
+The plugin reads `clipboardData.getData('text/html')`. If no HTML is present, it returns `false` to let Lexical's built-in plain text paste handler take over.
+
+### 4. Sanitize the HTML
+
+The raw HTML string is passed through `sanitizePastedHTML()`, which strips unsafe and non-semantic content.
+
+### 5. Parse to Lexical nodes
+
+The sanitized HTML is parsed into a DOM tree using `DOMParser`, then converted to Lexical nodes via Lexical's `$generateNodesFromDOM()`.
+
+### 6. Insert into the AST
+
+If the current selection is a `RangeSelection`, selected text is removed first. Then the parsed nodes are inserted at the cursor position via `$insertNodes()`.
+
+The browser's default paste is prevented with `event.preventDefault()`.
+
+## What `sanitizePastedHTML` does
+
+The `sanitizePastedHTML` function performs a comprehensive bottom-up traversal of the pasted DOM tree. Here is exactly what it does:
+
+### Strips dangerous tags entirely
+
+The following tags are removed along with all their children. No content is preserved:
+
+- `<script>`
+- `<style>`
+- `<iframe>`
+- `<object>`
+- `<noscript>`
+
+### Strips all `style` attributes
+
+Every `style` attribute on every element is removed. This eliminates inline font sizes, colors, margins, and all other CSS that external applications inject.
+
+### Strips all `class` attributes
+
+Every `class` attribute is removed. Google Docs, Word, and other applications add proprietary class names that have no meaning outside their rendering context.
+
+### Normalizes heading levels
+
+Before stripping styles, the sanitizer checks for `font-size` values in inline styles. Google Docs often uses `<span style="font-size: 26pt">` instead of proper `<h1>` elements. The sanitizer maps font sizes to heading levels:
+
+| Font size | Heading level |
+|---|---|
+| 32px+ (24pt+) | `<h1>` |
+| 24px+ (18pt+) | `<h2>` |
+| 18px+ (13.5pt+) | `<h3>` |
+| Below 18px | Normal text (no heading) |
+
+Unit conversion is handled automatically: `pt` values are converted to `px` using the standard 4/3 ratio, and `em`/`rem` values use a 16px base.
+
+### Collapses non-semantic elements
+
+- `<span>` and `<font>` elements are unwrapped (replaced by their children). If they contained a heading-level font-size, they are converted to the appropriate `<h1>`-`<h3>` element instead.
+- `<div>` elements are converted to `<p>` elements. If they contained a heading-level font-size, they are converted to heading elements instead.
+
+### Normalizes tag aliases
+
+Non-semantic formatting tags are converted to their semantic equivalents:
+
+| Input tag | Output tag |
+|---|---|
+| `<b>` | `<strong>` |
+| `<i>` | `<em>` |
+| `<del>` | `<s>` |
+| `<strike>` | `<s>` |
+
+### Preserves only semantic attributes
+
+For elements that survive sanitization, only specific attributes are kept:
+
+| Element | Preserved attributes |
+|---|---|
+| `<a>` | `href` |
+| `<img>` | `src`, `alt` |
+| All others | None |
+
+This means `onclick`, `onerror`, `data-*`, `id`, and all other attributes are stripped.
+
+## The HTML allowlist
+
+The sanitizer uses a strict **allowlist** approach. Only the following HTML tags survive sanitization. Any tag not on this list is unwrapped to its text content:
+
+| Category | Tags |
+|---|---|
+| Block structure | `p`, `br`, `hr` |
+| Headings | `h1`, `h2`, `h3`, `h4`, `h5`, `h6` |
+| Inline formatting | `strong`, `b`, `em`, `i`, `u`, `s`, `del`, `strike` |
+| Code | `code`, `pre` |
+| Quotes | `blockquote` |
+| Lists | `ul`, `ol`, `li` |
+| Links and images | `a`, `img` |
+| Tables | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
+
+Note that `b`, `i`, `del`, and `strike` are on the allowlist but are normalized to `strong`, `em`, and `s` respectively during processing.
+
+## Using `sanitizePastedHTML` directly
+
+The sanitization function is exported separately for use in custom paste handlers or server-side processing:
+
+```tsx
+import { sanitizePastedHTML } from '@scribex/core';
+
+const dirtyHTML = '<div style="font-size: 26pt; color: red;">Hello</div>';
+const cleanHTML = sanitizePastedHTML(dirtyHTML);
+// Result: '<h1>Hello</h1>'
+```
+
+```tsx
+const xssAttempt = '<p>Safe text<script>alert("xss")</script></p>';
+const cleanHTML = sanitizePastedHTML(xssAttempt);
+// Result: '<p>Safe text</p>'
+```
+
+```tsx
+const nestedSpans = '<span><span><span>Deeply nested</span></span></span>';
+const cleanHTML = sanitizePastedHTML(nestedSpans);
+// Result: 'Deeply nested'
+```
+
+## Image paste handling
+
+Image pastes are **not** handled by `PastePlugin`. When the user pastes an image (or a screenshot), the clipboard contains image files in `clipboardData.files`. The `PastePlugin` detects this and returns `false`, allowing the `ImagePlugin` to handle the paste through its upload pipeline.
+
+This separation ensures that:
+- Images go through the proper `UploadHandler` flow (local preview, upload, URL replacement)
+- The `PastePlugin` focuses solely on HTML and text content
+- No base64 image data ever enters the Lexical AST
+
+Make sure both `PastePlugin` and `ImagePlugin` are included in your editor if you want to support pasting both text and images:
+
+```tsx
+<EditorRoot namespace="my-editor">
+  <PastePlugin />
+  <ImagePlugin uploadHandler={myUploadHandler} />
+</EditorRoot>
+```
+
+## Testing paste sanitization
+
+The `sanitizePastedHTML` function is a pure function that takes an HTML string and returns a sanitized HTML string. It uses `DOMParser` internally, so it can be tested in any browser-like environment:
+
+```ts
+import { sanitizePastedHTML } from '@scribex/core';
+
+// Google Docs heading
+const gdocsHTML = '<span style="font-size: 26pt;">My Title</span>';
+expect(sanitizePastedHTML(gdocsHTML)).toBe('<h1>My Title</h1>');
+
+// XSS prevention
+const scriptHTML = '<p>Text</p><script>alert(1)</script>';
+expect(sanitizePastedHTML(scriptHTML)).toBe('<p>Text</p>');
+
+// Event handler stripping
+const onclickHTML = '<p onclick="alert(1)">Text</p>';
+expect(sanitizePastedHTML(onclickHTML)).toBe('<p>Text</p>');
+
+// Nested span collapse
+const spansHTML = '<span><span>Text</span></span>';
+expect(sanitizePastedHTML(spansHTML)).toBe('Text');
+```
+
+## Related
+
+- [Images and Uploads](/docs/guides/images-and-uploads) -- Image paste handling via `ImagePlugin`
+- [API: PastePlugin](/docs/api/plugins/paste-plugin) -- Full API reference
+- [API: sanitizePastedHTML](/docs/api/utils/sanitize-pasted-html) -- Sanitization function reference
