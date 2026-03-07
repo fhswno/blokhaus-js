@@ -10,7 +10,7 @@ Scribex includes a full-featured table system built on Lexical's `@lexical/table
 Three components work together to provide the complete table experience:
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
 import {
   EditorRoot,
@@ -19,7 +19,7 @@ import {
   TableHoverActions,
   InputRulePlugin,
   SlashMenu,
-} from '@scribex/core';
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -34,24 +34,21 @@ export default function EditorPage() {
 }
 ```
 
-| Component | Purpose |
-|---|---|
-| `TablePlugin` | Registers the table node, handles insertion commands, and manages selection/tab behavior |
-| `TableActionMenu` | Right-click context menu for table operations (insert/delete rows/columns, merge cells, etc.) |
+| Component           | Purpose                                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| `TablePlugin`       | Registers the table node, handles insertion commands, and manages selection/tab behavior       |
+| `TableActionMenu`   | Right-click context menu for table operations (insert/delete rows/columns, merge cells, etc.)  |
 | `TableHoverActions` | Visual handles on hover: row/column handles, add row/column buttons, column resize, table grip |
 
 ## `TablePlugin` props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `hasCellMerge` | `boolean` | `true` | Enable cell merging/unmerging |
-| `hasTabHandler` | `boolean` | `true` | Enable Tab key to move between cells |
+| Prop            | Type      | Default | Description                          |
+| --------------- | --------- | ------- | ------------------------------------ |
+| `hasCellMerge`  | `boolean` | `true`  | Enable cell merging/unmerging        |
+| `hasTabHandler` | `boolean` | `true`  | Enable Tab key to move between cells |
 
 ```tsx
-<TablePlugin
-  hasCellMerge={true}
-  hasTabHandler={true}
-/>
+<TablePlugin hasCellMerge={true} hasTabHandler={true} />
 ```
 
 When `hasCellMerge` is `false`, a transform is registered that automatically unmerges any merged cells, effectively disabling the feature.
@@ -69,7 +66,7 @@ Type `/table` in the editor. The slash menu shows a "Table" item. Selecting it i
 Use the `INSERT_TABLE_COMMAND_SCRIBEX` command to insert a table programmatically:
 
 ```tsx
-import { INSERT_TABLE_COMMAND_SCRIBEX } from '@scribex/core';
+import { INSERT_TABLE_COMMAND_SCRIBEX } from "@scribex/core";
 
 editor.dispatchCommand(INSERT_TABLE_COMMAND_SCRIBEX, {
   rows: 4,
@@ -83,35 +80,35 @@ This inserts a table with the specified dimensions after the current block. If t
 
 Right-clicking inside a table cell opens a context menu with the following actions:
 
-| Action | Description |
-|---|---|
-| **Insert row above** | Adds a new row above the current row |
-| **Insert row below** | Adds a new row below the current row |
-| **Insert column left** | Adds a new column to the left of the current column |
-| **Insert column right** | Adds a new column to the right of the current column |
-| **Delete row** | Removes the current row |
-| **Delete column** | Removes the current column |
-| **Merge cells** | Merges selected cells (when multiple cells are selected) |
-| **Unmerge cells** | Splits a previously merged cell back into individual cells |
-| **Cell background** | Opens a color picker to set the background color of selected cells |
-| **Delete table** | Removes the entire table |
+| Action                  | Description                                                        |
+| ----------------------- | ------------------------------------------------------------------ |
+| **Insert row above**    | Adds a new row above the current row                               |
+| **Insert row below**    | Adds a new row below the current row                               |
+| **Insert column left**  | Adds a new column to the left of the current column                |
+| **Insert column right** | Adds a new column to the right of the current column               |
+| **Delete row**          | Removes the current row                                            |
+| **Delete column**       | Removes the current column                                         |
+| **Merge cells**         | Merges selected cells (when multiple cells are selected)           |
+| **Unmerge cells**       | Splits a previously merged cell back into individual cells         |
+| **Cell background**     | Opens a color picker to set the background color of selected cells |
+| **Delete table**        | Removes the entire table                                           |
 
 ### Cell background colors
 
 The cell background picker uses tokens from `tokens.css`:
 
-| Color | Token |
-|---|---|
-| Default (clear) | -- |
-| Gray | `--scribex-cell-bg-gray` |
-| Brown | `--scribex-cell-bg-brown` |
-| Orange | `--scribex-cell-bg-orange` |
-| Yellow | `--scribex-cell-bg-yellow` |
-| Green | `--scribex-cell-bg-green` |
-| Blue | `--scribex-cell-bg-blue` |
-| Purple | `--scribex-cell-bg-purple` |
-| Pink | `--scribex-cell-bg-pink` |
-| Red | `--scribex-cell-bg-red` |
+| Color           | Token                      |
+| --------------- | -------------------------- |
+| Default (clear) | --                         |
+| Gray            | `--scribex-cell-bg-gray`   |
+| Brown           | `--scribex-cell-bg-brown`  |
+| Orange          | `--scribex-cell-bg-orange` |
+| Yellow          | `--scribex-cell-bg-yellow` |
+| Green           | `--scribex-cell-bg-green`  |
+| Blue            | `--scribex-cell-bg-blue`   |
+| Purple          | `--scribex-cell-bg-purple` |
+| Pink            | `--scribex-cell-bg-pink`   |
+| Red             | `--scribex-cell-bg-red`    |
 
 ## `TableHoverActions` -- visual handles
 
@@ -142,17 +139,18 @@ A small grip icon appears at the top-left corner of the table. Clicking it selec
 Lexical's table module provides a built-in cell selection system. Click and drag across cells to select a range. The selected cells are highlighted with the `--scribex-table-selection` overlay color.
 
 When multiple cells are selected:
+
 - The "Merge cells" action becomes available in the context menu.
 - The "Cell background" action applies to all selected cells.
 
 ## Keyboard navigation
 
-| Key | Behavior |
-|---|---|
-| Tab | Move to the next cell (left to right, top to bottom) |
-| Shift + Tab | Move to the previous cell |
-| Arrow keys | Navigate between cells |
-| Backspace / Delete (when table is selected) | Delete the entire table |
+| Key                                         | Behavior                                             |
+| ------------------------------------------- | ---------------------------------------------------- |
+| Tab                                         | Move to the next cell (left to right, top to bottom) |
+| Shift + Tab                                 | Move to the previous cell                            |
+| Arrow keys                                  | Navigate between cells                               |
+| Backspace / Delete (when table is selected) | Delete the entire table                              |
 
 ## Table tokens
 
@@ -172,7 +170,7 @@ Override these in your theme to customize the table appearance. See the [Theming
 ## Example: Read-only table with custom data
 
 ```tsx
-import { $createTableNodeWithDimensions } from '@lexical/table';
+import { $createTableNodeWithDimensions } from "@lexical/table";
 
 editor.update(() => {
   // Create a 3-column, 2-row table

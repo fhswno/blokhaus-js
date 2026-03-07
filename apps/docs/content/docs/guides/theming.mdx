@@ -14,13 +14,13 @@ All Scribex components reference CSS variables instead of hardcoded color values
 Copy `tokens.css` into your project and import it in your root layout or global stylesheet:
 
 ```css title="styles/scribex-tokens.css"
-@import './scribex-tokens.css';
+@import "./scribex-tokens.css";
 ```
 
 Or import it directly in your layout:
 
 ```tsx title="app/layout.tsx"
-import './styles/scribex-tokens.css';
+import "./styles/scribex-tokens.css";
 ```
 
 ## Full token reference
@@ -29,109 +29,109 @@ import './styles/scribex-tokens.css';
 
 These control the primary background and foreground colors of the editor.
 
-| Token | Default (Light) | Description |
-|---|---|---|
-| `--scribex-background` | `hsl(0 0% 100%)` | Editor background |
+| Token                  | Default (Light)       | Description        |
+| ---------------------- | --------------------- | ------------------ |
+| `--scribex-background` | `hsl(0 0% 100%)`      | Editor background  |
 | `--scribex-foreground` | `hsl(222.2 84% 4.9%)` | Primary text color |
 
 ### Editor chrome
 
 These tokens style borders, focus rings, and muted/secondary elements.
 
-| Token | Default (Light) | Description |
-|---|---|---|
-| `--scribex-border` | `hsl(214.3 31.8% 91.4%)` | Border color for editor containers |
-| `--scribex-ring` | `hsl(221.2 83.2% 53.3%)` | Focus ring color |
-| `--scribex-muted` | `hsl(210 40% 96.1%)` | Muted background (e.g., code blocks) |
-| `--scribex-muted-foreground` | `hsl(215.4 16.3% 46.9%)` | Muted text color |
+| Token                        | Default (Light)          | Description                          |
+| ---------------------------- | ------------------------ | ------------------------------------ |
+| `--scribex-border`           | `hsl(214.3 31.8% 91.4%)` | Border color for editor containers   |
+| `--scribex-ring`             | `hsl(221.2 83.2% 53.3%)` | Focus ring color                     |
+| `--scribex-muted`            | `hsl(210 40% 96.1%)`     | Muted background (e.g., code blocks) |
+| `--scribex-muted-foreground` | `hsl(215.4 16.3% 46.9%)` | Muted text color                     |
 
 ### Interactive tokens
 
-| Token | Default (Light) | Description |
-|---|---|---|
-| `--scribex-accent` | `hsl(221.2 83.2% 53.3%)` | Accent color for interactive elements |
-| `--scribex-accent-foreground` | `hsl(0 0% 100%)` | Text on accent backgrounds |
+| Token                         | Default (Light)          | Description                           |
+| ----------------------------- | ------------------------ | ------------------------------------- |
+| `--scribex-accent`            | `hsl(221.2 83.2% 53.3%)` | Accent color for interactive elements |
+| `--scribex-accent-foreground` | `hsl(0 0% 100%)`         | Text on accent backgrounds            |
 
 ### Status tokens
 
-| Token | Default (Light) | Description |
-|---|---|---|
+| Token                   | Default (Light)      | Description              |
+| ----------------------- | -------------------- | ------------------------ |
 | `--scribex-destructive` | `hsl(0 84.2% 60.2%)` | Destructive action color |
-| `--scribex-ai-stream` | `hsl(220 60% 50%)` | AI preview block accent |
+| `--scribex-ai-stream`   | `hsl(220 60% 50%)`   | AI preview block accent  |
 
 ### Radius
 
-| Token | Default | Description |
-|---|---|---|
+| Token              | Default  | Description                              |
+| ------------------ | -------- | ---------------------------------------- |
 | `--scribex-radius` | `0.5rem` | Default border radius for all components |
 
 ### Typography
 
-| Token | Default | Description |
-|---|---|---|
-| `--scribex-font-sans` | `ui-sans-serif, system-ui, sans-serif` | Sans-serif font stack |
-| `--scribex-font-serif` | `Georgia, "Times New Roman", serif` | Serif font stack |
-| `--scribex-font-mono` | `ui-monospace, monospace` | Monospace font stack |
-| `--scribex-font-hand` | `"Caveat", cursive` | Handwriting font stack |
+| Token                  | Default                                | Description            |
+| ---------------------- | -------------------------------------- | ---------------------- |
+| `--scribex-font-sans`  | `ui-sans-serif, system-ui, sans-serif` | Sans-serif font stack  |
+| `--scribex-font-serif` | `Georgia, "Times New Roman", serif`    | Serif font stack       |
+| `--scribex-font-mono`  | `ui-monospace, monospace`              | Monospace font stack   |
+| `--scribex-font-hand`  | `"Caveat", cursive`                    | Handwriting font stack |
 
 ### Text colors
 
 These tokens provide a Notion-style palette for text color formatting via the `ColorPlugin`.
 
-| Token | Default (Light) | Description |
-|---|---|---|
-| `--scribex-text-gray` | `#9b9a97` | Gray text |
-| `--scribex-text-brown` | `#64473a` | Brown text |
-| `--scribex-text-orange` | `#d9730d` | Orange text |
-| `--scribex-text-yellow` | `#dfab01` | Yellow text |
-| `--scribex-text-green` | `#0f7b6c` | Green text |
-| `--scribex-text-blue` | `#0b6e99` | Blue text |
-| `--scribex-text-purple` | `#6940a5` | Purple text |
-| `--scribex-text-pink` | `#ad1a72` | Pink text |
-| `--scribex-text-red` | `#e03e3e` | Red text |
+| Token                   | Default (Light) | Description |
+| ----------------------- | --------------- | ----------- |
+| `--scribex-text-gray`   | `#9b9a97`       | Gray text   |
+| `--scribex-text-brown`  | `#64473a`       | Brown text  |
+| `--scribex-text-orange` | `#d9730d`       | Orange text |
+| `--scribex-text-yellow` | `#dfab01`       | Yellow text |
+| `--scribex-text-green`  | `#0f7b6c`       | Green text  |
+| `--scribex-text-blue`   | `#0b6e99`       | Blue text   |
+| `--scribex-text-purple` | `#6940a5`       | Purple text |
+| `--scribex-text-pink`   | `#ad1a72`       | Pink text   |
+| `--scribex-text-red`    | `#e03e3e`       | Red text    |
 
 ### Highlight colors
 
 Background highlight colors for text, used alongside the text color tokens.
 
-| Token | Default (Light) | Description |
-|---|---|---|
-| `--scribex-highlight-gray` | `#ebeced` | Gray highlight |
-| `--scribex-highlight-brown` | `#e9e5e3` | Brown highlight |
-| `--scribex-highlight-orange` | `#faebdd` | Orange highlight |
-| `--scribex-highlight-yellow` | `#fbf3db` | Yellow highlight |
-| `--scribex-highlight-green` | `#ddedea` | Green highlight |
-| `--scribex-highlight-blue` | `#ddebf1` | Blue highlight |
-| `--scribex-highlight-purple` | `#eae4f2` | Purple highlight |
-| `--scribex-highlight-pink` | `#f4dfeb` | Pink highlight |
-| `--scribex-highlight-red` | `#fbe4e4` | Red highlight |
+| Token                        | Default (Light) | Description      |
+| ---------------------------- | --------------- | ---------------- |
+| `--scribex-highlight-gray`   | `#ebeced`       | Gray highlight   |
+| `--scribex-highlight-brown`  | `#e9e5e3`       | Brown highlight  |
+| `--scribex-highlight-orange` | `#faebdd`       | Orange highlight |
+| `--scribex-highlight-yellow` | `#fbf3db`       | Yellow highlight |
+| `--scribex-highlight-green`  | `#ddedea`       | Green highlight  |
+| `--scribex-highlight-blue`   | `#ddebf1`       | Blue highlight   |
+| `--scribex-highlight-purple` | `#eae4f2`       | Purple highlight |
+| `--scribex-highlight-pink`   | `#f4dfeb`       | Pink highlight   |
+| `--scribex-highlight-red`    | `#fbe4e4`       | Red highlight    |
 
 ### Table tokens
 
-| Token | Default (Light) | Description |
-|---|---|---|
-| `--scribex-table-border` | `hsl(214.3 31.8% 91.4%)` | Table cell borders |
-| `--scribex-table-header-bg` | `hsl(210 40% 96.1%)` | Table header row background |
-| `--scribex-table-selection` | `hsla(221.2 83.2% 53.3% / 0.1)` | Table cell selection overlay |
-| `--scribex-table-resize-handle` | `hsl(221.2 83.2% 53.3%)` | Column resize handle color |
+| Token                           | Default (Light)                 | Description                  |
+| ------------------------------- | ------------------------------- | ---------------------------- |
+| `--scribex-table-border`        | `hsl(214.3 31.8% 91.4%)`        | Table cell borders           |
+| `--scribex-table-header-bg`     | `hsl(210 40% 96.1%)`            | Table header row background  |
+| `--scribex-table-selection`     | `hsla(221.2 83.2% 53.3% / 0.1)` | Table cell selection overlay |
+| `--scribex-table-resize-handle` | `hsl(221.2 83.2% 53.3%)`        | Column resize handle color   |
 
 ### Popover / floating UI chrome
 
-| Token | Default (Light) | Description |
-|---|---|---|
-| `--scribex-popover-bg` | `rgba(255, 255, 255, 0.82)` | Popover background with blur |
-| `--scribex-popover-border` | `rgba(0, 0, 0, 0.06)` | Popover border |
-| `--scribex-popover-shadow` | (composite) | Popover box shadow |
-| `--scribex-icon-secondary` | `rgba(0, 0, 0, 0.55)` | Secondary icon color |
-| `--scribex-separator` | `rgba(0, 0, 0, 0.1)` | Separator line color |
-| `--scribex-hover-bg` | `rgba(0, 0, 0, 0.04)` | Hover background for interactive items |
+| Token                      | Default (Light)             | Description                            |
+| -------------------------- | --------------------------- | -------------------------------------- |
+| `--scribex-popover-bg`     | `rgba(255, 255, 255, 0.82)` | Popover background with blur           |
+| `--scribex-popover-border` | `rgba(0, 0, 0, 0.06)`       | Popover border                         |
+| `--scribex-popover-shadow` | (composite)                 | Popover box shadow                     |
+| `--scribex-icon-secondary` | `rgba(0, 0, 0, 0.55)`       | Secondary icon color                   |
+| `--scribex-separator`      | `rgba(0, 0, 0, 0.1)`        | Separator line color                   |
+| `--scribex-hover-bg`       | `rgba(0, 0, 0, 0.04)`       | Hover background for interactive items |
 
 ## Overriding tokens
 
 Override any token by redefining it in your CSS. Place your overrides after the Scribex token import:
 
 ```css title="styles/globals.css"
-@import './scribex-tokens.css';
+@import "./scribex-tokens.css";
 
 :root {
   /* Use your brand's blue as the accent */
@@ -168,20 +168,20 @@ Scribex supports dark mode via the `.dark` class on a parent element. The token 
 Toggle dark mode by adding or removing the `.dark` class on your `<html>` or a parent element:
 
 ```tsx title="components/ThemeToggle.tsx"
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
   return (
     <button onClick={() => setDark((d) => !d)}>
-      {dark ? 'Light mode' : 'Dark mode'}
+      {dark ? "Light mode" : "Dark mode"}
     </button>
   );
 }
@@ -192,29 +192,29 @@ export function ThemeToggle() {
 Scribex's Tailwind configuration maps CSS variables to utility classes. If you are extending Tailwind in your own project, you can reference the same variables:
 
 ```ts title="tailwind.config.ts"
-import type { Config } from 'tailwindcss';
+import type { Config } from "tailwindcss";
 
 export default {
   theme: {
     extend: {
       colors: {
-        'scribex-background': 'var(--scribex-background)',
-        'scribex-foreground': 'var(--scribex-foreground)',
-        'scribex-border': 'var(--scribex-border)',
-        'scribex-ring': 'var(--scribex-ring)',
-        'scribex-muted': 'var(--scribex-muted)',
-        'scribex-muted-foreground': 'var(--scribex-muted-foreground)',
-        'scribex-accent': 'var(--scribex-accent)',
-        'scribex-accent-foreground': 'var(--scribex-accent-foreground)',
-        'scribex-destructive': 'var(--scribex-destructive)',
+        "scribex-background": "var(--scribex-background)",
+        "scribex-foreground": "var(--scribex-foreground)",
+        "scribex-border": "var(--scribex-border)",
+        "scribex-ring": "var(--scribex-ring)",
+        "scribex-muted": "var(--scribex-muted)",
+        "scribex-muted-foreground": "var(--scribex-muted-foreground)",
+        "scribex-accent": "var(--scribex-accent)",
+        "scribex-accent-foreground": "var(--scribex-accent-foreground)",
+        "scribex-destructive": "var(--scribex-destructive)",
       },
       borderRadius: {
-        scribex: 'var(--scribex-radius)',
+        scribex: "var(--scribex-radius)",
       },
       fontFamily: {
-        'scribex-sans': 'var(--scribex-font-sans)',
-        'scribex-mono': 'var(--scribex-font-mono)',
-        'scribex-serif': 'var(--scribex-font-serif)',
+        "scribex-sans": "var(--scribex-font-sans)",
+        "scribex-mono": "var(--scribex-font-mono)",
+        "scribex-serif": "var(--scribex-font-serif)",
       },
     },
   },
@@ -251,7 +251,8 @@ Here is a complete example of a warm, earthy theme:
   --scribex-radius: 0.375rem;
 
   /* Typography */
-  --scribex-font-sans: "Merriweather Sans", ui-sans-serif, system-ui, sans-serif;
+  --scribex-font-sans:
+    "Merriweather Sans", ui-sans-serif, system-ui, sans-serif;
   --scribex-font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
