@@ -1,0 +1,292 @@
+---
+title: Serialization
+description: Serialize editor state to JSON and Markdown.
+---
+
+Scribex provides two serialization formats: **JSON** for persistence and **Markdown** for AI context and interoperability. JSON preserves the full Lexical AST including all formatting, node types, and metadata. Markdown provides a human-readable representation used primarily for sending editor content to AI models.
+
+## JSON serialization
+
+### Saving editor state
+
+Use the `useEditorState` hook to read the serialized JSON state. The hook debounces state changes to avoid performance issues with rapid updates:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, useEditorState } from '@scribex/core';
+
+function Editor() {
+  const { serializedState } = useEditorState({
+    debounceMs: 300,
+    onChange: (json) => {
+      // Save to your backend, localStorage, etc.
+      localStorage.setItem('editor-state', json);
+    },
+  });
+
+  return null;
+}
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+      <Editor />
+    </EditorRoot>
+  );
+}
+```
+
+The `onChange` callback receives a JSON string representing the full Lexical editor state. This string can be stored in a database, sent to an API, or saved to `localStorage`.
+
+### `useEditorState` options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `debounceMs` | `number` | `300` | Debounce delay in milliseconds. Do not set below 200ms. |
+| `onChange` | `(json: string) => void` | `undefined` | Called with the serialized JSON after each debounced update. |
+
+The hook returns `{ serializedState }` -- a string containing the latest serialized state. When an `onChange` callback is provided, the hook skips updating its internal React state (to avoid unnecessary re-renders) and calls the callback directly.
+
+### Restoring editor state
+
+Pass the saved JSON string as `initialState` to `EditorRoot`:
+
+```tsx
+const saved = localStorage.getItem('editor-state');
+
+<EditorRoot
+  namespace="my-editor"
+  initialState={saved}
+>
+  {/* plugins */}
+</EditorRoot>
+```
+
+`initialState` accepts a JSON string or `null`. Passing `null` or `undefined` creates a blank editor.
+
+The JSON string must be a valid Lexical editor state. If the string is malformed or contains node types that are not registered in `ALL_NODES`, Lexical will throw an error on initialization.
+
+### JSON structure
+
+The serialized state is a Lexical `EditorState` JSON object:
+
+```json
+{
+  "root": {
+    "type": "root",
+    "children": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "type": "text",
+            "text": "Hello ",
+            "format": 0
+          },
+          {
+            "type": "text",
+            "text": "world",
+            "format": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "version": 1
+      }
+    ],
+    "direction": "ltr",
+    "format": "",
+    "indent": 0,
+    "version": 1
+  }
+}
+```
+
+The `format` field on text nodes is a bitmask:
+
+| Bit | Value | Format |
+|---|---|---|
+| 0 | 1 | Bold |
+| 1 | 2 | Italic |
+| 2 | 4 | Strikethrough |
+| 3 | 8 | Underline |
+| 4 | 16 | Code |
+| 5 | 32 | Subscript |
+| 6 | 64 | Superscript |
+
+### Saving to a backend
+
+Here is a typical pattern for saving to a REST API:
+
+```tsx
+function Editor() {
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { serializedState } = useEditorState({
+    debounceMs: 300,
+    onChange: (json) => {
+      // Debounce the API call separately from the state serialization
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+
+      saveTimeout.current = setTimeout(async () => {
+        await fetch('/api/documents/123', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: json }),
+        });
+      }, 1000); // Save at most once per second
+    },
+  });
+
+  return null;
+}
+```
+
+## Markdown serialization
+
+### `serializeNodesToMarkdown`
+
+This function converts an array of Lexical nodes into a Markdown string. It is a pure function with no side effects -- call it inside `editor.read()`:
+
+```tsx
+import { serializeNodesToMarkdown } from '@scribex/core';
+import { $getRoot } from 'lexical';
+
+// Read the entire document as Markdown
+const markdown = editor.read(() => {
+  const root = $getRoot();
+  return serializeNodesToMarkdown(root.getChildren());
+});
+
+console.log(markdown);
+```
+
+### Supported node types
+
+The Markdown serializer handles the following node types:
+
+| Node type | Markdown output |
+|---|---|
+| Paragraph | Plain text (double newline separated) |
+| Heading (H1-H6) | `# `, `## `, `### `, etc. |
+| Blockquote | `> text` |
+| Bullet list | `- item` |
+| Numbered list | `1. item` |
+| Checklist | `- [x] item` or `- [ ] item` |
+| Bold text | `**text**` |
+| Italic text | `*text*` |
+| Strikethrough | `~~text~~` |
+| Inline code | `` `text` `` |
+| Link | `[text](url)` |
+| Image | `![alt](src)` |
+| Video | `[title](src)` |
+| Horizontal rule | `---` |
+| Table | Pipe-separated table with header row |
+| Toggle | `<details><summary>title</summary>content</details>` |
+| Callout | `> [!emoji] text` |
+
+Unknown node types fall back to their plain text content via `node.getTextContent()`.
+
+### Inline format bitmask
+
+Text formatting is applied based on the Lexical format bitmask:
+
+- **Bit 0 (1)**: Bold -- wraps in `**`
+- **Bit 1 (2)**: Italic -- wraps in `*`
+- **Bit 2 (4)**: Strikethrough -- wraps in `~~`
+- **Bit 3 (8)**: Underline -- no Markdown equivalent, skipped
+- **Bit 4 (16)**: Code -- wraps in `` ` ``
+
+### AI context usage
+
+The primary use case for Markdown serialization is preparing context for AI models. Before an AI generation request, the surrounding editor content is serialized to Markdown:
+
+```tsx
+import { serializeNodesToMarkdown } from '@scribex/core';
+
+// Inside the AI integration:
+editor.read(() => {
+  const root = $getRoot();
+  const allNodes = root.getChildren();
+
+  // Serialize relevant nodes to Markdown for AI context
+  const context = serializeNodesToMarkdown(allNodes);
+
+  // Send to the AI provider
+  await aiProvider.generate({
+    prompt: userPrompt,
+    context: context,
+  });
+});
+```
+
+Markdown is used instead of raw Lexical JSON because:
+1. It is far more token-efficient (fewer tokens = lower cost and faster responses)
+2. AI models understand Markdown natively
+3. It preserves structural semantics (headings, lists, emphasis) that plain text loses
+
+## Markdown to Lexical conversion
+
+### `$parseMarkdownToLexicalNodes`
+
+This function parses a Markdown string and creates Lexical nodes. It must be called inside `editor.update()` because it creates Lexical nodes that require an active editor context:
+
+```tsx
+import { $parseMarkdownToLexicalNodes } from '@scribex/core';
+import { $getRoot } from 'lexical';
+
+editor.update(() => {
+  const markdown = '# Hello\n\nThis is **bold** and *italic* text.';
+  const nodes = $parseMarkdownToLexicalNodes(markdown);
+
+  const root = $getRoot();
+  root.clear();
+  for (const node of nodes) {
+    root.append(node);
+  }
+});
+```
+
+### Supported Markdown parsing
+
+The parser handles:
+
+| Markdown syntax | Lexical node |
+|---|---|
+| `# heading` | `HeadingNode` (h1-h6) |
+| `> quote` | `QuoteNode` |
+| `- item` or `* item` | `ListNode` (bullet) |
+| `1. item` | `ListNode` (number) |
+| `- [x] item` / `- [ ] item` | `ListNode` (check) |
+| `**bold**` | `TextNode` with bold format |
+| `*italic*` | `TextNode` with italic format |
+| `` `code` `` | `TextNode` with code format |
+| `~~strikethrough~~` | `TextNode` with strikethrough format |
+| Plain text | `ParagraphNode` |
+
+Blocks are separated by double newlines (`\n\n`). Inline formatting is parsed within each block.
+
+### Usage in AI accept flow
+
+The `$parseMarkdownToLexicalNodes` function is used internally by the `AIPreviewNode` when the user accepts AI-generated content. The generated Markdown is parsed back into Lexical nodes and inserted into the AST in a single `editor.update()` call, creating exactly one history entry:
+
+```tsx
+// Inside AIPreviewNode "Accept" handler:
+editor.update(() => {
+  const nodes = $parseMarkdownToLexicalNodes(generatedMarkdown);
+  // Replace the AIPreviewNode with the parsed nodes
+  for (const node of nodes) {
+    aiPreviewNode.insertBefore(node);
+  }
+  aiPreviewNode.remove();
+});
+```
+
+## Related
+
+- [AI Integration](/docs/guides/ai-integration) -- How Markdown serialization feeds AI context
+- [Multi-Editor](/docs/guides/multi-editor) -- Saving state for multiple editors
+- [API: useEditorState](/docs/api/hooks/use-editor-state) -- Full hook reference
+- [API: serializeNodesToMarkdown](/docs/api/utils/serialize-nodes-to-markdown) -- Markdown serializer reference
