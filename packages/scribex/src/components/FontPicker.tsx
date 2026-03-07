@@ -49,6 +49,7 @@ export function FontPicker({
           <button
             key={entry.label}
             type="button"
+            aria-label={entry.label}
             data-testid={`font-${entry.label.toLowerCase()}`}
             onMouseDown={(e) => {
               e.preventDefault();
