@@ -3,15 +3,15 @@ title: CalloutNode
 description: Styled callout/alert block with emoji and color presets.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 `CalloutNode` is an `ElementNode` (not a `DecoratorNode`) that renders a styled callout block with an emoji indicator and a color preset. Because it extends `ElementNode`, it can contain standard Lexical children (paragraphs, text, lists, etc.) just like a blockquote.
 
 ## Import
 
 ```tsx
-import { CalloutNode, $createCalloutNode, $isCalloutNode } from '@scribex/core';
-import type { CalloutPayload } from '@scribex/core';
+import { CalloutNode, $createCalloutNode, $isCalloutNode } from "@scribex/core";
+import type { CalloutPayload } from "@scribex/core";
 ```
 
 ## CalloutPayload
@@ -24,11 +24,11 @@ interface CalloutPayload {
 }
 ```
 
-| Field | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `emoji` | `string` | No | `"💡"` | The emoji displayed as the callout indicator. |
-| `colorPreset` | `string` | No | `"default"` | The color preset ID. Must match a `CalloutPreset.id`. |
-| `key` | `NodeKey` | No | auto | Explicit Lexical node key. |
+| Field         | Type      | Required | Default     | Description                                           |
+| ------------- | --------- | -------- | ----------- | ----------------------------------------------------- |
+| `emoji`       | `string`  | No       | `"💡"`      | The emoji displayed as the callout indicator.         |
+| `colorPreset` | `string`  | No       | `"default"` | The color preset ID. Must match a `CalloutPreset.id`. |
+| `key`         | `NodeKey` | No       | auto        | Explicit Lexical node key.                            |
 
 ## Functions
 
@@ -39,11 +39,11 @@ Creates a new `CalloutNode`. All fields are optional with sensible defaults. Mus
 ```ts
 editor.update(() => {
   const callout = $createCalloutNode({
-    emoji: '\u{26A0}\u{FE0F}',   // warning sign
-    colorPreset: 'warning',
+    emoji: "\u{26A0}\u{FE0F}", // warning sign
+    colorPreset: "warning",
   });
   const paragraph = $createParagraphNode();
-  paragraph.append($createTextNode('This is a warning callout.'));
+  paragraph.append($createTextNode("This is a warning callout."));
   callout.append(paragraph);
   $getRoot().append(callout);
 });
@@ -55,12 +55,12 @@ Type guard that returns `true` if the given node is a `CalloutNode`.
 
 ## Instance methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `getEmoji()` | `string` | Returns the current emoji. Uses `getLatest()` for read safety. |
-| `setEmoji(emoji: string)` | `this` | Sets the emoji. Uses `getWritable()` internally. Must be called inside `editor.update()`. |
-| `getColorPreset()` | `string` | Returns the current color preset ID. Uses `getLatest()` for read safety. |
-| `setColorPreset(preset: string)` | `this` | Sets the color preset. Uses `getWritable()` internally. Must be called inside `editor.update()`. |
+| Method                           | Returns  | Description                                                                                      |
+| -------------------------------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `getEmoji()`                     | `string` | Returns the current emoji. Uses `getLatest()` for read safety.                                   |
+| `setEmoji(emoji: string)`        | `this`   | Sets the emoji. Uses `getWritable()` internally. Must be called inside `editor.update()`.        |
+| `getColorPreset()`               | `string` | Returns the current color preset ID. Uses `getLatest()` for read safety.                         |
+| `setColorPreset(preset: string)` | `this`   | Sets the color preset. Uses `getWritable()` internally. Must be called inside `editor.update()`. |
 
 ## ElementNode characteristics
 
@@ -85,7 +85,7 @@ getDOMSlot(element: HTMLElement): ElementDOMSlot {
 
 ```ts
 type SerializedCalloutNode = SerializedElementNode & {
-  type: 'callout';
+  type: "callout";
   version: 1;
   emoji: string;
   colorPreset: string;
@@ -120,14 +120,14 @@ Color presets map to CSS variables defined in `tokens.css`:
 
 Scribex ships with six built-in callout presets:
 
-| ID | Label | Default Emoji | Background | Border |
-|---|---|---|---|---|
-| `default` | Default | `💡` | `#f1f1ef` | `#d4d4d4` |
-| `info` | Info | `ℹ️` | `#ddebf1` | `#0b6e99` |
-| `warning` | Warning | `⚠️` | `#fbf3db` | `#dfab01` |
-| `error` | Error | `🚫` | `#fbe4e4` | `#e03e3e` |
-| `success` | Success | `✅` | `#ddedea` | `#0f7b6c` |
-| `purple` | Note | `📝` | `#eae4f2` | `#6940a5` |
+| ID        | Label   | Default Emoji | Background | Border    |
+| --------- | ------- | ------------- | ---------- | --------- |
+| `default` | Default | `💡`          | `#f1f1ef`  | `#d4d4d4` |
+| `info`    | Info    | `ℹ️`          | `#ddebf1`  | `#0b6e99` |
+| `warning` | Warning | `⚠️`          | `#fbf3db`  | `#dfab01` |
+| `error`   | Error   | `🚫`          | `#fbe4e4`  | `#e03e3e` |
+| `success` | Success | `✅`          | `#ddedea`  | `#0f7b6c` |
+| `purple`  | Note    | `📝`          | `#eae4f2`  | `#6940a5` |
 
 See [Data & Presets](/docs/api/data-and-presets#default_callout_presets) for the full `CalloutPreset` interface.
 

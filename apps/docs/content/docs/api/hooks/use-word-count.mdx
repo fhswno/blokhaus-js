@@ -3,14 +3,14 @@ title: useWordCount
 description: Track word and character counts.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 `useWordCount` is a React hook that tracks the word count and character count of the editor's text content. It uses a debounced update listener to avoid recalculating on every keystroke.
 
 ## Import
 
 ```tsx
-import { useWordCount } from '@scribex/core';
+import { useWordCount } from "@scribex/core";
 ```
 
 ## Signature
@@ -24,15 +24,15 @@ function useWordCount(debounceMs?: number): {
 
 ## Parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `debounceMs` | `number` | `300` | Debounce delay in milliseconds. Controls how often the count is recalculated after editor changes. |
+| Parameter    | Type     | Default | Description                                                                                        |
+| ------------ | -------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `debounceMs` | `number` | `300`   | Debounce delay in milliseconds. Controls how often the count is recalculated after editor changes. |
 
 ## Return value
 
-| Field | Type | Description |
-|---|---|---|
-| `words` | `number` | The number of words in the editor. Returns `0` for empty content. |
+| Field        | Type     | Description                                                          |
+| ------------ | -------- | -------------------------------------------------------------------- |
+| `words`      | `number` | The number of words in the editor. Returns `0` for empty content.    |
 | `characters` | `number` | The total number of characters in the editor (including whitespace). |
 
 ## Requirements
@@ -44,9 +44,9 @@ This hook must be used inside an `EditorRoot` component. It calls `useLexicalCom
 ### Word count display
 
 ```tsx title="components/WordCounter.tsx"
-'use client';
+"use client";
 
-import { useWordCount } from '@scribex/core';
+import { useWordCount } from "@scribex/core";
 
 function WordCounter() {
   const { words, characters } = useWordCount();
@@ -62,9 +62,9 @@ function WordCounter() {
 ### Using with EditorRoot
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, InputRulePlugin, useWordCount } from '@scribex/core';
+import { EditorRoot, InputRulePlugin, useWordCount } from "@scribex/core";
 
 function StatusBar() {
   const { words, characters } = useWordCount(500);
@@ -79,7 +79,10 @@ function StatusBar() {
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <InputRulePlugin />
       <StatusBar />
     </EditorRoot>
@@ -105,7 +108,11 @@ The hook works by:
 4. Counting words by trimming the text and splitting on whitespace (`/\s+/`). An empty or whitespace-only string returns `0` words.
 
 <Callout type="info">
-The word count uses a simple whitespace-based split (`text.trim().split(/\s+/).length`). This works well for Latin-script languages but may not accurately count words in CJK (Chinese, Japanese, Korean) text where words are not separated by spaces. For CJK-aware word counting, you can implement a custom hook using `Intl.Segmenter`.
+  The word count uses a simple whitespace-based split
+  (`text.trim().split(/\s+/).length`). This works well for Latin-script
+  languages but may not accurately count words in CJK (Chinese, Japanese,
+  Korean) text where words are not separated by spaces. For CJK-aware word
+  counting, you can implement a custom hook using `Intl.Segmenter`.
 </Callout>
 
 ## Related

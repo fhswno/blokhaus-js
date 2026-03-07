@@ -3,14 +3,14 @@ title: useEditorState
 description: Subscribe to serialized editor state changes.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 `useEditorState` is a React hook that subscribes to Lexical editor state changes and provides the serialized JSON state. It uses a debounced update listener to avoid performance issues on large documents.
 
 ## Import
 
 ```tsx
-import { useEditorState } from '@scribex/core';
+import { useEditorState } from "@scribex/core";
 ```
 
 ## Signature
@@ -24,19 +24,20 @@ function useEditorState(options?: {
 
 ## Parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `debounceMs` | `number` | `300` | Debounce delay in milliseconds. Controls how often the serialized state is computed after editor changes. |
-| `onChange` | `(serializedState: string) => void` | `undefined` | Callback invoked with the serialized JSON string after each debounced update. When provided, the hook skips React state updates for `serializedState` to avoid unnecessary re-renders. |
+| Parameter    | Type                                | Default     | Description                                                                                                                                                                            |
+| ------------ | ----------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `debounceMs` | `number`                            | `300`       | Debounce delay in milliseconds. Controls how often the serialized state is computed after editor changes.                                                                              |
+| `onChange`   | `(serializedState: string) => void` | `undefined` | Callback invoked with the serialized JSON string after each debounced update. When provided, the hook skips React state updates for `serializedState` to avoid unnecessary re-renders. |
 
 ## Return value
 
-| Field | Type | Description |
-|---|---|---|
+| Field             | Type     | Description                                                                                                                            |
+| ----------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `serializedState` | `string` | The editor state serialized as a JSON string via `editorState.toJSON()`. Empty string on initial render before the first update fires. |
 
 <Callout type="warn">
-Do not set `debounceMs` below `200`. High-frequency serialization calls on every keystroke degrade performance on large documents.
+  Do not set `debounceMs` below `200`. High-frequency serialization calls on
+  every keystroke degrade performance on large documents.
 </Callout>
 
 ## Requirements
@@ -48,9 +49,9 @@ This hook must be used inside an `EditorRoot` component. It calls `useLexicalCom
 ### Reading state for display
 
 ```tsx title="components/StateViewer.tsx"
-'use client';
+"use client";
 
-import { useEditorState } from '@scribex/core';
+import { useEditorState } from "@scribex/core";
 
 function StateViewer() {
   const { serializedState } = useEditorState();
@@ -68,16 +69,16 @@ function StateViewer() {
 When you provide an `onChange` callback, the hook avoids triggering React re-renders for `serializedState`. This is the recommended pattern for persistence, since you typically do not need to render the raw JSON:
 
 ```tsx title="components/AutoSave.tsx"
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import { useEditorState } from '@scribex/core';
+import { useCallback } from "react";
+import { useEditorState } from "@scribex/core";
 
 function AutoSave() {
   const handleChange = useCallback((json: string) => {
-    fetch('/api/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: json,
     });
   }, []);
@@ -93,21 +94,20 @@ function AutoSave() {
 The hook must be rendered as a child (or deeper descendant) of `EditorRoot`:
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, useEditorState } from '@scribex/core';
+import { EditorRoot, useEditorState } from "@scribex/core";
 
 function StatePersistence() {
   useEditorState({
-    onChange: (json) => localStorage.setItem('editor-state', json),
+    onChange: (json) => localStorage.setItem("editor-state", json),
   });
   return null;
 }
 
 export default function EditorPage() {
-  const savedState = typeof window !== 'undefined'
-    ? localStorage.getItem('editor-state')
-    : null;
+  const savedState =
+    typeof window !== "undefined" ? localStorage.getItem("editor-state") : null;
 
   return (
     <EditorRoot
