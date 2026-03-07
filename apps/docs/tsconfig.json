@@ -2,15 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@/.source": [
-        "./.source"
-      ],
-      "@/.source/*": [
-        "./.source/*"
-      ]
+      "@/*": ["./*"],
+      "@/.source": ["./.source"],
+      "@/.source/*": ["./.source/*"]
     },
     "tsBuildInfoFile": "./.tsbuildinfo",
     "allowJs": true,
@@ -30,7 +24,5 @@
     "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
