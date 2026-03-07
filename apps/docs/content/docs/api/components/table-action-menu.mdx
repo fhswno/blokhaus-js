@@ -8,7 +8,7 @@ description: Right-click context menu for table cell operations.
 ## Import
 
 ```tsx
-import { TableActionMenu } from '@scribex/core';
+import { TableActionMenu } from "@scribex/core";
 ```
 
 ## Props
@@ -20,7 +20,7 @@ import { TableActionMenu } from '@scribex/core';
 Add `TableActionMenu` alongside `TablePlugin` as children of `EditorRoot`:
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
 import {
   EditorRoot,
@@ -29,11 +29,14 @@ import {
   TableHoverActions,
   SlashMenu,
   InputRulePlugin,
-} from '@scribex/core';
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <SlashMenu />
       <InputRulePlugin />
       <TablePlugin />
@@ -45,6 +48,7 @@ export default function EditorPage() {
 ```
 
 All three table components work together:
+
 - `TablePlugin` registers the table node and handles insertion commands
 - `TableActionMenu` provides the right-click context menu
 - `TableHoverActions` provides visual hover handles
@@ -53,18 +57,18 @@ All three table components work together:
 
 The context menu includes the following actions:
 
-| Action | Description |
-|---|---|
-| **Insert row above** | Adds a new row above the current row |
-| **Insert row below** | Adds a new row below the current row |
-| **Insert column left** | Adds a new column to the left of the current column |
-| **Insert column right** | Adds a new column to the right of the current column |
-| **Delete row** | Removes the current row |
-| **Delete column** | Removes the current column |
-| **Merge cells** | Merges selected cells (visible only when a table selection with multiple cells is active) |
-| **Unmerge cell** | Splits a previously merged cell back into individual cells (visible only when the right-clicked cell has `colSpan > 1` or `rowSpan > 1`) |
-| **Cell background** | Opens a color submenu to set the background color of the current cell or all selected cells |
-| **Delete table** | Removes the entire table (styled in red as a destructive action) |
+| Action                  | Description                                                                                                                              |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Insert row above**    | Adds a new row above the current row                                                                                                     |
+| **Insert row below**    | Adds a new row below the current row                                                                                                     |
+| **Insert column left**  | Adds a new column to the left of the current column                                                                                      |
+| **Insert column right** | Adds a new column to the right of the current column                                                                                     |
+| **Delete row**          | Removes the current row                                                                                                                  |
+| **Delete column**       | Removes the current column                                                                                                               |
+| **Merge cells**         | Merges selected cells (visible only when a table selection with multiple cells is active)                                                |
+| **Unmerge cell**        | Splits a previously merged cell back into individual cells (visible only when the right-clicked cell has `colSpan > 1` or `rowSpan > 1`) |
+| **Cell background**     | Opens a color submenu to set the background color of the current cell or all selected cells                                              |
+| **Delete table**        | Removes the entire table (styled in red as a destructive action)                                                                         |
 
 ### Conditional actions
 
@@ -75,18 +79,18 @@ The context menu includes the following actions:
 
 The "Cell background" action reveals a submenu with 10 color options:
 
-| Color | CSS Variable | Swatch |
-|---|---|---|
-| Default | (clears background) | transparent |
-| Gray | `var(--scribex-cell-bg-gray)` | #f1f1ef |
-| Brown | `var(--scribex-cell-bg-brown)` | #f4f0ee |
-| Orange | `var(--scribex-cell-bg-orange)` | #fbecdd |
-| Yellow | `var(--scribex-cell-bg-yellow)` | #fbf3db |
-| Green | `var(--scribex-cell-bg-green)` | #edf3ec |
-| Blue | `var(--scribex-cell-bg-blue)` | #e7f3f8 |
-| Purple | `var(--scribex-cell-bg-purple)` | #f4f0f7 |
-| Pink | `var(--scribex-cell-bg-pink)` | #f9f0f5 |
-| Red | `var(--scribex-cell-bg-red)` | #fdebec |
+| Color   | CSS Variable                    | Swatch      |
+| ------- | ------------------------------- | ----------- |
+| Default | (clears background)             | transparent |
+| Gray    | `var(--scribex-cell-bg-gray)`   | #f1f1ef     |
+| Brown   | `var(--scribex-cell-bg-brown)`  | #f4f0ee     |
+| Orange  | `var(--scribex-cell-bg-orange)` | #fbecdd     |
+| Yellow  | `var(--scribex-cell-bg-yellow)` | #fbf3db     |
+| Green   | `var(--scribex-cell-bg-green)`  | #edf3ec     |
+| Blue    | `var(--scribex-cell-bg-blue)`   | #e7f3f8     |
+| Purple  | `var(--scribex-cell-bg-purple)` | #f4f0f7     |
+| Pink    | `var(--scribex-cell-bg-pink)`   | #f9f0f5     |
+| Red     | `var(--scribex-cell-bg-red)`    | #fdebec     |
 
 When a `TableSelection` is active (multiple cells selected), the background color is applied to all selected cells. Otherwise, it applies to the single right-clicked cell.
 
@@ -97,6 +101,7 @@ The currently active cell background color is indicated by a blue accent border 
 ### Opening
 
 The menu opens on `contextmenu` events (right-click) when:
+
 - The selection is a `RangeSelection` with the anchor inside a table cell, or
 - The selection is a `TableSelection` (multiple cells selected)
 
@@ -105,6 +110,7 @@ The native browser context menu is suppressed (`e.preventDefault()`).
 ### Closing
 
 The menu closes when:
+
 - The user clicks outside the menu
 - The user presses Escape
 - An action is selected

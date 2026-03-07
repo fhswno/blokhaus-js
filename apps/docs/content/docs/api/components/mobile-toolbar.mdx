@@ -8,7 +8,7 @@ description: Fixed-position formatting toolbar for touch devices.
 ## Import
 
 ```tsx
-import { MobileToolbar } from '@scribex/core';
+import { MobileToolbar } from "@scribex/core";
 ```
 
 ## Props
@@ -20,18 +20,21 @@ import { MobileToolbar } from '@scribex/core';
 Add `MobileToolbar` as a child of `EditorRoot`:
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
 import {
   EditorRoot,
   FloatingToolbar,
   MobileToolbar,
   InputRulePlugin,
-} from '@scribex/core';
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <FloatingToolbar />
       <MobileToolbar />
       <InputRulePlugin />
@@ -49,13 +52,13 @@ It is safe to include both `FloatingToolbar` and `MobileToolbar` in the same edi
 
 The mobile toolbar provides five formatting buttons:
 
-| Button | Format | Icon |
-|---|---|---|
-| Bold | `bold` | B (bold) |
-| Italic | `italic` | I (italic) |
-| Underline | `underline` | U (underline) |
+| Button        | Format          | Icon              |
+| ------------- | --------------- | ----------------- |
+| Bold          | `bold`          | B (bold)          |
+| Italic        | `italic`        | I (italic)        |
+| Underline     | `underline`     | U (underline)     |
 | Strikethrough | `strikethrough` | S (strikethrough) |
-| Inline Code | `code` | Code brackets |
+| Inline Code   | `code`          | Code brackets     |
 
 Each button dispatches the corresponding `FORMAT_TEXT_COMMAND` to the Lexical editor.
 
@@ -64,9 +67,9 @@ Each button dispatches the corresponding `FORMAT_TEXT_COMMAND` to the Lexical ed
 The component detects touch devices on mount using multiple signals for reliability:
 
 ```ts
-window.matchMedia('(pointer: coarse)').matches ||
-navigator.maxTouchPoints > 0 ||
-'ontouchstart' in window
+window.matchMedia("(pointer: coarse)").matches ||
+  navigator.maxTouchPoints > 0 ||
+  "ontouchstart" in window;
 ```
 
 If none of these signals indicate a touch device, the component renders nothing (`null`). This check runs once on mount and is not reactive.

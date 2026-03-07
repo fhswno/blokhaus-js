@@ -8,25 +8,28 @@ description: Block drag handles and drop indicators for desktop drag-and-drop.
 ## Import
 
 ```tsx
-import { OverlayPortal } from '@scribex/core';
+import { OverlayPortal } from "@scribex/core";
 ```
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
+| Prop        | Type     | Default      | Description                                                                                                        |
+| ----------- | -------- | ------------ | ------------------------------------------------------------------------------------------------------------------ |
 | `namespace` | `string` | **required** | Must match the `namespace` of the parent `EditorRoot`. Used to scope the portal and ensure multi-editor isolation. |
 
 ## Basic usage
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, OverlayPortal, InputRulePlugin } from '@scribex/core';
+import { EditorRoot, OverlayPortal, InputRulePlugin } from "@scribex/core";
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <OverlayPortal namespace="my-editor" />
       <InputRulePlugin />
     </EditorRoot>
@@ -83,9 +86,9 @@ For open toggle/collapsible containers, the overlay portal can target individual
 `OverlayPortal` performs a touch device check on mount using multiple signals:
 
 ```ts
-window.matchMedia('(pointer: coarse)').matches ||
-navigator.maxTouchPoints > 0 ||
-'ontouchstart' in window
+window.matchMedia("(pointer: coarse)").matches ||
+  navigator.maxTouchPoints > 0 ||
+  "ontouchstart" in window;
 ```
 
 If any of these signals indicate a touch device, the component renders nothing (`null`). This check runs once on mount -- it is not reactive.
@@ -95,6 +98,7 @@ On touch devices, use `MobileToolbar` instead for formatting. Block reordering o
 ## Multi-editor isolation
 
 Each `OverlayPortal` instance:
+
 - Renders into `document.body` via a React Portal
 - Tags its drag handle with `data-namespace={namespace}` for identification
 - Only tracks mouse events relative to its own editor's root element (found via `[data-scribex-root]`)
