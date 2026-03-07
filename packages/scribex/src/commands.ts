@@ -15,3 +15,4 @@ export const INSERT_VIDEO_COMMAND = createCommand<{ file: File } | { url: string
 export const OPEN_VIDEO_INPUT_COMMAND = createCommand<void>('OPEN_VIDEO_INPUT_COMMAND');
 export const INSERT_TOGGLE_COMMAND = createCommand<{ isOpen?: boolean } | undefined>('INSERT_TOGGLE_COMMAND');
 export const SET_FONT_FAMILY_COMMAND = createCommand<string>('SET_FONT_FAMILY_COMMAND');
+export const SET_BLOCK_DIRECTION_COMMAND = createCommand<'ltr' | 'rtl'>('SET_BLOCK_DIRECTION_COMMAND');
