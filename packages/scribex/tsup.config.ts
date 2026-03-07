@@ -28,6 +28,7 @@ export default defineConfig({
     "shiki",
   ],
   esbuildOptions(options) {
+    options.jsx = "automatic";
     options.banner = { js: '"use client";' };
   },
 });
