@@ -1,0 +1,221 @@
+---
+title: EditorRoot
+description: The root editor component that wraps Lexical's LexicalComposer.
+---
+
+`EditorRoot` is the foundational component of every Scribex editor instance. It wraps Lexical's `LexicalComposer` with all registered custom nodes, sets up the rich text plugin, history tracking, and auto-focus. All other Scribex components and plugins must be rendered as children of `EditorRoot`.
+
+## Import
+
+```tsx
+import { EditorRoot } from '@scribex/core';
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `namespace` | `string` | **required** | Unique identifier for multi-editor isolation. Each editor on the page must have a distinct namespace. |
+| `initialState` | `string \| null` | `undefined` | Serialized Lexical JSON state. Pass `null` or omit for a blank editor. |
+| `children` | `React.ReactNode` | `undefined` | Plugin and UI components (FloatingToolbar, SlashMenu, etc.) |
+| `className` | `string` | `undefined` | CSS class applied to the editor container `<div>`. |
+| `dir` | `"ltr" \| "rtl" \| "auto"` | `undefined` | Document-level text direction. When set to `"ltr"` or `"rtl"`, the root node direction is set on mount. Omit for per-paragraph auto-detection. |
+| `placeholder` | `string` | `"Start writing..."` | Placeholder text shown when the editor is empty. |
+| `editable` | `boolean` | `true` | Whether the editor content is editable. Set to `false` for read-only mode. |
+| `autoFocus` | `boolean` | `true` | Whether the editor auto-focuses on mount. |
+| `onError` | `(error: Error) => void` | `console.error` + `throw` | Custom error handler for Lexical errors. The default handler logs to the console and re-throws. |
+
+## Basic usage
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, FloatingToolbar, SlashMenu, InputRulePlugin } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot
+      namespace="my-editor"
+      className="relative min-h-[400px] p-4 border rounded-lg"
+      placeholder="Start writing something amazing..."
+    >
+      <FloatingToolbar />
+      <SlashMenu />
+      <InputRulePlugin />
+    </EditorRoot>
+  );
+}
+```
+
+## With plugins as children
+
+Every feature in Scribex is a composable plugin passed as a React child. There is no prop explosion -- you only include what you need:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  FloatingToolbar,
+  SlashMenu,
+  OverlayPortal,
+  MobileToolbar,
+  InputRulePlugin,
+  ImagePlugin,
+  PastePlugin,
+  LinkPlugin,
+  ListPlugin,
+  ColorPlugin,
+  BlockSelectionPlugin,
+  useEditorState,
+} from '@scribex/core';
+
+function StateTracker() {
+  const { serializedState } = useEditorState({
+    debounceMs: 300,
+    onChange: (json) => {
+      // Persist to your backend
+      fetch('/api/save', {
+        method: 'POST',
+        body: json,
+      });
+    },
+  });
+  return null;
+}
+
+const uploadHandler = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch('/api/upload', { method: 'POST', body: formData });
+  const { url } = await res.json();
+  return url;
+};
+
+export default function EditorPage() {
+  return (
+    <EditorRoot
+      namespace="my-editor"
+      className="relative min-h-[500px] p-4 border rounded-lg"
+    >
+      <StateTracker />
+
+      {/* UI Components */}
+      <FloatingToolbar />
+      <SlashMenu />
+      <OverlayPortal namespace="my-editor" />
+      <MobileToolbar />
+
+      {/* Plugins */}
+      <InputRulePlugin />
+      <ImagePlugin uploadHandler={uploadHandler} />
+      <PastePlugin />
+      <LinkPlugin />
+      <ListPlugin />
+      <ColorPlugin />
+      <BlockSelectionPlugin />
+    </EditorRoot>
+  );
+}
+```
+
+## Multi-editor example
+
+Multiple `EditorRoot` instances can coexist on the same page. Each must have a unique `namespace`:
+
+```tsx title="app/document/page.tsx"
+'use client';
+
+import { EditorRoot, FloatingToolbar, InputRulePlugin } from '@scribex/core';
+
+export default function DocumentPage() {
+  return (
+    <div className="space-y-8">
+      {/* Title editor */}
+      <EditorRoot
+        namespace="title-editor"
+        className="text-3xl font-bold p-2 border-b"
+        placeholder="Untitled"
+        autoFocus={true}
+      >
+        <InputRulePlugin />
+      </EditorRoot>
+
+      {/* Body editor */}
+      <EditorRoot
+        namespace="body-editor"
+        className="relative min-h-[400px] p-4"
+        placeholder="Start writing..."
+        autoFocus={false}
+      >
+        <FloatingToolbar />
+        <InputRulePlugin />
+      </EditorRoot>
+    </div>
+  );
+}
+```
+
+Each editor maintains fully isolated state. Typing in one editor does not affect the other. Keyboard shortcuts (e.g., Cmd+B) are automatically scoped to the editor that has focus via Lexical's `COMMAND_PRIORITY_EDITOR`.
+
+## Read-only mode
+
+Set `editable={false}` to render the editor in read-only mode. This is useful for displaying saved content without allowing modifications:
+
+```tsx
+<EditorRoot
+  namespace="viewer"
+  initialState={savedJsonState}
+  editable={false}
+  autoFocus={false}
+  className="prose"
+/>
+```
+
+## Restoring saved state
+
+Pass a serialized Lexical JSON string to `initialState` to restore previously saved content:
+
+```tsx
+const savedState = localStorage.getItem('editor-state');
+
+<EditorRoot
+  namespace="my-editor"
+  initialState={savedState}
+>
+  {/* plugins */}
+</EditorRoot>
+```
+
+## RTL support
+
+For right-to-left languages, set the `dir` prop:
+
+```tsx
+<EditorRoot
+  namespace="rtl-editor"
+  dir="rtl"
+  placeholder="...ابدأ الكتابة"
+>
+  <FloatingToolbar />
+  <InputRulePlugin />
+</EditorRoot>
+```
+
+When `dir` is set to `"ltr"` or `"rtl"`, the root node's direction is set once on mount. Per-paragraph direction can still be changed via the floating toolbar's direction toggle.
+
+## Notes
+
+- `EditorRoot` is a client component (`'use client'`). It cannot be used as a Server Component.
+- It wraps `LexicalComposer` with the full `ALL_NODES` registry, which includes all custom Scribex nodes (ImageNode, CodeBlockNode, MentionNode, etc.).
+- The Lexical theme (`scribexTheme`) is applied automatically for consistent CSS class names on editor elements.
+- The `namespace` prop is passed through to `LexicalComposer` and is also rendered as a `data-namespace` attribute on the wrapper `<div>` for DOM identification.
+- The editor container includes `data-scribex-root` for use by `OverlayPortal` and other components that need to find the editor boundary.
+- Custom error handling can be configured via `onError`. In production, you should replace the default handler with your error tracking service.
+
+## Related
+
+- [useEditorState](/docs/api/hooks/use-editor-state) -- Hook for reading serialized editor state
+- [OverlayPortal](/docs/api/components/overlay-portal) -- Drag-and-drop block handles (requires matching `namespace`)
+- [Multi-Editor guide](/docs/guides/multi-editor) -- Detailed guide on multi-editor setups
+- [Quick Start](/docs/quick-start) -- Full setup walkthrough
