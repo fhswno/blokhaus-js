@@ -3,12 +3,12 @@ title: CalloutPlugin
 description: Styled callout blocks with emoji and color presets.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## Import
 
 ```tsx
-import { CalloutPlugin } from '@scribex/core';
+import { CalloutPlugin } from "@scribex/core";
 ```
 
 ## Overview
@@ -17,11 +17,11 @@ The `CalloutPlugin` provides styled callout blocks (also known as admonitions or
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `presets` | `CalloutPreset[]` | Built-in presets | Custom color presets. When provided, replaces the built-in set. |
-| `defaultEmoji` | `string` | `"💡"` | Default emoji for new callouts when no emoji is specified. |
-| `defaultPreset` | `string` | `"default"` | The preset key to use for new callouts when no preset is specified. |
+| Prop            | Type              | Default          | Description                                                         |
+| --------------- | ----------------- | ---------------- | ------------------------------------------------------------------- |
+| `presets`       | `CalloutPreset[]` | Built-in presets | Custom color presets. When provided, replaces the built-in set.     |
+| `defaultEmoji`  | `string`          | `"💡"`           | Default emoji for new callouts when no emoji is specified.          |
+| `defaultPreset` | `string`          | `"default"`      | The preset key to use for new callouts when no preset is specified. |
 
 ## The `CalloutPreset` interface
 
@@ -42,22 +42,27 @@ interface CalloutPreset {
 
 ## Built-in presets
 
-| Key | Label | Appearance |
-|---|---|---|
-| `"default"` | Default | Light gray background, subtle border |
-| `"info"` | Info | Light blue background, blue border |
-| `"success"` | Success | Light green background, green border |
+| Key         | Label   | Appearance                             |
+| ----------- | ------- | -------------------------------------- |
+| `"default"` | Default | Light gray background, subtle border   |
+| `"info"`    | Info    | Light blue background, blue border     |
+| `"success"` | Success | Light green background, green border   |
 | `"warning"` | Warning | Light yellow background, yellow border |
-| `"danger"` | Danger | Light red background, red border |
+| `"danger"`  | Danger  | Light red background, red border       |
 
 ## Usage
 
 ### Basic setup
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, CalloutPlugin, InputRulePlugin, SlashMenu } from '@scribex/core';
+import {
+  EditorRoot,
+  CalloutPlugin,
+  InputRulePlugin,
+  SlashMenu,
+} from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -75,50 +80,46 @@ export default function EditorPage() {
 ```tsx
 const customPresets = [
   {
-    key: 'tip',
-    label: 'Tip',
-    backgroundColor: 'hsl(142 76% 96%)',
-    borderColor: 'hsl(142 76% 46%)',
+    key: "tip",
+    label: "Tip",
+    backgroundColor: "hsl(142 76% 96%)",
+    borderColor: "hsl(142 76% 46%)",
   },
   {
-    key: 'important',
-    label: 'Important',
-    backgroundColor: 'hsl(262 83% 96%)',
-    borderColor: 'hsl(262 83% 58%)',
+    key: "important",
+    label: "Important",
+    backgroundColor: "hsl(262 83% 96%)",
+    borderColor: "hsl(262 83% 58%)",
   },
   {
-    key: 'caution',
-    label: 'Caution',
-    backgroundColor: 'hsl(38 92% 95%)',
-    borderColor: 'hsl(38 92% 50%)',
+    key: "caution",
+    label: "Caution",
+    backgroundColor: "hsl(38 92% 95%)",
+    borderColor: "hsl(38 92% 50%)",
   },
 ];
 
-<CalloutPlugin
-  presets={customPresets}
-  defaultEmoji="📝"
-  defaultPreset="tip"
-/>
+<CalloutPlugin presets={customPresets} defaultEmoji="📝" defaultPreset="tip" />;
 ```
 
 ## Registered commands
 
-| Command | Payload | Description |
-|---|---|---|
+| Command                  | Payload                                    | Description                                             |
+| ------------------------ | ------------------------------------------ | ------------------------------------------------------- |
 | `INSERT_CALLOUT_COMMAND` | `{ emoji?: string; colorPreset?: string }` | Inserts a callout block at the current cursor position. |
 
 ### Creating a callout programmatically
 
 ```tsx
-import { INSERT_CALLOUT_COMMAND } from '@scribex/core';
+import { INSERT_CALLOUT_COMMAND } from "@scribex/core";
 
 // Insert with defaults
 editor.dispatchCommand(INSERT_CALLOUT_COMMAND, {});
 
 // Insert with specific emoji and preset
 editor.dispatchCommand(INSERT_CALLOUT_COMMAND, {
-  emoji: '⚠️',
-  colorPreset: 'warning',
+  emoji: "⚠️",
+  colorPreset: "warning",
 });
 ```
 
@@ -153,11 +154,11 @@ Callout blocks support any block-level content: paragraphs, headings, lists, cod
 
 ```tsx
 editor.update(() => {
-  const callout = $createCalloutNode('💡', 'info');
-  const heading = $createHeadingNode('h3');
-  heading.append($createTextNode('Pro tip'));
+  const callout = $createCalloutNode("💡", "info");
+  const heading = $createHeadingNode("h3");
+  heading.append($createTextNode("Pro tip"));
   const paragraph = $createParagraphNode();
-  paragraph.append($createTextNode('You can put any content inside callouts.'));
+  paragraph.append($createTextNode("You can put any content inside callouts."));
 
   callout.append(heading, paragraph);
   $getRoot().append(callout);
@@ -166,13 +167,13 @@ editor.update(() => {
 
 ## Keyboard behavior
 
-| Key | Context | Action |
-|---|---|---|
-| Enter | End of last paragraph in callout | Create a new paragraph inside the callout |
-| Enter (x2) | Empty paragraph at end of callout | Exit the callout and create a paragraph below |
-| Backspace | Start of first paragraph, callout is empty | Delete the callout block |
-| Arrow Down | Last line of callout | Move cursor to the next block after the callout |
-| Arrow Up | First line of callout | Move cursor to the block before the callout |
+| Key        | Context                                    | Action                                          |
+| ---------- | ------------------------------------------ | ----------------------------------------------- |
+| Enter      | End of last paragraph in callout           | Create a new paragraph inside the callout       |
+| Enter (x2) | Empty paragraph at end of callout          | Exit the callout and create a paragraph below   |
+| Backspace  | Start of first paragraph, callout is empty | Delete the callout block                        |
+| Arrow Down | Last line of callout                       | Move cursor to the next block after the callout |
+| Arrow Up   | First line of callout                      | Move cursor to the block before the callout     |
 
 ## Slash menu integration
 
@@ -181,24 +182,29 @@ When `CalloutPlugin` is mounted, a "Callout" item appears in the slash menu. Sel
 ## Type guards and helpers
 
 ```tsx
-import { $isCalloutNode, $createCalloutNode } from '@scribex/core';
+import { $isCalloutNode, $createCalloutNode } from "@scribex/core";
 
 // Check if a node is a callout
 if ($isCalloutNode(node)) {
-  console.log('Emoji:', node.getEmoji());
-  console.log('Preset:', node.getColorPreset());
+  console.log("Emoji:", node.getEmoji());
+  console.log("Preset:", node.getColorPreset());
 }
 
 // Create a callout
-const callout = $createCalloutNode('🔥', 'danger');
+const callout = $createCalloutNode("🔥", "danger");
 ```
 
 <Callout type="info">
-Callout colors are applied via inline CSS custom properties on the callout container element. This allows the color presets to work without any additional CSS files, and ensures colors are consistent in both light and dark themes when using HSL values.
+  Callout colors are applied via inline CSS custom properties on the callout
+  container element. This allows the color presets to work without any
+  additional CSS files, and ensures colors are consistent in both light and dark
+  themes when using HSL values.
 </Callout>
 
 <Callout type="warn">
-When providing custom `presets`, the built-in presets are completely replaced. If you want to extend the defaults, import `DEFAULT_CALLOUT_PRESETS` from `@scribex/core` and spread it into your custom array.
+  When providing custom `presets`, the built-in presets are completely replaced.
+  If you want to extend the defaults, import `DEFAULT_CALLOUT_PRESETS` from
+  `@scribex/core` and spread it into your custom array.
 </Callout>
 
 ## Related

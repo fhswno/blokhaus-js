@@ -3,12 +3,12 @@ title: ImagePlugin
 description: Image upload with optimistic loading UI.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## Import
 
 ```tsx
-import { ImagePlugin } from '@scribex/core';
+import { ImagePlugin } from "@scribex/core";
 ```
 
 ## Overview
@@ -19,13 +19,13 @@ The plugin also registers the `INSERT_IMAGE_COMMAND` Lexical command, which can 
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `uploadHandler` | `UploadHandler` | (required) | Function that uploads a `File` and returns a `Promise<string>` resolving to the remote URL. |
-| `maxFileSize` | `number` | `10485760` (10 MB) | Maximum file size in bytes. Files exceeding this limit are rejected. |
-| `allowedFormats` | `string[]` | `['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']` | Allowed MIME types. Files not matching these types are rejected. |
-| `onFileRejected` | `(file: File, reason: 'size' \| 'format') => void` | -- | Called when a file fails validation. Use this to surface user-friendly error messages. |
-| `onUploadError` | `(file: File, error: unknown) => void` | -- | Called when the `uploadHandler` promise rejects. |
+| Prop             | Type                                               | Default                                                                   | Description                                                                                 |
+| ---------------- | -------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `uploadHandler`  | `UploadHandler`                                    | (required)                                                                | Function that uploads a `File` and returns a `Promise<string>` resolving to the remote URL. |
+| `maxFileSize`    | `number`                                           | `10485760` (10 MB)                                                        | Maximum file size in bytes. Files exceeding this limit are rejected.                        |
+| `allowedFormats` | `string[]`                                         | `['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']` | Allowed MIME types. Files not matching these types are rejected.                            |
+| `onFileRejected` | `(file: File, reason: 'size' \| 'format') => void` | --                                                                        | Called when a file fails validation. Use this to surface user-friendly error messages.      |
+| `onUploadError`  | `(file: File, error: unknown) => void`             | --                                                                        | Called when the `uploadHandler` promise rejects.                                            |
 
 ## The `UploadHandler` type
 
@@ -42,21 +42,21 @@ Scribex provides no default implementation. You supply your own upload logic, ke
 ### Basic setup
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, ImagePlugin } from '@scribex/core';
+import { EditorRoot, ImagePlugin } from "@scribex/core";
 
 const uploadHandler = async (file: File): Promise<string> => {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
-  const response = await fetch('/api/upload', {
-    method: 'POST',
+  const response = await fetch("/api/upload", {
+    method: "POST",
     body: formData,
   });
 
   if (!response.ok) {
-    throw new Error('Upload failed');
+    throw new Error("Upload failed");
   }
 
   const { url } = await response.json();
@@ -78,18 +78,18 @@ export default function EditorPage() {
 <ImagePlugin
   uploadHandler={uploadHandler}
   maxFileSize={5 * 1024 * 1024} // 5 MB
-  allowedFormats={['image/jpeg', 'image/png', 'image/webp']}
+  allowedFormats={["image/jpeg", "image/png", "image/webp"]}
   onFileRejected={(file, reason) => {
-    if (reason === 'size') {
+    if (reason === "size") {
       toast.error(`${file.name} exceeds the 5 MB limit.`);
     }
-    if (reason === 'format') {
+    if (reason === "format") {
       toast.error(`${file.name} is not a supported image format.`);
     }
   }}
   onUploadError={(file, error) => {
     console.error(`Upload failed for ${file.name}:`, error);
-    toast.error('Image upload failed. Please try again.');
+    toast.error("Image upload failed. Please try again.");
   }}
 />
 ```
@@ -97,7 +97,7 @@ export default function EditorPage() {
 ### Programmatic image insertion
 
 ```tsx
-import { INSERT_IMAGE_COMMAND } from '@scribex/core';
+import { INSERT_IMAGE_COMMAND } from "@scribex/core";
 
 // Trigger upload from a custom file input
 function handleFileSelect(file: File) {
@@ -146,11 +146,15 @@ When `ImagePlugin` is mounted, an "Image" item automatically appears in the slas
 - **`ImageNode`**: Permanent DecoratorNode storing `{ src, altText, width?, height? }`. Supports click-to-select with a selection ring.
 
 <Callout type="warn">
-Never use base64 encoding for images. Base64 bloats the JSON state, hits database column size limits, and makes serialized state unreadable. Always upload to a remote URL via the `UploadHandler`.
+  Never use base64 encoding for images. Base64 bloats the JSON state, hits
+  database column size limits, and makes serialized state unreadable. Always
+  upload to a remote URL via the `UploadHandler`.
 </Callout>
 
 <Callout type="info">
-Non-image files dropped onto the editor are silently ignored by `ImagePlugin`. If the dropped content is HTML or plain text, it falls through to the paste pipeline.
+  Non-image files dropped onto the editor are silently ignored by `ImagePlugin`.
+  If the dropped content is HTML or plain text, it falls through to the paste
+  pipeline.
 </Callout>
 
 ## Related
