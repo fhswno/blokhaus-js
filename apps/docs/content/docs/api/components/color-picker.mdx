@@ -1,0 +1,167 @@
+---
+title: ColorPicker
+description: Text and highlight color picker component.
+---
+
+`ColorPicker` renders a compact color selection panel with two sections: text color and background highlight color. It is primarily used inside the `FloatingToolbar` but can also be used standalone within a Lexical editor context.
+
+## Import
+
+```tsx
+import { ColorPicker } from '@scribex/core';
+import type { ColorPalette, ColorEntry } from '@scribex/core';
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `palette` | `ColorPalette` | `DEFAULT_COLOR_PALETTE` | Color palette configuration with text and highlight color arrays. |
+| `activeTextColor` | `string \| null` | **required** | The currently active text color CSS value, or `null` if using the default color. |
+| `activeHighlightColor` | `string \| null` | **required** | The currently active highlight/background color CSS value, or `null` if using the default. |
+| `onClose` | `() => void` | **required** | Callback invoked after a color is selected. Typically used to close the picker dropdown. |
+
+## Basic usage
+
+The `ColorPicker` is typically used inside the `FloatingToolbar` and does not need to be added separately. However, you can use it in a custom toolbar or UI:
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+import { ColorPicker } from '@scribex/core';
+
+function CustomColorControl() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button onClick={() => setIsOpen(!isOpen)}>Colors</button>
+
+      {isOpen && (
+        <div style={{ position: 'absolute', top: '100%', zIndex: 50 }}>
+          <ColorPicker
+            activeTextColor={null}
+            activeHighlightColor={null}
+            onClose={() => setIsOpen(false)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Color palette structure
+
+The `ColorPalette` type contains two arrays of `ColorEntry` objects:
+
+```ts
+interface ColorEntry {
+  /** Human-readable label shown in the picker */
+  label: string;
+  /** CSS value to apply -- should be a var() reference */
+  value: string;
+  /** Preview swatch color (raw hex/hsl for rendering the dot in the picker) */
+  swatch: string;
+}
+
+interface ColorPalette {
+  text: ColorEntry[];
+  highlight: ColorEntry[];
+}
+```
+
+## Default color palette
+
+The default palette includes 10 text colors and 10 highlight colors:
+
+### Text colors
+
+| Color | CSS Variable | Swatch |
+|---|---|---|
+| Default | (removes color) | currentColor |
+| Gray | `var(--scribex-text-gray)` | #9b9a97 |
+| Brown | `var(--scribex-text-brown)` | #64473a |
+| Orange | `var(--scribex-text-orange)` | #d9730d |
+| Yellow | `var(--scribex-text-yellow)` | #dfab01 |
+| Green | `var(--scribex-text-green)` | #0f7b6c |
+| Blue | `var(--scribex-text-blue)` | #0b6e99 |
+| Purple | `var(--scribex-text-purple)` | #6940a5 |
+| Pink | `var(--scribex-text-pink)` | #ad1a72 |
+| Red | `var(--scribex-text-red)` | #e03e3e |
+
+### Highlight colors
+
+| Color | CSS Variable | Swatch |
+|---|---|---|
+| Default | (removes highlight) | transparent |
+| Gray | `var(--scribex-highlight-gray)` | #ebeced |
+| Brown | `var(--scribex-highlight-brown)` | #e9e5e3 |
+| Orange | `var(--scribex-highlight-orange)` | #faebdd |
+| Yellow | `var(--scribex-highlight-yellow)` | #fbf3db |
+| Green | `var(--scribex-highlight-green)` | #ddedea |
+| Blue | `var(--scribex-highlight-blue)` | #ddebf1 |
+| Purple | `var(--scribex-highlight-purple)` | #eae4f2 |
+| Pink | `var(--scribex-highlight-pink)` | #f4dfeb |
+| Red | `var(--scribex-highlight-red)` | #fbe4e4 |
+
+## Custom palette
+
+Override the default palette by passing a custom `ColorPalette`:
+
+```tsx
+import type { ColorPalette } from '@scribex/core';
+
+const brandPalette: ColorPalette = {
+  text: [
+    { label: 'Default', value: '', swatch: 'currentColor' },
+    { label: 'Primary', value: 'var(--brand-primary)', swatch: '#6366f1' },
+    { label: 'Secondary', value: 'var(--brand-secondary)', swatch: '#8b5cf6' },
+    { label: 'Danger', value: 'var(--brand-danger)', swatch: '#ef4444' },
+  ],
+  highlight: [
+    { label: 'Default', value: '', swatch: 'transparent' },
+    { label: 'Highlight', value: 'var(--brand-highlight)', swatch: '#fef08a' },
+    { label: 'Success', value: 'var(--brand-success-bg)', swatch: '#dcfce7' },
+  ],
+};
+
+<ColorPicker
+  palette={brandPalette}
+  activeTextColor={null}
+  activeHighlightColor={null}
+  onClose={() => {}}
+/>
+```
+
+## Commands dispatched
+
+When a color is selected, the `ColorPicker` dispatches Lexical commands:
+
+- **Text color:** `SET_TEXT_COLOR_COMMAND` with the CSS value string
+- **Highlight color:** `SET_HIGHLIGHT_COLOR_COMMAND` with the CSS value string
+
+An empty string value (`""`) removes the color, reverting to the default.
+
+After dispatching the command, the picker calls `editor.focus()` to return focus to the editor and then invokes the `onClose` callback.
+
+## Visual indicators
+
+- The active text color is indicated by a small checkmark icon in the bottom-right corner of the swatch button.
+- The active highlight color is indicated by a centered checkmark icon.
+- The "Default" text color swatch renders an "A" character in the current foreground color.
+- The "Default" highlight swatch is transparent and displays a null symbol.
+
+## Notes
+
+- `ColorPicker` is a client component (`'use client'`).
+- It must be rendered within a `LexicalComposer` context (i.e., inside `EditorRoot`).
+- The component uses `onMouseDown` with `e.preventDefault()` to prevent the editor from losing focus when clicking color swatches.
+- Color values use CSS variable references (e.g., `var(--scribex-text-red)`) so that colors can be customized via the theme's `tokens.css` without modifying the picker.
+
+## Related
+
+- [FloatingToolbar](/docs/api/components/floating-toolbar) -- Parent component that hosts the color picker
+- [ColorPlugin](/docs/api/plugins/color-plugin) -- Plugin that registers the color commands
+- [Theming guide](/docs/guides/theming) -- Customizing color tokens
