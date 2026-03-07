@@ -51,17 +51,17 @@ interface AIGenerateConfig {
 ## Basic setup
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, AIPlugin } from '@scribex/core';
-import type { AIProvider } from '@scribex/core';
+import { EditorRoot, AIPlugin } from "@scribex/core";
+import type { AIProvider } from "@scribex/core";
 
 const myProvider: AIProvider = {
-  name: 'My AI',
+  name: "My AI",
   generate: async ({ prompt, context, config }) => {
-    const response = await fetch('/api/ai/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt, context, ...config }),
     });
 
@@ -101,27 +101,27 @@ export default function EditorPage() {
 ### Example: OpenAI-compatible API route
 
 ```ts title="app/api/ai/generate/route.ts"
-import { NextRequest } from 'next/server';
+import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   const { prompt, context, systemPrompt } = await request.json();
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: "gpt-4o",
       stream: true,
       messages: [
         {
-          role: 'system',
-          content: systemPrompt ?? 'You are a helpful writing assistant.',
+          role: "system",
+          content: systemPrompt ?? "You are a helpful writing assistant.",
         },
         {
-          role: 'user',
+          role: "user",
           content: `Context:\n${context}\n\nTask:\n${prompt}`,
         },
       ],
@@ -131,8 +131,8 @@ export async function POST(request: NextRequest) {
   // Forward the stream directly to the client
   return new Response(response.body, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
     },
   });
 }
@@ -142,13 +142,13 @@ export async function POST(request: NextRequest) {
 
 ```ts
 const ollamaProvider: AIProvider = {
-  name: 'Ollama',
+  name: "Ollama",
   generate: async ({ prompt, context }) => {
-    const response = await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("http://localhost:11434/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: 'llama3',
+        model: "llama3",
         prompt: `Context:\n${context}\n\nTask:\n${prompt}`,
         stream: true,
       }),
@@ -205,31 +205,31 @@ Pass a `config` prop to `AIPlugin` to customize behavior:
     generate: {
       temperature: 0.7,
       maxTokens: 2000,
-      systemPrompt: 'You are a technical writing assistant. Use Markdown.',
+      systemPrompt: "You are a technical writing assistant. Use Markdown.",
     },
     labels: {
-      header: 'AI Assistant',
-      streaming: 'Writing...',
-      accept: 'Insert',
-      discard: 'Cancel',
-      retry: 'Try again',
-      dismiss: 'Close',
-      defaultError: 'Something went wrong. Please try again.',
+      header: "AI Assistant",
+      streaming: "Writing...",
+      accept: "Insert",
+      discard: "Cancel",
+      retry: "Try again",
+      dismiss: "Close",
+      defaultError: "Something went wrong. Please try again.",
     },
     retry: {
       maxRetries: 3,
     },
     contextWindowSize: 5,
     onError: (error) => {
-      console.error('AI error:', error);
+      console.error("AI error:", error);
       // Send to your error tracking service
     },
     onAccept: (content) => {
       // Track analytics
-      console.log('AI content accepted:', content.length, 'chars');
+      console.log("AI content accepted:", content.length, "chars");
     },
     onDiscard: () => {
-      console.log('AI content discarded');
+      console.log("AI content discarded");
     },
   }}
 />
@@ -237,24 +237,24 @@ Pass a `config` prop to `AIPlugin` to customize behavior:
 
 ### Full config reference
 
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `generate.temperature` | `number` | (provider default) | Sampling temperature (0-2) |
-| `generate.maxTokens` | `number` | (provider default) | Maximum tokens to generate |
-| `generate.systemPrompt` | `string` | (provider default) | System prompt / persona |
-| `labels.header` | `string` | `"AI"` | Header label on the preview node |
-| `labels.streaming` | `string` | `"generating..."` | Status text while streaming |
-| `labels.accept` | `string` | `"Accept"` | Accept button label |
-| `labels.discard` | `string` | `"Discard"` | Discard button label |
-| `labels.retry` | `string` | `"Retry"` | Retry button label |
-| `labels.dismiss` | `string` | `"Dismiss"` | Dismiss button (error state) |
-| `labels.defaultError` | `string` | `"An error occurred"` | Fallback error message |
-| `retry.maxRetries` | `number` | `Infinity` | Maximum retry attempts. Set to 0 to disable. |
-| `contextWindowSize` | `number` | `3` | Number of preceding blocks to include as context |
-| `onError` | `(error: Error) => void` | -- | Called when the stream encounters an error |
-| `onAccept` | `(content: string) => void` | -- | Called when the user accepts generated content |
-| `onDiscard` | `() => void` | -- | Called when the user discards generated content |
-| `renderPrompt` | `(props: AIPromptInputRenderProps) => ReactElement` | -- | Custom prompt input component |
+| Property                | Type                                                | Default               | Description                                      |
+| ----------------------- | --------------------------------------------------- | --------------------- | ------------------------------------------------ |
+| `generate.temperature`  | `number`                                            | (provider default)    | Sampling temperature (0-2)                       |
+| `generate.maxTokens`    | `number`                                            | (provider default)    | Maximum tokens to generate                       |
+| `generate.systemPrompt` | `string`                                            | (provider default)    | System prompt / persona                          |
+| `labels.header`         | `string`                                            | `"AI"`                | Header label on the preview node                 |
+| `labels.streaming`      | `string`                                            | `"generating..."`     | Status text while streaming                      |
+| `labels.accept`         | `string`                                            | `"Accept"`            | Accept button label                              |
+| `labels.discard`        | `string`                                            | `"Discard"`           | Discard button label                             |
+| `labels.retry`          | `string`                                            | `"Retry"`             | Retry button label                               |
+| `labels.dismiss`        | `string`                                            | `"Dismiss"`           | Dismiss button (error state)                     |
+| `labels.defaultError`   | `string`                                            | `"An error occurred"` | Fallback error message                           |
+| `retry.maxRetries`      | `number`                                            | `Infinity`            | Maximum retry attempts. Set to 0 to disable.     |
+| `contextWindowSize`     | `number`                                            | `3`                   | Number of preceding blocks to include as context |
+| `onError`               | `(error: Error) => void`                            | --                    | Called when the stream encounters an error       |
+| `onAccept`              | `(content: string) => void`                         | --                    | Called when the user accepts generated content   |
+| `onDiscard`             | `() => void`                                        | --                    | Called when the user discards generated content  |
+| `renderPrompt`          | `(props: AIPromptInputRenderProps) => ReactElement` | --                    | Custom prompt input component                    |
 
 ## Custom prompt input
 
@@ -267,7 +267,7 @@ Replace the built-in prompt input with your own component using `renderPrompt`:
     renderPrompt: ({ position, onSubmit, onClose }) => (
       <div
         style={{
-          position: 'fixed',
+          position: "fixed",
           top: position.top,
           left: position.left,
           zIndex: 60,
@@ -277,10 +277,10 @@ Replace the built-in prompt input with your own component using `renderPrompt`:
           autoFocus
           placeholder="What should I write?"
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === "Enter") {
               onSubmit(e.currentTarget.value);
             }
-            if (e.key === 'Escape') {
+            if (e.key === "Escape") {
               onClose();
             }
           }}
@@ -313,14 +313,17 @@ When `AIPlugin` is included, a `/ai` item automatically appears in the slash men
 You can trigger AI generation programmatically using Lexical commands:
 
 ```tsx
-import { OPEN_AI_PROMPT_COMMAND, INSERT_AI_PREVIEW_COMMAND } from '@scribex/core';
+import {
+  OPEN_AI_PROMPT_COMMAND,
+  INSERT_AI_PREVIEW_COMMAND,
+} from "@scribex/core";
 
 // Open the prompt input
 editor.dispatchCommand(OPEN_AI_PROMPT_COMMAND, undefined);
 
 // Or insert directly with a prompt
 editor.dispatchCommand(INSERT_AI_PREVIEW_COMMAND, {
-  prompt: 'Write a summary of the content above',
+  prompt: "Write a summary of the content above",
 });
 ```
 

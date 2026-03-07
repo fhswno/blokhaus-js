@@ -8,9 +8,9 @@ This example shows a production-ready Scribex editor with every available plugin
 ## Complete editor page
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 import {
   // Core
   EditorRoot,
@@ -44,8 +44,8 @@ import {
 
   // Helpers
   $createMentionNode,
-} from '@scribex/core';
-import type { AIProvider, MentionProvider, UploadHandler } from '@scribex/core';
+} from "@scribex/core";
+import type { AIProvider, MentionProvider, UploadHandler } from "@scribex/core";
 
 // ---------------------------------------------------------------------------
 // Upload handler -- replace with your real upload endpoint
@@ -53,10 +53,10 @@ import type { AIProvider, MentionProvider, UploadHandler } from '@scribex/core';
 
 const uploadHandler: UploadHandler = async (file: File): Promise<string> => {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
-  const response = await fetch('/api/upload', {
-    method: 'POST',
+  const response = await fetch("/api/upload", {
+    method: "POST",
     body: formData,
   });
 
@@ -73,11 +73,11 @@ const uploadHandler: UploadHandler = async (file: File): Promise<string> => {
 // ---------------------------------------------------------------------------
 
 const aiProvider: AIProvider = {
-  name: 'My AI',
+  name: "My AI",
   generate: async ({ prompt, context, config }) => {
-    const response = await fetch('/api/ai/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prompt,
         context,
@@ -112,15 +112,25 @@ const aiProvider: AIProvider = {
 // ---------------------------------------------------------------------------
 
 const userMentionProvider: MentionProvider = {
-  trigger: '@',
+  trigger: "@",
   onSearch: async (query) => {
     // Replace with your actual user search API
     const users = [
-      { id: 'u1', label: 'Alice Johnson', meta: 'alice@company.com', icon: '/avatars/alice.jpg' },
-      { id: 'u2', label: 'Bob Smith', meta: 'bob@company.com', icon: '/avatars/bob.jpg' },
-      { id: 'u3', label: 'Charlie Brown', meta: 'charlie@company.com' },
-      { id: 'u4', label: 'Diana Prince', meta: 'diana@company.com' },
-      { id: 'u5', label: 'Eve Williams', meta: 'eve@company.com' },
+      {
+        id: "u1",
+        label: "Alice Johnson",
+        meta: "alice@company.com",
+        icon: "/avatars/alice.jpg",
+      },
+      {
+        id: "u2",
+        label: "Bob Smith",
+        meta: "bob@company.com",
+        icon: "/avatars/bob.jpg",
+      },
+      { id: "u3", label: "Charlie Brown", meta: "charlie@company.com" },
+      { id: "u4", label: "Diana Prince", meta: "diana@company.com" },
+      { id: "u5", label: "Eve Williams", meta: "eve@company.com" },
     ];
     if (!query) return users;
     return users.filter((u) =>
@@ -128,38 +138,51 @@ const userMentionProvider: MentionProvider = {
     );
   },
   renderItem: (item) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       {item.icon ? (
         <img
           src={item.icon}
           alt=""
-          style={{ width: 20, height: 20, borderRadius: '50%' }}
+          style={{ width: 20, height: 20, borderRadius: "50%" }}
         />
       ) : (
-        <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#ddd', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>
+        <span
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            background: "#ddd",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 10,
+          }}
+        >
           {item.label[0]}
         </span>
       )}
       <div>
         <div style={{ fontWeight: 500 }}>{item.label}</div>
-        {item.meta && <div style={{ fontSize: 12, opacity: 0.6 }}>{item.meta}</div>}
+        {item.meta && (
+          <div style={{ fontSize: 12, opacity: 0.6 }}>{item.meta}</div>
+        )}
       </div>
     </div>
   ),
   onSelect: (item) =>
-    $createMentionNode({ id: item.id, label: item.label, trigger: '@' }),
+    $createMentionNode({ id: item.id, label: item.label, trigger: "@" }),
 };
 
 const tagMentionProvider: MentionProvider = {
-  trigger: '#',
+  trigger: "#",
   onSearch: async (query) => {
     const tags = [
-      { id: 't1', label: 'documentation' },
-      { id: 't2', label: 'feature-request' },
-      { id: 't3', label: 'bug' },
-      { id: 't4', label: 'enhancement' },
-      { id: 't5', label: 'design' },
-      { id: 't6', label: 'performance' },
+      { id: "t1", label: "documentation" },
+      { id: "t2", label: "feature-request" },
+      { id: "t3", label: "bug" },
+      { id: "t4", label: "enhancement" },
+      { id: "t5", label: "design" },
+      { id: "t6", label: "performance" },
     ];
     if (!query) return tags;
     return tags.filter((t) =>
@@ -167,13 +190,13 @@ const tagMentionProvider: MentionProvider = {
     );
   },
   renderItem: (item) => (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+    <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
       <span style={{ opacity: 0.5 }}>#</span>
       {item.label}
     </span>
   ),
   onSelect: (item) =>
-    $createMentionNode({ id: item.id, label: item.label, trigger: '#' }),
+    $createMentionNode({ id: item.id, label: item.label, trigger: "#" }),
 };
 
 // ---------------------------------------------------------------------------
@@ -206,19 +229,19 @@ function WordCounter() {
 
 export default function FullFeaturedEditorPage() {
   const [initialState] = useState(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('scribex-full-featured');
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("scribex-full-featured");
   });
 
   const handleSave = useCallback((json: string) => {
-    localStorage.setItem('scribex-full-featured', json);
+    localStorage.setItem("scribex-full-featured", json);
   }, []);
 
   return (
     <main className="max-w-3xl mx-auto py-12 px-4">
       <h1 className="text-2xl font-bold mb-2">Full-Featured Editor</h1>
       <p className="text-gray-500 mb-6">
-        Every Scribex plugin enabled. Type <code>/</code> for commands,{' '}
+        Every Scribex plugin enabled. Type <code>/</code> for commands,{" "}
         <code>@</code> to mention someone, or <code>#</code> for tags.
       </p>
 
@@ -261,23 +284,26 @@ export default function FullFeaturedEditorPage() {
               generate: {
                 temperature: 0.7,
                 maxTokens: 2000,
-                systemPrompt: 'You are a helpful writing assistant. Respond in Markdown.',
+                systemPrompt:
+                  "You are a helpful writing assistant. Respond in Markdown.",
               },
               labels: {
-                header: 'AI Assistant',
-                streaming: 'Writing...',
-                accept: 'Insert',
-                discard: 'Cancel',
+                header: "AI Assistant",
+                streaming: "Writing...",
+                accept: "Insert",
+                discard: "Cancel",
               },
               contextWindowSize: 5,
               onAccept: (content) => {
-                console.log('AI content accepted:', content.length, 'chars');
+                console.log("AI content accepted:", content.length, "chars");
               },
             }}
           />
 
           {/* Mentions */}
-          <MentionPlugin providers={[userMentionProvider, tagMentionProvider]} />
+          <MentionPlugin
+            providers={[userMentionProvider, tagMentionProvider]}
+          />
 
           {/* Block types */}
           <TablePlugin hasCellMerge hasTabHandler />
@@ -306,29 +332,32 @@ export default function FullFeaturedEditorPage() {
 The AI provider above expects a streaming endpoint at `/api/ai/generate`. Here is a reference implementation using the OpenAI SDK:
 
 ```ts title="app/api/ai/generate/route.ts"
-import { NextRequest } from 'next/server';
+import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const { prompt, context, temperature, maxTokens, systemPrompt } = await request.json();
+  const { prompt, context, temperature, maxTokens, systemPrompt } =
+    await request.json();
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: "gpt-4o",
       stream: true,
       temperature: temperature ?? 0.7,
       max_tokens: maxTokens ?? 2000,
       messages: [
         {
-          role: 'system',
-          content: systemPrompt ?? 'You are a helpful writing assistant. Respond in Markdown.',
+          role: "system",
+          content:
+            systemPrompt ??
+            "You are a helpful writing assistant. Respond in Markdown.",
         },
         {
-          role: 'user',
+          role: "user",
           content: `Context:\n${context}\n\nTask:\n${prompt}`,
         },
       ],
@@ -337,8 +366,8 @@ export async function POST(request: NextRequest) {
 
   return new Response(response.body, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
     },
   });
 }
@@ -349,22 +378,22 @@ export async function POST(request: NextRequest) {
 The upload handler expects a `/api/upload` endpoint. Here is a minimal example that saves to the local filesystem (replace with S3, R2, or your storage provider in production):
 
 ```ts title="app/api/upload/route.ts"
-import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { NextRequest, NextResponse } from "next/server";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
-  const file = formData.get('file') as File;
+  const file = formData.get("file") as File;
 
   if (!file) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  const uploadDir = join(process.cwd(), 'public', 'uploads');
+  const uploadDir = join(process.cwd(), "public", "uploads");
   await mkdir(uploadDir, { recursive: true });
 
   const filename = `${Date.now()}-${file.name}`;
@@ -379,41 +408,41 @@ export async function POST(request: NextRequest) {
 
 ### UI Components
 
-| Component | Purpose |
-|---|---|
+| Component         | Purpose                                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------- |
 | `FloatingToolbar` | Appears on text selection with Bold, Italic, Underline, Strikethrough, Code, Link buttons |
-| `SlashMenu` | Command palette triggered by `/` at the start of an empty paragraph |
-| `OverlayPortal` | Notion-style drag handles on hover (desktop only) |
-| `MobileToolbar` | Bottom-anchored formatting toolbar on touch devices |
+| `SlashMenu`       | Command palette triggered by `/` at the start of an empty paragraph                       |
+| `OverlayPortal`   | Notion-style drag handles on hover (desktop only)                                         |
+| `MobileToolbar`   | Bottom-anchored formatting toolbar on touch devices                                       |
 
 ### Headless Plugins
 
-| Plugin | Purpose |
-|---|---|
-| `InputRulePlugin` | Markdown shortcuts (`# `, `> `, `- `, etc.) |
-| `PastePlugin` | Sanitizes HTML from external paste sources |
-| `LinkPlugin` | URL detection and link editing |
-| `ListPlugin` | Ordered, unordered, and task list behaviors |
-| `ImagePlugin` | Drag/drop and paste image upload with optimistic UI |
-| `VideoPlugin` | Video embed (YouTube, Vimeo, Loom) and file upload |
-| `AIPlugin` | AI content generation with streaming preview |
-| `MentionPlugin` | `@user` and `#tag` mentions with async search |
-| `TablePlugin` | Table insertion and cell navigation |
-| `TableActionMenu` | Right-click context menu for table operations |
-| `TableHoverActions` | Row/column handles and resize |
-| `TogglePlugin` | Collapsible toggle blocks |
-| `CalloutPlugin` | Styled callout blocks with emoji and color presets |
-| `EmojiPickerPlugin` | Emoji search and insertion via the slash menu |
-| `ColorPlugin` | Text and background color formatting |
-| `DirectionPlugin` | LTR/RTL text direction |
-| `BlockSelectionPlugin` | Multi-block selection with keyboard shortcuts |
+| Plugin                 | Purpose                                             |
+| ---------------------- | --------------------------------------------------- |
+| `InputRulePlugin`      | Markdown shortcuts (`# `, `> `, `- `, etc.)         |
+| `PastePlugin`          | Sanitizes HTML from external paste sources          |
+| `LinkPlugin`           | URL detection and link editing                      |
+| `ListPlugin`           | Ordered, unordered, and task list behaviors         |
+| `ImagePlugin`          | Drag/drop and paste image upload with optimistic UI |
+| `VideoPlugin`          | Video embed (YouTube, Vimeo, Loom) and file upload  |
+| `AIPlugin`             | AI content generation with streaming preview        |
+| `MentionPlugin`        | `@user` and `#tag` mentions with async search       |
+| `TablePlugin`          | Table insertion and cell navigation                 |
+| `TableActionMenu`      | Right-click context menu for table operations       |
+| `TableHoverActions`    | Row/column handles and resize                       |
+| `TogglePlugin`         | Collapsible toggle blocks                           |
+| `CalloutPlugin`        | Styled callout blocks with emoji and color presets  |
+| `EmojiPickerPlugin`    | Emoji search and insertion via the slash menu       |
+| `ColorPlugin`          | Text and background color formatting                |
+| `DirectionPlugin`      | LTR/RTL text direction                              |
+| `BlockSelectionPlugin` | Multi-block selection with keyboard shortcuts       |
 
 ### Hooks
 
-| Hook | Purpose |
-|---|---|
+| Hook             | Purpose                                                  |
+| ---------------- | -------------------------------------------------------- |
 | `useEditorState` | Debounced serialized JSON state with `onChange` callback |
-| `useWordCount` | Live word and character count |
+| `useWordCount`   | Live word and character count                            |
 
 ## Removing features
 
