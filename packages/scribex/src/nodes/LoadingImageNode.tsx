@@ -107,7 +107,7 @@ function LoadingImageComponent({ objectURL }: { objectURL: string }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "rgba(0, 0, 0, 0.1)",
+          backgroundColor: "var(--scribex-loading-overlay, rgba(0, 0, 0, 0.1))",
           borderRadius: "var(--scribex-radius, 0.5rem)",
         }}
       >
