@@ -3,7 +3,7 @@ title: Video Nodes
 description: VideoNode and LoadingVideoNode for video content.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 Scribex provides two nodes for video handling: `VideoNode` for permanent video embeds and uploaded files, and `LoadingVideoNode` for optimistic previews during file upload. Together they implement the video upload and embed flow described in the [Video Embeds guide](/docs/guides/video-embeds).
 
@@ -16,8 +16,8 @@ A `DecoratorNode` that renders either an `<iframe>` (for embedded videos from Yo
 ### Import
 
 ```tsx
-import { VideoNode, $createVideoNode, $isVideoNode } from '@scribex/core';
-import type { VideoPayload } from '@scribex/core';
+import { VideoNode, $createVideoNode, $isVideoNode } from "@scribex/core";
+import type { VideoPayload } from "@scribex/core";
 ```
 
 ### VideoPayload
@@ -25,20 +25,20 @@ import type { VideoPayload } from '@scribex/core';
 ```ts
 interface VideoPayload {
   src: string;
-  videoType: 'embed' | 'file';
+  videoType: "embed" | "file";
   provider: string;
   title?: string;
   key?: NodeKey;
 }
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `src` | `string` | Yes | The video URL. For embeds, this is the embed URL (e.g., `https://www.youtube.com/embed/dQw4w9WgXcQ`). For files, this is the remote file URL. |
-| `videoType` | `'embed' \| 'file'` | Yes | Whether the video is an iframe embed or a native `<video>` file. |
-| `provider` | `string` | Yes | The video provider identifier: `"youtube"`, `"vimeo"`, `"loom"`, or `"generic"`. |
-| `title` | `string` | No | Title/label for the video. Used as the `<iframe>` title attribute. |
-| `key` | `NodeKey` | No | Explicit Lexical node key. |
+| Field       | Type                | Required | Description                                                                                                                                   |
+| ----------- | ------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src`       | `string`            | Yes      | The video URL. For embeds, this is the embed URL (e.g., `https://www.youtube.com/embed/dQw4w9WgXcQ`). For files, this is the remote file URL. |
+| `videoType` | `'embed' \| 'file'` | Yes      | Whether the video is an iframe embed or a native `<video>` file.                                                                              |
+| `provider`  | `string`            | Yes      | The video provider identifier: `"youtube"`, `"vimeo"`, `"loom"`, or `"generic"`.                                                              |
+| `title`     | `string`            | No       | Title/label for the video. Used as the `<iframe>` title attribute.                                                                            |
+| `key`       | `NodeKey`           | No       | Explicit Lexical node key.                                                                                                                    |
 
 ### Functions
 
@@ -47,16 +47,18 @@ interface VideoPayload {
 Creates a new `VideoNode`. Must be called inside `editor.update()`.
 
 ```ts
-import { parseVideoEmbed } from '@scribex/core';
+import { parseVideoEmbed } from "@scribex/core";
 
 editor.update(() => {
-  const embedInfo = parseVideoEmbed('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  const embedInfo = parseVideoEmbed(
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  );
   if (embedInfo) {
     const video = $createVideoNode({
       src: embedInfo.embedUrl,
-      videoType: 'embed',
+      videoType: "embed",
       provider: embedInfo.provider,
-      title: 'My Video',
+      title: "My Video",
     });
     $getRoot().append(video);
   }
@@ -69,21 +71,21 @@ Type guard that returns `true` if the given node is a `VideoNode`.
 
 ### Instance methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `getSrc()` | `string` | Returns the video URL. |
+| Method           | Returns             | Description                                 |
+| ---------------- | ------------------- | ------------------------------------------- |
+| `getSrc()`       | `string`            | Returns the video URL.                      |
 | `getVideoType()` | `'embed' \| 'file'` | Returns whether this is an embed or a file. |
-| `getProvider()` | `string` | Returns the provider identifier. |
-| `getTitle()` | `string` | Returns the video title. |
+| `getProvider()`  | `string`            | Returns the provider identifier.            |
+| `getTitle()`     | `string`            | Returns the video title.                    |
 
 ### Serialized format
 
 ```ts
 type SerializedVideoNode = {
-  type: 'video';
+  type: "video";
   version: 1;
   src: string;
-  videoType: 'embed' | 'file';
+  videoType: "embed" | "file";
   provider: string;
   title: string;
 };
@@ -116,7 +118,11 @@ A transient `DecoratorNode` used during video file upload. It renders a placehol
 ### Import
 
 ```tsx
-import { LoadingVideoNode, $createLoadingVideoNode, $isLoadingVideoNode } from '@scribex/core';
+import {
+  LoadingVideoNode,
+  $createLoadingVideoNode,
+  $isLoadingVideoNode,
+} from "@scribex/core";
 ```
 
 ### Functions
@@ -139,16 +145,16 @@ Type guard that returns `true` if the given node is a `LoadingVideoNode`.
 
 ### Instance methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `getObjectURL()` | `string` | Returns the local blob URL. |
-| `getFileName()` | `string` | Returns the original file name. |
+| Method           | Returns  | Description                     |
+| ---------------- | -------- | ------------------------------- |
+| `getObjectURL()` | `string` | Returns the local blob URL.     |
+| `getFileName()`  | `string` | Returns the original file name. |
 
 ### Serialized format
 
 ```ts
 type SerializedLoadingVideoNode = {
-  type: 'loading-video';
+  type: "loading-video";
   version: 1;
   objectURL: string;
   fileName: string;
@@ -156,7 +162,10 @@ type SerializedLoadingVideoNode = {
 ```
 
 <Callout type="warn">
-`LoadingVideoNode` is transient. It exists only while the upload is in progress. After the upload resolves or rejects, the `VideoPlugin` replaces or removes it. Always call `URL.revokeObjectURL()` after the upload completes to prevent memory leaks.
+  `LoadingVideoNode` is transient. It exists only while the upload is in
+  progress. After the upload resolves or rejects, the `VideoPlugin` replaces or
+  removes it. Always call `URL.revokeObjectURL()` after the upload completes to
+  prevent memory leaks.
 </Callout>
 
 ### Visual rendering
