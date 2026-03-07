@@ -79,6 +79,15 @@
   --scribex-callout-purple-bg: #eae4f2;
   --scribex-callout-purple-border: #6940a5;
 
+  /* Block selection */
+  --scribex-block-selection: rgba(45, 133, 255, 0.08);
+
+  /* Loading / overlay */
+  --scribex-loading-overlay: rgba(0, 0, 0, 0.1);
+
+  /* AI preview */
+  --scribex-ai-stream-bg: rgba(51, 102, 204, 0.05);
+
   /* Popover / floating UI chrome */
   --scribex-popover-bg: rgba(255, 255, 255, 0.82);
   --scribex-popover-border: rgba(0, 0, 0, 0.06);
@@ -153,6 +162,15 @@
   --scribex-callout-success-border: hsl(160 60% 42%);
   --scribex-callout-purple-bg: hsl(270 20% 20%);
   --scribex-callout-purple-border: hsl(270 55% 55%);
+
+  /* Block selection */
+  --scribex-block-selection: rgba(55, 131, 249, 0.15);
+
+  /* Loading / overlay */
+  --scribex-loading-overlay: rgba(255, 255, 255, 0.08);
+
+  /* AI preview */
+  --scribex-ai-stream-bg: rgba(100, 150, 255, 0.08);
 
   /* Popover / floating UI chrome */
   --scribex-popover-bg: rgba(30, 30, 34, 0.88);
