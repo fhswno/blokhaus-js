@@ -3,12 +3,12 @@ title: LinkPlugin
 description: Link creation, editing, and preview.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## Import
 
 ```tsx
-import { LinkPlugin } from '@scribex/core';
+import { LinkPlugin } from "@scribex/core";
 ```
 
 ## Overview
@@ -17,9 +17,9 @@ The `LinkPlugin` provides link creation, inline editing, and hover preview funct
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `config` | `LinkPluginConfig` | `{}` | Optional configuration for rendering, validation, and link behavior. |
+| Prop     | Type               | Default | Description                                                          |
+| -------- | ------------------ | ------- | -------------------------------------------------------------------- |
+| `config` | `LinkPluginConfig` | `{}`    | Optional configuration for rendering, validation, and link behavior. |
 
 ## The `LinkPluginConfig` interface
 
@@ -39,10 +39,7 @@ interface LinkPluginConfig {
    * Custom render function for the link hover preview card.
    * Receives the URL and the link text.
    */
-  renderLinkPreview?: (props: {
-    url: string;
-    text: string;
-  }) => React.ReactNode;
+  renderLinkPreview?: (props: { url: string; text: string }) => React.ReactNode;
   /**
    * Validates the URL before applying it. Return true to accept, false to reject.
    * Default: accepts any string that starts with http://, https://, or mailto:
@@ -66,9 +63,9 @@ interface LinkPluginConfig {
 ### Basic setup
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, LinkPlugin, FloatingToolbar } from '@scribex/core';
+import { EditorRoot, LinkPlugin, FloatingToolbar } from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -88,13 +85,13 @@ export default function EditorPage() {
     validateUrl: (url) => {
       try {
         const parsed = new URL(url);
-        return ['http:', 'https:', 'mailto:'].includes(parsed.protocol);
+        return ["http:", "https:", "mailto:"].includes(parsed.protocol);
       } catch {
         return false;
       }
     },
-    target: '_blank',
-    rel: 'noopener noreferrer nofollow',
+    target: "_blank",
+    rel: "noopener noreferrer nofollow",
   }}
 />
 ```
@@ -112,17 +109,23 @@ export default function EditorPage() {
           placeholder="https://example.com"
           className="px-2 py-1 border rounded text-sm"
           onKeyDown={(e) => {
-            if (e.key === 'Enter') onSubmit(e.currentTarget.value);
-            if (e.key === 'Escape') onCancel();
+            if (e.key === "Enter") onSubmit(e.currentTarget.value);
+            if (e.key === "Escape") onCancel();
           }}
           autoFocus
         />
         <div className="flex gap-2">
-          <button onClick={() => onSubmit(url)} className="text-sm text-scribex-accent">
+          <button
+            onClick={() => onSubmit(url)}
+            className="text-sm text-scribex-accent"
+          >
             Apply
           </button>
           {url && (
-            <button onClick={onRemove} className="text-sm text-scribex-destructive">
+            <button
+              onClick={onRemove}
+              className="text-sm text-scribex-destructive"
+            >
               Remove link
             </button>
           )}
@@ -135,14 +138,14 @@ export default function EditorPage() {
 
 ## Registered commands
 
-| Command | Payload | Description |
-|---|---|---|
-| `OPEN_LINK_INPUT_COMMAND` | `void` | Opens the link URL input at the current selection. |
+| Command                   | Payload | Description                                        |
+| ------------------------- | ------- | -------------------------------------------------- |
+| `OPEN_LINK_INPUT_COMMAND` | `void`  | Opens the link URL input at the current selection. |
 
 ## Keyboard shortcuts
 
-| Shortcut | Action |
-|---|---|
+| Shortcut                           | Action                                                                                                                                                                                   |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Cmd+K` (Mac) / `Ctrl+K` (Windows) | Open the link input for the current selection. If text is selected, it becomes the link text. If the cursor is inside an existing link, the input opens pre-filled with the current URL. |
 
 ## Behavior details
@@ -171,11 +174,15 @@ When the user hovers over a link, a preview card appears showing the URL. The pr
 Double-clicking a link opens it in a new tab using `window.open()` with the configured `target` and `rel` attributes. Single-clicking a link places the cursor inside the link text for editing.
 
 <Callout type="info">
-The `Cmd+K` shortcut is registered at `COMMAND_PRIORITY_EDITOR` level, which means it is automatically scoped to the editor that currently has focus. In multi-editor setups, the shortcut only affects the active editor.
+  The `Cmd+K` shortcut is registered at `COMMAND_PRIORITY_EDITOR` level, which
+  means it is automatically scoped to the editor that currently has focus. In
+  multi-editor setups, the shortcut only affects the active editor.
 </Callout>
 
 <Callout type="warn">
-The default `validateUrl` function only accepts URLs starting with `http://`, `https://`, or `mailto:`. If you need to support other protocols (e.g., `tel:`, `ftp:`), provide a custom `validateUrl` function.
+  The default `validateUrl` function only accepts URLs starting with `http://`,
+  `https://`, or `mailto:`. If you need to support other protocols (e.g.,
+  `tel:`, `ftp:`), provide a custom `validateUrl` function.
 </Callout>
 
 ## Related

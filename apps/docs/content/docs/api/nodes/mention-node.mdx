@@ -3,15 +3,15 @@ title: MentionNode
 description: Inline mention chip for @users, #tags, and custom triggers.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 `MentionNode` is a `DecoratorNode` that renders as a non-editable inline chip inside the editor. It supports any trigger character (`@`, `#`, or custom) and stores the referenced entity's ID, label, and trigger for serialization.
 
 ## Import
 
 ```tsx
-import { MentionNode, $createMentionNode, $isMentionNode } from '@scribex/core';
-import type { MentionPayload } from '@scribex/core';
+import { MentionNode, $createMentionNode, $isMentionNode } from "@scribex/core";
+import type { MentionPayload } from "@scribex/core";
 ```
 
 ## MentionPayload
@@ -25,12 +25,12 @@ interface MentionPayload {
 }
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `id` | `string` | Yes | Unique identifier of the mentioned entity (user ID, tag ID, etc.). |
-| `label` | `string` | Yes | Display text for the mention chip (e.g., "Alice", "feature-request"). |
-| `trigger` | `string` | Yes | The trigger character that created this mention (`"@"`, `"#"`, etc.). |
-| `key` | `NodeKey` | No | Explicit Lexical node key. |
+| Field     | Type      | Required | Description                                                           |
+| --------- | --------- | -------- | --------------------------------------------------------------------- |
+| `id`      | `string`  | Yes      | Unique identifier of the mentioned entity (user ID, tag ID, etc.).    |
+| `label`   | `string`  | Yes      | Display text for the mention chip (e.g., "Alice", "feature-request"). |
+| `trigger` | `string`  | Yes      | The trigger character that created this mention (`"@"`, `"#"`, etc.). |
+| `key`     | `NodeKey` | No       | Explicit Lexical node key.                                            |
 
 ## Functions
 
@@ -39,14 +39,14 @@ interface MentionPayload {
 Creates a new `MentionNode`. Must be called inside `editor.update()`. Typically invoked by a `MentionProvider`'s `onSelect` callback.
 
 ```ts
-import { $createMentionNode } from '@scribex/core';
+import { $createMentionNode } from "@scribex/core";
 
 // Inside a MentionProvider's onSelect:
 const onSelect = (item: MentionItem) => {
   return $createMentionNode({
     id: item.id,
     label: item.label,
-    trigger: '@',
+    trigger: "@",
   });
 };
 ```
@@ -70,16 +70,19 @@ editor.read(() => {
   }
 
   root.getChildren().forEach(collectMentions);
-  console.log('Found mentions:', mentions.map(m => m.getTextContent()));
+  console.log(
+    "Found mentions:",
+    mentions.map((m) => m.getTextContent()),
+  );
 });
 ```
 
 ## Instance methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `isInline()` | `true` | Always returns `true`. Mention nodes are inline elements. |
-| `getTextContent()` | `string` | Returns `trigger + label` (e.g., `"@Alice"`). |
+| Method             | Returns  | Description                                               |
+| ------------------ | -------- | --------------------------------------------------------- |
+| `isInline()`       | `true`   | Always returns `true`. Mention nodes are inline elements. |
+| `getTextContent()` | `string` | Returns `trigger + label` (e.g., `"@Alice"`).             |
 
 ## Serialized format
 
@@ -87,7 +90,7 @@ The JSON serialization uses `mentionId` (not `id`) to avoid collisions with Lexi
 
 ```ts
 type SerializedMentionNode = {
-  type: 'mention';
+  type: "mention";
   version: 1;
   mentionId: string;
   label: string;
@@ -121,29 +124,25 @@ The chip renders with a subtle background tint derived from the accent color usi
 `MentionNode` is typically created by `MentionPlugin` based on `MentionProvider` configuration:
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import {
-  EditorRoot,
-  MentionPlugin,
-  $createMentionNode,
-} from '@scribex/core';
-import type { MentionProvider, MentionItem } from '@scribex/core';
+import { EditorRoot, MentionPlugin, $createMentionNode } from "@scribex/core";
+import type { MentionProvider, MentionItem } from "@scribex/core";
 
 const userProvider: MentionProvider = {
-  trigger: '@',
+  trigger: "@",
   onSearch: async (query) => {
     const res = await fetch(`/api/users?q=${query}`);
     return res.json();
   },
   renderItem: (item) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <span>{item.label}</span>
       <span style={{ opacity: 0.5 }}>{item.meta}</span>
     </div>
   ),
   onSelect: (item) =>
-    $createMentionNode({ id: item.id, label: item.label, trigger: '@' }),
+    $createMentionNode({ id: item.id, label: item.label, trigger: "@" }),
 };
 
 export default function EditorPage() {
