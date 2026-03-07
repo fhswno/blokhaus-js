@@ -1,0 +1,13 @@
+{
+  "title": "API Reference",
+  "pages": [
+    "...components",
+    "...plugins",
+    "...nodes",
+    "...hooks",
+    "commands",
+    "types",
+    "utilities",
+    "data-and-presets"
+  ]
+}
