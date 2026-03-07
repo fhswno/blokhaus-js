@@ -1,0 +1,141 @@
+---
+title: Quick Start
+description: Build a fully-featured Notion-style editor in under 5 minutes.
+---
+
+This guide walks you through building a complete block editor with formatting toolbar, slash commands, drag-and-drop, images, and more.
+
+## 1. Create the editor page
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  FloatingToolbar,
+  SlashMenu,
+  OverlayPortal,
+  MobileToolbar,
+  InputRulePlugin,
+  ImagePlugin,
+  PastePlugin,
+  LinkPlugin,
+  ListPlugin,
+  EmojiPickerPlugin,
+  ColorPlugin,
+  BlockSelectionPlugin,
+  useEditorState,
+} from '@scribex/core';
+
+function Editor() {
+  const { serializedState } = useEditorState({
+    debounceMs: 300,
+    onChange: (json) => {
+      // Save to your backend
+      console.log('Editor state:', json);
+    },
+  });
+
+  return null;
+}
+
+const uploadHandler = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch('/api/upload', { method: 'POST', body: formData });
+  const { url } = await res.json();
+  return url;
+};
+
+export default function EditorPage() {
+  return (
+    <div className="max-w-3xl mx-auto py-12 px-4">
+      <EditorRoot
+        namespace="my-editor"
+        className="relative min-h-[500px] p-4 border rounded-lg"
+        placeholder="Start writing something amazing..."
+      >
+        {/* State management */}
+        <Editor />
+
+        {/* UI Components */}
+        <FloatingToolbar />
+        <SlashMenu />
+        <OverlayPortal namespace="my-editor" />
+        <MobileToolbar />
+
+        {/* Plugins */}
+        <InputRulePlugin />
+        <ImagePlugin uploadHandler={uploadHandler} />
+        <PastePlugin />
+        <LinkPlugin />
+        <ListPlugin />
+        <EmojiPickerPlugin />
+        <ColorPlugin />
+        <BlockSelectionPlugin />
+      </EditorRoot>
+    </div>
+  );
+}
+```
+
+## 2. Understanding the architecture
+
+Scribex follows a composable plugin architecture. Every feature is an independent React component passed as a child to `EditorRoot`:
+
+- **`EditorRoot`** — Wraps Lexical's `LexicalComposer` with all registered nodes
+- **UI Components** — Visual elements like toolbars and menus
+- **Plugins** — Headless logic that extends editor behavior (render `null`)
+
+This means you only include what you need. No prop explosion, no `<Editor enableAI enableImages enableTables />`.
+
+## 3. Add markdown shortcuts
+
+The `InputRulePlugin` enables markdown-style shortcuts out of the box:
+
+| Shortcut | Result |
+|---|---|
+| `# ` | Heading 1 |
+| `## ` | Heading 2 |
+| `### ` | Heading 3 |
+| `> ` | Blockquote |
+| `- ` or `* ` | Bullet list |
+| `1. ` | Numbered list |
+| `[ ] ` | Task list (unchecked) |
+| `[x] ` | Task list (checked) |
+| ` ``` ` | Code block |
+| `---` | Horizontal divider |
+
+## 4. Persist editor state
+
+Use the `useEditorState` hook to read the serialized JSON state:
+
+```tsx
+const { serializedState } = useEditorState({
+  debounceMs: 300,
+  onChange: (json) => {
+    // Save to database, localStorage, etc.
+    localStorage.setItem('editor-state', json);
+  },
+});
+```
+
+To restore state, pass it as `initialState`:
+
+```tsx
+const saved = localStorage.getItem('editor-state');
+
+<EditorRoot
+  namespace="my-editor"
+  initialState={saved}
+>
+  {/* plugins */}
+</EditorRoot>
+```
+
+## 5. Next steps
+
+- [Theming](/docs/guides/theming) — Customize colors, fonts, and spacing
+- [AI Integration](/docs/guides/ai-integration) — Add AI-powered content generation
+- [Mentions](/docs/guides/mentions) — Add @mentions and #tags
+- [API Reference](/docs/api/components/editor-root) — Complete API documentation
