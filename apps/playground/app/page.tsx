@@ -23,9 +23,14 @@ import {
   VideoPlugin,
   TogglePlugin,
   DirectionPlugin,
+  BlockSelectionPlugin,
   $createMentionNode,
   useEditorState,
   sanitizePastedHTML,
+  useLexicalComposerContext,
+  $getSelection,
+  $isRangeSelection,
+  TextNode,
 } from "@scribex/core";
 
 // REACT
@@ -37,6 +42,8 @@ import type {
   AIProvider,
   AIPluginConfig,
   MentionProvider,
+  SlashMenuItem,
+  LexicalEditor,
 } from "@scribex/core";
 
 /** Mock upload handler — simulates a 500ms upload and returns a blob URL.
@@ -212,14 +219,66 @@ const mentionProviders: MentionProvider[] = [
   tagMentionProvider,
 ];
 
+// ─── Theme toggle slash menu item ────────────────────────────────────────────
+
+const ThemeIcon = ({ size }: { size?: number }) => {
+  // Dynamic icon — renders sun or moon based on current theme
+  const isDark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+  return isDark ? (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor">
+      <path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z" />
+    </svg>
+  ) : (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor">
+      <path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.36A88,88,0,0,1,65.64,67.09,89,89,0,0,1,96,48.11,104.1,104.1,0,0,0,152,104a104.1,104.1,0,0,0,55.89,56A89,89,0,0,1,188.9,190.36Z" />
+    </svg>
+  );
+};
+
+function createThemeToggleItem(
+  toggleTheme: () => void,
+  editor: LexicalEditor,
+): SlashMenuItem {
+  return {
+    id: "toggle-theme",
+    label: "Toggle Theme",
+    description: "Switch between light and dark mode",
+    keywords: ["theme", "dark", "light", "mode", "night"],
+    icon: ThemeIcon,
+    onSelect: () => {
+      // Remove the "/" trigger text before toggling
+      editor.update(() => {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) return;
+        const anchor = selection.anchor.getNode();
+        if (anchor instanceof TextNode) {
+          anchor.remove();
+        }
+      });
+      toggleTheme();
+    },
+  };
+}
+
 // ─── Plugins (shared between all editors) ────────────────────────────────────
 
-function EditorPlugins({ namespace }: { namespace: string }) {
+function EditorPlugins({
+  namespace,
+  toggleTheme,
+}: {
+  namespace: string;
+  toggleTheme: () => void;
+}) {
+  const [editor] = useLexicalComposerContext();
+  const themeItem = createThemeToggleItem(toggleTheme, editor);
+
   return (
     <>
       <FloatingToolbar />
       <InputRulePlugin />
-      <SlashMenu />
+      <SlashMenu items={[themeItem]} />
       <OverlayPortal namespace={namespace} />
       <ImagePlugin uploadHandler={mockUploadHandler} />
       <AIPlugin provider={aiProvider} config={aiConfig} />
@@ -233,6 +292,7 @@ function EditorPlugins({ namespace }: { namespace: string }) {
       <VideoPlugin uploadHandler={mockUploadHandler} />
       <TogglePlugin />
       <DirectionPlugin />
+      <BlockSelectionPlugin />
       <PastePlugin />
       <EmojiPickerPlugin />
       <LinkPlugin />
@@ -279,9 +339,11 @@ function HiddenStateDisplay({
 function EditorCard({
   namespace,
   label,
+  toggleTheme,
 }: {
   namespace: string;
   label?: string;
+  toggleTheme: () => void;
 }) {
   const [editorState, setEditorState] = useState("");
   const [showState, setShowState] = useState(false);
@@ -305,7 +367,7 @@ function EditorCard({
       )}
       <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
         <EditorRoot namespace={namespace} className="relative p-4 min-h-32">
-          <EditorPlugins namespace={namespace} />
+          <EditorPlugins namespace={namespace} toggleTheme={toggleTheme} />
           <HiddenStateDisplay onStateChange={setEditorState} />
         </EditorRoot>
       </div>
@@ -334,6 +396,7 @@ export default function Page() {
   const [copied, setCopied] = useState(false);
   const [showDevEditors, setShowDevEditors] = useState(false);
   const [dark, setDark] = useState(false);
+  const toggleTheme = useCallback(() => setDark((d) => !d), []);
 
   // Expose sanitizePastedHTML on window for Playwright unit tests
   useEffect(() => {
@@ -436,7 +499,7 @@ export default function Page() {
           namespace="playground-editor"
           className="relative min-h-[70vh]"
         >
-          <EditorPlugins namespace="playground-editor" />
+          <EditorPlugins namespace="playground-editor" toggleTheme={toggleTheme} />
           <HiddenStateDisplay onStateChange={setEditorState} />
         </EditorRoot>
       </main>
@@ -466,11 +529,11 @@ export default function Page() {
 
           {showDevEditors && (
             <div className="mt-6 space-y-6">
-              <EditorCard namespace="playground-editor-b" label="Editor B" />
+              <EditorCard namespace="playground-editor-b" label="Editor B" toggleTheme={toggleTheme} />
               <div data-testid="stress-test-editors" className="space-y-6">
-                <EditorCard namespace="playground-editor-c" label="Editor C" />
-                <EditorCard namespace="playground-editor-d" label="Editor D" />
-                <EditorCard namespace="playground-editor-e" label="Editor E" />
+                <EditorCard namespace="playground-editor-c" label="Editor C" toggleTheme={toggleTheme} />
+                <EditorCard namespace="playground-editor-d" label="Editor D" toggleTheme={toggleTheme} />
+                <EditorCard namespace="playground-editor-e" label="Editor E" toggleTheme={toggleTheme} />
               </div>
             </div>
           )}
