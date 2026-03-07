@@ -1,0 +1,158 @@
+---
+title: InputRulePlugin
+description: Markdown-style shortcuts and the input rule engine.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Import
+
+```tsx
+import { InputRulePlugin } from '@scribex/core';
+```
+
+## Overview
+
+The `InputRulePlugin` is a Lexical plugin component (renders `null`) that powers markdown-style shortcuts and the slash menu trigger. It registers a `TextNode` transform via `editor.registerNodeTransform(TextNode, ...)` and checks each text change against a registry of `InputRule` objects. The engine is IME-safe, skipping all transforms during active composition sessions.
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `rules` | `InputRule[]` | `[]` | Custom input rules to register alongside the built-in rules. Custom rules are checked after built-in rules. |
+
+## The `InputRule` interface
+
+```ts
+interface InputRule {
+  /** The trigger pattern. Must include a trailing space or newline to fire. */
+  pattern: RegExp;
+  /** The node type this rule produces. Used for categorization. */
+  type: 'heading' | 'quote' | 'code' | 'divider' | 'custom';
+  /**
+   * Called when the pattern matches. Receives the matched text and the
+   * current TextNode. The engine clears the trigger text before calling this.
+   *
+   * IMPORTANT: This callback runs inside a Lexical node transform, which is
+   * already within an editor.update() context. Do NOT wrap mutations in
+   * editor.update() here.
+   */
+  onMatch: (match: RegExpMatchArray, node: TextNode, editor: LexicalEditor) => void;
+}
+```
+
+## Built-in rules
+
+These rules are registered by default and do not need to be passed via the `rules` prop:
+
+| Trigger | Produces | Notes |
+|---|---|---|
+| `# ` | Heading 1 | Requires trailing space |
+| `## ` | Heading 2 | Requires trailing space |
+| `### ` | Heading 3 | Requires trailing space |
+| `> ` | Blockquote | Requires trailing space |
+| `- ` or `* ` | Unordered list item | Requires trailing space |
+| `1. ` | Ordered list item | Requires trailing space |
+| `[] ` | Unchecked task item | Requires trailing space |
+| `[x] ` | Checked task item | Requires trailing space |
+| ` ``` ` | Code block | Fires without trailing space (unambiguous at 3 chars) |
+| `---` | Horizontal divider | Fires without trailing space (unambiguous at 3 chars) |
+| `/` | Opens slash menu | Dispatches `OPEN_SLASH_MENU_COMMAND` |
+
+## Usage
+
+### Basic usage with built-in rules only
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, InputRulePlugin, SlashMenu } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+      <InputRulePlugin />
+      <SlashMenu />
+    </EditorRoot>
+  );
+}
+```
+
+### Adding custom rules
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, InputRulePlugin } from '@scribex/core';
+import type { InputRule } from '@scribex/core';
+import { $createParagraphNode } from 'lexical';
+
+const customRules: InputRule[] = [
+  {
+    pattern: /^::note $/,
+    type: 'custom',
+    onMatch: (_match, node, editor) => {
+      const parent = node.getParent();
+      if (!parent) return;
+
+      // Defer command dispatch -- transforms cannot dispatch commands directly
+      queueMicrotask(() => {
+        editor.dispatchCommand(INSERT_CALLOUT_COMMAND, {
+          emoji: 'pencil',
+          colorPreset: 'blue',
+        });
+      });
+    },
+  },
+  {
+    pattern: /^\*\*\*$/,
+    type: 'divider',
+    onMatch: (_match, node) => {
+      const parent = node.getParent();
+      if (!parent) return;
+
+      const rule = $createHorizontalRuleNode();
+      const trailing = $createParagraphNode();
+      parent.replace(rule);
+      rule.insertAfter(trailing);
+      trailing.selectEnd();
+    },
+  },
+];
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <InputRulePlugin rules={customRules} />
+    </EditorRoot>
+  );
+}
+```
+
+## IME safety
+
+The engine checks `editor._compositionKey` before running any transforms. If the editor is in IME composition mode (the user is typing Japanese, Chinese, Korean, or another language that uses an input method editor), all transforms are skipped entirely. Transforms only resume after the `compositionend` event fires.
+
+This prevents false matches during CJK character composition where intermediate keystrokes may resemble trigger patterns.
+
+## Performance
+
+The engine includes several optimizations:
+
+1. **Length check**: Text content longer than 6 characters is skipped immediately. All built-in patterns match strings of 6 characters or fewer.
+2. **First-character index**: A pre-computed set of valid starting characters allows the engine to skip regex matching entirely when the first character is not a potential trigger.
+3. **Early exit**: Rules are checked in order. The first match wins.
+
+<Callout type="warn">
+Do not call `editor.update()` inside `onMatch`. The callback already runs inside a node transform, which is an update context. Nesting `editor.update()` calls causes unpredictable behavior.
+</Callout>
+
+<Callout type="warn">
+Use `queueMicrotask()` to dispatch Lexical commands from within `onMatch`. Dispatching commands directly inside a node transform is not supported by Lexical.
+</Callout>
+
+## Related
+
+- [Input Rules Guide](/docs/guides/input-rules) -- Extended tutorial with examples
+- [Slash Menu Guide](/docs/guides/slash-menu) -- Configuring the slash menu
+- [Custom Plugins Guide](/docs/guides/custom-plugins) -- Building your own plugins
