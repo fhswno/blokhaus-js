@@ -1,0 +1,243 @@
+---
+title: Mentions
+description: Add @mentions, #tags, and custom trigger-based mentions.
+---
+
+Scribex includes a fully extensible mention system. Out of the box it supports `@` for user mentions and `#` for tags, but you can register any trigger character. The system provides async search, keyboard-navigable dropdown, and a persistent `MentionNode` in the AST.
+
+## Core concepts
+
+The mention system has three parts:
+
+1. **`MentionProvider`** -- an interface you implement to supply search results for a trigger character.
+2. **`MentionPlugin`** -- a React component that detects trigger characters, manages the dropdown, and handles insertion.
+3. **`MentionNode`** -- a Lexical DecoratorNode that stores `{ id, label, trigger }` and renders as a non-editable inline chip.
+
+## The `MentionProvider` interface
+
+```ts
+interface MentionProvider {
+  /** The character that triggers this provider (e.g., '@', '#') */
+  trigger: string;
+  /**
+   * Called when the user types after the trigger. Return a promise that
+   * resolves to matching items. Return an empty array for no results.
+   */
+  onSearch: (query: string) => Promise<MentionItem[]>;
+  /**
+   * Renders a single item in the dropdown.
+   * Keep it lightweight -- this renders on every keystroke.
+   */
+  renderItem: (item: MentionItem) => React.ReactNode;
+  /**
+   * Called when the user selects an item. Return the Lexical node to insert.
+   * The plugin handles replacing the trigger + query text with this node.
+   */
+  onSelect: (item: MentionItem) => LexicalNode;
+}
+
+interface MentionItem {
+  id: string;
+  label: string;
+  /** Optional: rendered as secondary text in the dropdown item */
+  meta?: string;
+  /** Optional: URL to an avatar or icon */
+  icon?: string;
+}
+```
+
+## Basic setup
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, MentionPlugin, $createMentionNode } from '@scribex/core';
+import type { MentionProvider } from '@scribex/core';
+
+const userProvider: MentionProvider = {
+  trigger: '@',
+  onSearch: async (query) => {
+    // Replace with your actual API call
+    const users = [
+      { id: '1', label: 'Alice Johnson', meta: 'alice@example.com', icon: '/avatars/alice.jpg' },
+      { id: '2', label: 'Bob Smith', meta: 'bob@example.com', icon: '/avatars/bob.jpg' },
+      { id: '3', label: 'Charlie Brown', meta: 'charlie@example.com' },
+    ];
+    return users.filter((u) =>
+      u.label.toLowerCase().includes(query.toLowerCase()),
+    );
+  },
+  renderItem: (item) => <span>{item.label}</span>,
+  onSelect: (item) =>
+    $createMentionNode({ id: item.id, label: item.label, trigger: '@' }),
+};
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <MentionPlugin providers={[userProvider]} />
+    </EditorRoot>
+  );
+}
+```
+
+## Multiple providers
+
+Register multiple providers with different trigger characters. Each operates independently:
+
+```tsx
+const tagProvider: MentionProvider = {
+  trigger: '#',
+  onSearch: async (query) => {
+    const tags = [
+      { id: 'tag-1', label: 'documentation' },
+      { id: 'tag-2', label: 'feature-request' },
+      { id: 'tag-3', label: 'bug' },
+      { id: 'tag-4', label: 'enhancement' },
+    ];
+    return tags.filter((t) =>
+      t.label.toLowerCase().includes(query.toLowerCase()),
+    );
+  },
+  renderItem: (item) => (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ opacity: 0.5 }}>#</span>
+      {item.label}
+    </span>
+  ),
+  onSelect: (item) =>
+    $createMentionNode({ id: item.id, label: item.label, trigger: '#' }),
+};
+
+<MentionPlugin providers={[userProvider, tagProvider]} />
+```
+
+## Async search with API calls
+
+The `onSearch` function is asynchronous, so you can fetch results from your backend:
+
+```tsx
+const userProvider: MentionProvider = {
+  trigger: '@',
+  onSearch: async (query) => {
+    if (query.length < 2) return []; // Don't search until 2 chars
+
+    const response = await fetch(
+      `/api/users/search?q=${encodeURIComponent(query)}`,
+    );
+    const users = await response.json();
+
+    return users.map((user: { id: string; name: string; email: string; avatar?: string }) => ({
+      id: user.id,
+      label: user.name,
+      meta: user.email,
+      icon: user.avatar,
+    }));
+  },
+  renderItem: (item) => <span>{item.label}</span>,
+  onSelect: (item) =>
+    $createMentionNode({ id: item.id, label: item.label, trigger: '@' }),
+};
+```
+
+The search is debounced internally (50ms) to avoid excessive API calls during rapid typing.
+
+## Keyboard navigation
+
+The mention dropdown supports full keyboard navigation:
+
+| Key | Action |
+|---|---|
+| Arrow Down | Move selection to next item |
+| Arrow Up | Move selection to previous item |
+| Enter | Select the highlighted item |
+| Tab | Select the highlighted item |
+| Escape | Close the dropdown, leave trigger text as plain text |
+
+Keyboard commands are registered at `COMMAND_PRIORITY_HIGH` to intercept them before the editor's default handlers. Focus remains in the editor (not the popover) at all times.
+
+## Dropdown behavior
+
+The mention dropdown follows these rules:
+
+- **Opens** when the user types a trigger character (`@`, `#`, etc.) preceded by a space or at the start of a line.
+- **Filters** results as the user types after the trigger character. Each keystroke calls `onSearch` with the query string.
+- **Closes** when the user:
+  - Selects an item (Enter or Tab or click).
+  - Presses Escape.
+  - Backspaces past the trigger character.
+  - Moves the cursor away from the trigger text.
+  - Types a space or newline (no match likely).
+
+## The `MentionNode`
+
+When the user selects an item, the trigger text and query are replaced with a `MentionNode`. This node:
+
+- **Stores**: `{ id: string, label: string, trigger: string }`.
+- **Renders as**: an inline, non-editable chip with the trigger character and label (e.g., `@Alice Johnson`).
+- **Is focusable**: You can select it with the cursor. Pressing Backspace or Delete when the node is selected removes it.
+- **Serializes**: via `exportJSON()` / `importJSON()`, so mentions persist through save/load cycles.
+
+### Styling
+
+`@` mentions use the `--scribex-ai-stream` accent color by default. `#` tags use the `--scribex-accent` color. Both render with a subtle tinted background and the trigger character slightly dimmed.
+
+### Using `$createMentionNode`
+
+The `$createMentionNode` helper creates a `MentionNode` instance:
+
+```tsx
+import { $createMentionNode } from '@scribex/core';
+
+const node = $createMentionNode({
+  id: 'user-123',
+  label: 'Alice Johnson',
+  trigger: '@',
+});
+```
+
+This function must be called inside an `editor.update()` context or inside the `onSelect` callback of a `MentionProvider` (which is already inside an update).
+
+### Type guard
+
+Use `$isMentionNode` to check if a node is a `MentionNode`:
+
+```tsx
+import { $isMentionNode } from '@scribex/core';
+
+editor.read(() => {
+  const root = $getRoot();
+  root.getChildren().forEach((child) => {
+    // Walk the tree to find mention nodes
+    if ($isMentionNode(child)) {
+      console.log('Found mention:', child.getTextContent());
+    }
+  });
+});
+```
+
+## Custom trigger characters
+
+You can use any single character as a trigger. For example, a `/` trigger for slash commands or a `+` trigger for labels:
+
+```tsx
+const labelProvider: MentionProvider = {
+  trigger: '+',
+  onSearch: async (query) => {
+    const labels = [
+      { id: 'l1', label: 'urgent', meta: 'High priority' },
+      { id: 'l2', label: 'review-needed', meta: 'Needs review' },
+    ];
+    return labels.filter((l) =>
+      l.label.toLowerCase().includes(query.toLowerCase()),
+    );
+  },
+  renderItem: (item) => <span>{item.label}</span>,
+  onSelect: (item) =>
+    $createMentionNode({ id: item.id, label: item.label, trigger: '+' }),
+};
+```
+
+## Handling stale mentions
+
+When a `MentionItem`'s `id` no longer exists in your application's data (e.g., a user was deleted), the `MentionNode` still renders with its stored `label`. It is your responsibility to handle stale references at the application level, for example by styling them differently or filtering them during serialization.
