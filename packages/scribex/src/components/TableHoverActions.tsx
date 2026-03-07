@@ -637,6 +637,8 @@ export function TableHoverActions() {
       handle.removeEventListener("mousedown", onMouseDown);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
     };
   }, [editor, getColumnWidths, portalContainer, buildColHandles]);
 
