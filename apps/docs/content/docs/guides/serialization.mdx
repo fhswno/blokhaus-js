@@ -12,16 +12,16 @@ Scribex provides two serialization formats: **JSON** for persistence and **Markd
 Use the `useEditorState` hook to read the serialized JSON state. The hook debounces state changes to avoid performance issues with rapid updates:
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, useEditorState } from '@scribex/core';
+import { EditorRoot, useEditorState } from "@scribex/core";
 
 function Editor() {
   const { serializedState } = useEditorState({
     debounceMs: 300,
     onChange: (json) => {
       // Save to your backend, localStorage, etc.
-      localStorage.setItem('editor-state', json);
+      localStorage.setItem("editor-state", json);
     },
   });
 
@@ -30,7 +30,10 @@ function Editor() {
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <Editor />
     </EditorRoot>
   );
@@ -41,10 +44,10 @@ The `onChange` callback receives a JSON string representing the full Lexical edi
 
 ### `useEditorState` options
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `debounceMs` | `number` | `300` | Debounce delay in milliseconds. Do not set below 200ms. |
-| `onChange` | `(json: string) => void` | `undefined` | Called with the serialized JSON after each debounced update. |
+| Option       | Type                     | Default     | Description                                                  |
+| ------------ | ------------------------ | ----------- | ------------------------------------------------------------ |
+| `debounceMs` | `number`                 | `300`       | Debounce delay in milliseconds. Do not set below 200ms.      |
+| `onChange`   | `(json: string) => void` | `undefined` | Called with the serialized JSON after each debounced update. |
 
 The hook returns `{ serializedState }` -- a string containing the latest serialized state. When an `onChange` callback is provided, the hook skips updating its internal React state (to avoid unnecessary re-renders) and calls the callback directly.
 
@@ -53,14 +56,11 @@ The hook returns `{ serializedState }` -- a string containing the latest seriali
 Pass the saved JSON string as `initialState` to `EditorRoot`:
 
 ```tsx
-const saved = localStorage.getItem('editor-state');
+const saved = localStorage.getItem("editor-state");
 
-<EditorRoot
-  namespace="my-editor"
-  initialState={saved}
->
+<EditorRoot namespace="my-editor" initialState={saved}>
   {/* plugins */}
-</EditorRoot>
+</EditorRoot>;
 ```
 
 `initialState` accepts a JSON string or `null`. Passing `null` or `undefined` creates a blank editor.
@@ -106,15 +106,15 @@ The serialized state is a Lexical `EditorState` JSON object:
 
 The `format` field on text nodes is a bitmask:
 
-| Bit | Value | Format |
-|---|---|---|
-| 0 | 1 | Bold |
-| 1 | 2 | Italic |
-| 2 | 4 | Strikethrough |
-| 3 | 8 | Underline |
-| 4 | 16 | Code |
-| 5 | 32 | Subscript |
-| 6 | 64 | Superscript |
+| Bit | Value | Format        |
+| --- | ----- | ------------- |
+| 0   | 1     | Bold          |
+| 1   | 2     | Italic        |
+| 2   | 4     | Strikethrough |
+| 3   | 8     | Underline     |
+| 4   | 16    | Code          |
+| 5   | 32    | Subscript     |
+| 6   | 64    | Superscript   |
 
 ### Saving to a backend
 
@@ -131,9 +131,9 @@ function Editor() {
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
 
       saveTimeout.current = setTimeout(async () => {
-        await fetch('/api/documents/123', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch("/api/documents/123", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: json }),
         });
       }, 1000); // Save at most once per second
@@ -151,8 +151,8 @@ function Editor() {
 This function converts an array of Lexical nodes into a Markdown string. It is a pure function with no side effects -- call it inside `editor.read()`:
 
 ```tsx
-import { serializeNodesToMarkdown } from '@scribex/core';
-import { $getRoot } from 'lexical';
+import { serializeNodesToMarkdown } from "@scribex/core";
+import { $getRoot } from "lexical";
 
 // Read the entire document as Markdown
 const markdown = editor.read(() => {
@@ -167,25 +167,25 @@ console.log(markdown);
 
 The Markdown serializer handles the following node types:
 
-| Node type | Markdown output |
-|---|---|
-| Paragraph | Plain text (double newline separated) |
-| Heading (H1-H6) | `# `, `## `, `### `, etc. |
-| Blockquote | `> text` |
-| Bullet list | `- item` |
-| Numbered list | `1. item` |
-| Checklist | `- [x] item` or `- [ ] item` |
-| Bold text | `**text**` |
-| Italic text | `*text*` |
-| Strikethrough | `~~text~~` |
-| Inline code | `` `text` `` |
-| Link | `[text](url)` |
-| Image | `![alt](src)` |
-| Video | `[title](src)` |
-| Horizontal rule | `---` |
-| Table | Pipe-separated table with header row |
-| Toggle | `<details><summary>title</summary>content</details>` |
-| Callout | `> [!emoji] text` |
+| Node type       | Markdown output                                      |
+| --------------- | ---------------------------------------------------- |
+| Paragraph       | Plain text (double newline separated)                |
+| Heading (H1-H6) | `# `, `## `, `### `, etc.                            |
+| Blockquote      | `> text`                                             |
+| Bullet list     | `- item`                                             |
+| Numbered list   | `1. item`                                            |
+| Checklist       | `- [x] item` or `- [ ] item`                         |
+| Bold text       | `**text**`                                           |
+| Italic text     | `*text*`                                             |
+| Strikethrough   | `~~text~~`                                           |
+| Inline code     | `` `text` ``                                         |
+| Link            | `[text](url)`                                        |
+| Image           | `![alt](src)`                                        |
+| Video           | `[title](src)`                                       |
+| Horizontal rule | `---`                                                |
+| Table           | Pipe-separated table with header row                 |
+| Toggle          | `<details><summary>title</summary>content</details>` |
+| Callout         | `> [!emoji] text`                                    |
 
 Unknown node types fall back to their plain text content via `node.getTextContent()`.
 
@@ -204,7 +204,7 @@ Text formatting is applied based on the Lexical format bitmask:
 The primary use case for Markdown serialization is preparing context for AI models. Before an AI generation request, the surrounding editor content is serialized to Markdown:
 
 ```tsx
-import { serializeNodesToMarkdown } from '@scribex/core';
+import { serializeNodesToMarkdown } from "@scribex/core";
 
 // Inside the AI integration:
 editor.read(() => {
@@ -223,6 +223,7 @@ editor.read(() => {
 ```
 
 Markdown is used instead of raw Lexical JSON because:
+
 1. It is far more token-efficient (fewer tokens = lower cost and faster responses)
 2. AI models understand Markdown natively
 3. It preserves structural semantics (headings, lists, emphasis) that plain text loses
@@ -234,11 +235,11 @@ Markdown is used instead of raw Lexical JSON because:
 This function parses a Markdown string and creates Lexical nodes. It must be called inside `editor.update()` because it creates Lexical nodes that require an active editor context:
 
 ```tsx
-import { $parseMarkdownToLexicalNodes } from '@scribex/core';
-import { $getRoot } from 'lexical';
+import { $parseMarkdownToLexicalNodes } from "@scribex/core";
+import { $getRoot } from "lexical";
 
 editor.update(() => {
-  const markdown = '# Hello\n\nThis is **bold** and *italic* text.';
+  const markdown = "# Hello\n\nThis is **bold** and *italic* text.";
   const nodes = $parseMarkdownToLexicalNodes(markdown);
 
   const root = $getRoot();
@@ -253,18 +254,18 @@ editor.update(() => {
 
 The parser handles:
 
-| Markdown syntax | Lexical node |
-|---|---|
-| `# heading` | `HeadingNode` (h1-h6) |
-| `> quote` | `QuoteNode` |
-| `- item` or `* item` | `ListNode` (bullet) |
-| `1. item` | `ListNode` (number) |
-| `- [x] item` / `- [ ] item` | `ListNode` (check) |
-| `**bold**` | `TextNode` with bold format |
-| `*italic*` | `TextNode` with italic format |
-| `` `code` `` | `TextNode` with code format |
-| `~~strikethrough~~` | `TextNode` with strikethrough format |
-| Plain text | `ParagraphNode` |
+| Markdown syntax             | Lexical node                         |
+| --------------------------- | ------------------------------------ |
+| `# heading`                 | `HeadingNode` (h1-h6)                |
+| `> quote`                   | `QuoteNode`                          |
+| `- item` or `* item`        | `ListNode` (bullet)                  |
+| `1. item`                   | `ListNode` (number)                  |
+| `- [x] item` / `- [ ] item` | `ListNode` (check)                   |
+| `**bold**`                  | `TextNode` with bold format          |
+| `*italic*`                  | `TextNode` with italic format        |
+| `` `code` ``                | `TextNode` with code format          |
+| `~~strikethrough~~`         | `TextNode` with strikethrough format |
+| Plain text                  | `ParagraphNode`                      |
 
 Blocks are separated by double newlines (`\n\n`). Inline formatting is parsed within each block.
 

@@ -8,9 +8,9 @@ Scribex supports both video embeds (from URLs) and direct video file uploads. Th
 ## Basic setup
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, VideoPlugin } from '@scribex/core';
+import { EditorRoot, VideoPlugin } from "@scribex/core";
 
 export default function EditorPage() {
   return (
@@ -26,34 +26,37 @@ For embed-only support (no file uploads), pass no `uploadHandler`. To enable fil
 ```tsx
 const videoUploadHandler = async (file: File): Promise<string> => {
   const formData = new FormData();
-  formData.append('file', file);
-  const res = await fetch('/api/upload/video', { method: 'POST', body: formData });
+  formData.append("file", file);
+  const res = await fetch("/api/upload/video", {
+    method: "POST",
+    body: formData,
+  });
   const { url } = await res.json();
   return url;
 };
 
-<VideoPlugin uploadHandler={videoUploadHandler} />
+<VideoPlugin uploadHandler={videoUploadHandler} />;
 ```
 
 ## `VideoPlugin` props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `uploadHandler` | `UploadHandler` | -- | Handler for uploading video files. Omit to disable file uploads. |
-| `maxFileSize` | `number` | `52428800` (50MB) | Maximum video file size in bytes |
-| `allowedFormats` | `string[]` | `['video/mp4', 'video/webm', 'video/quicktime']` | Allowed MIME types for file upload |
-| `onFileRejected` | `(file: File, reason: 'size' \| 'format') => void` | -- | Called when a file is rejected |
+| Prop             | Type                                               | Default                                          | Description                                                      |
+| ---------------- | -------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| `uploadHandler`  | `UploadHandler`                                    | --                                               | Handler for uploading video files. Omit to disable file uploads. |
+| `maxFileSize`    | `number`                                           | `52428800` (50MB)                                | Maximum video file size in bytes                                 |
+| `allowedFormats` | `string[]`                                         | `['video/mp4', 'video/webm', 'video/quicktime']` | Allowed MIME types for file upload                               |
+| `onFileRejected` | `(file: File, reason: 'size' \| 'format') => void` | --                                               | Called when a file is rejected                                   |
 
 ## Supported embed providers
 
 The `parseVideoEmbed` utility recognizes URLs from these providers and converts them to embeddable iframe URLs:
 
-| Provider | Recognized URL patterns | Embed URL format |
-|---|---|---|
-| **YouTube** | `youtube.com/watch?v=ID`, `youtu.be/ID`, `youtube.com/embed/ID`, `youtube.com/shorts/ID`, `youtube.com/live/ID` | `https://www.youtube.com/embed/ID` |
-| **Vimeo** | `vimeo.com/ID`, `player.vimeo.com/video/ID`, `vimeo.com/channels/NAME/ID` | `https://player.vimeo.com/video/ID` |
-| **Loom** | `loom.com/share/ID`, `loom.com/embed/ID` | `https://www.loom.com/embed/ID` |
-| **Generic** | Any valid HTTP/HTTPS URL | The URL itself (rendered in an iframe) |
+| Provider    | Recognized URL patterns                                                                                         | Embed URL format                       |
+| ----------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **YouTube** | `youtube.com/watch?v=ID`, `youtu.be/ID`, `youtube.com/embed/ID`, `youtube.com/shorts/ID`, `youtube.com/live/ID` | `https://www.youtube.com/embed/ID`     |
+| **Vimeo**   | `vimeo.com/ID`, `player.vimeo.com/video/ID`, `vimeo.com/channels/NAME/ID`                                       | `https://player.vimeo.com/video/ID`    |
+| **Loom**    | `loom.com/share/ID`, `loom.com/embed/ID`                                                                        | `https://www.loom.com/embed/ID`        |
+| **Generic** | Any valid HTTP/HTTPS URL                                                                                        | The URL itself (rendered in an iframe) |
 
 If the URL is not recognized as a specific provider but is a valid URL, it falls through to the `generic` provider and is rendered in an iframe as-is.
 
@@ -66,9 +69,9 @@ When the user provides a video URL (via the `/video` slash menu item or programm
 3. The node renders as a responsive iframe with the provider's embed URL.
 
 ```ts
-import { parseVideoEmbed } from '@scribex/core';
+import { parseVideoEmbed } from "@scribex/core";
 
-const result = parseVideoEmbed('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+const result = parseVideoEmbed("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 // {
 //   provider: 'youtube',
 //   embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
@@ -101,11 +104,11 @@ When `VideoPlugin` is included, a "Video" item appears in the slash menu. Select
 Use Lexical commands to insert videos programmatically:
 
 ```tsx
-import { INSERT_VIDEO_COMMAND, OPEN_VIDEO_INPUT_COMMAND } from '@scribex/core';
+import { INSERT_VIDEO_COMMAND, OPEN_VIDEO_INPUT_COMMAND } from "@scribex/core";
 
 // Insert a video embed by URL
 editor.dispatchCommand(INSERT_VIDEO_COMMAND, {
-  url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+  url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 });
 
 // Insert a video from a File object
@@ -121,24 +124,24 @@ The `VideoNode` is a Lexical DecoratorNode that stores:
 
 ```ts
 interface VideoPayload {
-  src: string;               // Embed URL or uploaded video URL
-  videoType: 'embed' | 'file'; // Whether this is an embed or uploaded file
-  provider: string;          // 'youtube', 'vimeo', 'loom', 'generic', or 'upload'
-  title?: string;            // Display title / original URL
+  src: string; // Embed URL or uploaded video URL
+  videoType: "embed" | "file"; // Whether this is an embed or uploaded file
+  provider: string; // 'youtube', 'vimeo', 'loom', 'generic', or 'upload'
+  title?: string; // Display title / original URL
 }
 ```
 
 ### Creating a video node programmatically
 
 ```tsx
-import { $createVideoNode } from '@scribex/core';
+import { $createVideoNode } from "@scribex/core";
 
 editor.update(() => {
   const videoNode = $createVideoNode({
-    src: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    videoType: 'embed',
-    provider: 'youtube',
-    title: 'Rick Astley - Never Gonna Give You Up',
+    src: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    videoType: "embed",
+    provider: "youtube",
+    title: "Rick Astley - Never Gonna Give You Up",
   });
 
   const root = $getRoot();
@@ -149,10 +152,10 @@ editor.update(() => {
 ### Type guard
 
 ```tsx
-import { $isVideoNode } from '@scribex/core';
+import { $isVideoNode } from "@scribex/core";
 
 if ($isVideoNode(node)) {
-  console.log('Video provider:', node.getProvider());
+  console.log("Video provider:", node.getProvider());
 }
 ```
 
@@ -161,14 +164,14 @@ if ($isVideoNode(node)) {
 The `parseVideoEmbed` function is a pure utility (no React, no side effects) exported from `@scribex/core`:
 
 ```ts
-import { parseVideoEmbed } from '@scribex/core';
-import type { VideoEmbedInfo } from '@scribex/core';
+import { parseVideoEmbed } from "@scribex/core";
+import type { VideoEmbedInfo } from "@scribex/core";
 
 const info: VideoEmbedInfo | null = parseVideoEmbed(userInput);
 
 if (info) {
-  console.log(info.provider);    // 'youtube' | 'vimeo' | 'loom' | 'generic'
-  console.log(info.embedUrl);    // The iframe-compatible URL
+  console.log(info.provider); // 'youtube' | 'vimeo' | 'loom' | 'generic'
+  console.log(info.embedUrl); // The iframe-compatible URL
   console.log(info.thumbnailUrl); // Only for YouTube (optional)
 }
 ```
@@ -178,15 +181,23 @@ Returns `null` for non-URL strings or invalid protocols. Returns `{ provider: 'g
 ## Example: Video with upload and embed support
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+"use client";
 
-import { EditorRoot, VideoPlugin, InputRulePlugin, SlashMenu } from '@scribex/core';
+import {
+  EditorRoot,
+  VideoPlugin,
+  InputRulePlugin,
+  SlashMenu,
+} from "@scribex/core";
 
 const videoUpload = async (file: File): Promise<string> => {
   const formData = new FormData();
-  formData.append('video', file);
-  const res = await fetch('/api/upload/video', { method: 'POST', body: formData });
-  if (!res.ok) throw new Error('Video upload failed');
+  formData.append("video", file);
+  const res = await fetch("/api/upload/video", {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Video upload failed");
   const { url } = await res.json();
   return url;
 };
@@ -199,10 +210,11 @@ export default function EditorPage() {
       <VideoPlugin
         uploadHandler={videoUpload}
         maxFileSize={100 * 1024 * 1024} // 100MB
-        allowedFormats={['video/mp4', 'video/webm']}
+        allowedFormats={["video/mp4", "video/webm"]}
         onFileRejected={(file, reason) => {
-          if (reason === 'size') alert('Video too large. Max 100MB.');
-          if (reason === 'format') alert('Only MP4 and WebM files are supported.');
+          if (reason === "size") alert("Video too large. Max 100MB.");
+          if (reason === "format")
+            alert("Only MP4 and WebM files are supported.");
         }}
       />
     </EditorRoot>
