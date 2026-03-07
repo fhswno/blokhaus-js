@@ -10,11 +10,14 @@ When users paste content from external sources -- Google Docs, Microsoft Word, w
 Add the `PastePlugin` as a child of `EditorRoot`:
 
 ```tsx title="app/editor/page.tsx"
-import { EditorRoot, PastePlugin, ImagePlugin } from '@scribex/core';
+import { EditorRoot, PastePlugin, ImagePlugin } from "@scribex/core";
 
 export default function EditorPage() {
   return (
-    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+    <EditorRoot
+      namespace="my-editor"
+      className="min-h-[400px] p-4 border rounded"
+    >
       <PastePlugin />
       <ImagePlugin uploadHandler={uploadHandler} />
     </EditorRoot>
@@ -80,12 +83,12 @@ Every `class` attribute is removed. Google Docs, Word, and other applications ad
 
 Before stripping styles, the sanitizer checks for `font-size` values in inline styles. Google Docs often uses `<span style="font-size: 26pt">` instead of proper `<h1>` elements. The sanitizer maps font sizes to heading levels:
 
-| Font size | Heading level |
-|---|---|
-| 32px+ (24pt+) | `<h1>` |
-| 24px+ (18pt+) | `<h2>` |
-| 18px+ (13.5pt+) | `<h3>` |
-| Below 18px | Normal text (no heading) |
+| Font size       | Heading level            |
+| --------------- | ------------------------ |
+| 32px+ (24pt+)   | `<h1>`                   |
+| 24px+ (18pt+)   | `<h2>`                   |
+| 18px+ (13.5pt+) | `<h3>`                   |
+| Below 18px      | Normal text (no heading) |
 
 Unit conversion is handled automatically: `pt` values are converted to `px` using the standard 4/3 ratio, and `em`/`rem` values use a 16px base.
 
@@ -98,22 +101,22 @@ Unit conversion is handled automatically: `pt` values are converted to `px` usin
 
 Non-semantic formatting tags are converted to their semantic equivalents:
 
-| Input tag | Output tag |
-|---|---|
-| `<b>` | `<strong>` |
-| `<i>` | `<em>` |
-| `<del>` | `<s>` |
-| `<strike>` | `<s>` |
+| Input tag  | Output tag |
+| ---------- | ---------- |
+| `<b>`      | `<strong>` |
+| `<i>`      | `<em>`     |
+| `<del>`    | `<s>`      |
+| `<strike>` | `<s>`      |
 
 ### Preserves only semantic attributes
 
 For elements that survive sanitization, only specific attributes are kept:
 
-| Element | Preserved attributes |
-|---|---|
-| `<a>` | `href` |
-| `<img>` | `src`, `alt` |
-| All others | None |
+| Element    | Preserved attributes |
+| ---------- | -------------------- |
+| `<a>`      | `href`               |
+| `<img>`    | `src`, `alt`         |
+| All others | None                 |
 
 This means `onclick`, `onerror`, `data-*`, `id`, and all other attributes are stripped.
 
@@ -121,16 +124,16 @@ This means `onclick`, `onerror`, `data-*`, `id`, and all other attributes are st
 
 The sanitizer uses a strict **allowlist** approach. Only the following HTML tags survive sanitization. Any tag not on this list is unwrapped to its text content:
 
-| Category | Tags |
-|---|---|
-| Block structure | `p`, `br`, `hr` |
-| Headings | `h1`, `h2`, `h3`, `h4`, `h5`, `h6` |
+| Category          | Tags                                                |
+| ----------------- | --------------------------------------------------- |
+| Block structure   | `p`, `br`, `hr`                                     |
+| Headings          | `h1`, `h2`, `h3`, `h4`, `h5`, `h6`                  |
 | Inline formatting | `strong`, `b`, `em`, `i`, `u`, `s`, `del`, `strike` |
-| Code | `code`, `pre` |
-| Quotes | `blockquote` |
-| Lists | `ul`, `ol`, `li` |
-| Links and images | `a`, `img` |
-| Tables | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
+| Code              | `code`, `pre`                                       |
+| Quotes            | `blockquote`                                        |
+| Lists             | `ul`, `ol`, `li`                                    |
+| Links and images  | `a`, `img`                                          |
+| Tables            | `table`, `thead`, `tbody`, `tr`, `th`, `td`         |
 
 Note that `b`, `i`, `del`, and `strike` are on the allowlist but are normalized to `strong`, `em`, and `s` respectively during processing.
 
@@ -139,7 +142,7 @@ Note that `b`, `i`, `del`, and `strike` are on the allowlist but are normalized 
 The sanitization function is exported separately for use in custom paste handlers or server-side processing:
 
 ```tsx
-import { sanitizePastedHTML } from '@scribex/core';
+import { sanitizePastedHTML } from "@scribex/core";
 
 const dirtyHTML = '<div style="font-size: 26pt; color: red;">Hello</div>';
 const cleanHTML = sanitizePastedHTML(dirtyHTML);
@@ -153,7 +156,7 @@ const cleanHTML = sanitizePastedHTML(xssAttempt);
 ```
 
 ```tsx
-const nestedSpans = '<span><span><span>Deeply nested</span></span></span>';
+const nestedSpans = "<span><span><span>Deeply nested</span></span></span>";
 const cleanHTML = sanitizePastedHTML(nestedSpans);
 // Result: 'Deeply nested'
 ```
@@ -163,6 +166,7 @@ const cleanHTML = sanitizePastedHTML(nestedSpans);
 Image pastes are **not** handled by `PastePlugin`. When the user pastes an image (or a screenshot), the clipboard contains image files in `clipboardData.files`. The `PastePlugin` detects this and returns `false`, allowing the `ImagePlugin` to handle the paste through its upload pipeline.
 
 This separation ensures that:
+
 - Images go through the proper `UploadHandler` flow (local preview, upload, URL replacement)
 - The `PastePlugin` focuses solely on HTML and text content
 - No base64 image data ever enters the Lexical AST
@@ -181,23 +185,23 @@ Make sure both `PastePlugin` and `ImagePlugin` are included in your editor if yo
 The `sanitizePastedHTML` function is a pure function that takes an HTML string and returns a sanitized HTML string. It uses `DOMParser` internally, so it can be tested in any browser-like environment:
 
 ```ts
-import { sanitizePastedHTML } from '@scribex/core';
+import { sanitizePastedHTML } from "@scribex/core";
 
 // Google Docs heading
 const gdocsHTML = '<span style="font-size: 26pt;">My Title</span>';
-expect(sanitizePastedHTML(gdocsHTML)).toBe('<h1>My Title</h1>');
+expect(sanitizePastedHTML(gdocsHTML)).toBe("<h1>My Title</h1>");
 
 // XSS prevention
-const scriptHTML = '<p>Text</p><script>alert(1)</script>';
-expect(sanitizePastedHTML(scriptHTML)).toBe('<p>Text</p>');
+const scriptHTML = "<p>Text</p><script>alert(1)</script>";
+expect(sanitizePastedHTML(scriptHTML)).toBe("<p>Text</p>");
 
 // Event handler stripping
 const onclickHTML = '<p onclick="alert(1)">Text</p>';
-expect(sanitizePastedHTML(onclickHTML)).toBe('<p>Text</p>');
+expect(sanitizePastedHTML(onclickHTML)).toBe("<p>Text</p>");
 
 // Nested span collapse
-const spansHTML = '<span><span>Text</span></span>';
-expect(sanitizePastedHTML(spansHTML)).toBe('Text');
+const spansHTML = "<span><span>Text</span></span>";
+expect(sanitizePastedHTML(spansHTML)).toBe("Text");
 ```
 
 ## Related
