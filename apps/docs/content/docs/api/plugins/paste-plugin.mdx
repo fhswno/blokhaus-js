@@ -1,0 +1,142 @@
+---
+title: PastePlugin
+description: HTML paste sanitization pipeline.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Import
+
+```tsx
+import { PastePlugin } from '@scribex/core';
+```
+
+## Overview
+
+The `PastePlugin` intercepts paste events and sanitizes incoming HTML before it enters the Lexical AST. Pasting from external sources like Google Docs, Microsoft Word, and web pages produces dirty HTML with inline styles, non-semantic markup, and potentially dangerous elements. The plugin strips all of this down to clean, semantic HTML using a strict allowlist approach, then converts the result into Lexical nodes.
+
+## Props
+
+The `PastePlugin` accepts no props. It is a zero-configuration plugin that handles all paste sanitization automatically.
+
+## Usage
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { EditorRoot, PastePlugin } from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor">
+      <PastePlugin />
+    </EditorRoot>
+  );
+}
+```
+
+That is it. No configuration is needed. The plugin registers a `PASTE_COMMAND` listener at `COMMAND_PRIORITY_EDITOR` priority and returns `true` from the handler to prevent Lexical's default paste handling.
+
+## Sanitization pipeline
+
+When a paste event occurs, the plugin runs the following sequence:
+
+```
+Paste event fires
+  |
+  v
+Check ClipboardData for files (images)
+  |
+  +--[has image files]--> Skip (ImagePlugin handles this)
+  |
+  v
+Extract text/html from ClipboardData
+  |
+  +--[no HTML]--> Fall through to plain text handling
+  |
+  v
+Pass HTML string through sanitizePastedHTML()
+  |
+  v
+Parse sanitized HTML into Lexical nodes via $generateNodesFromDOM()
+  |
+  v
+Insert nodes at current selection -- single editor.update()
+```
+
+## What `sanitizePastedHTML` does
+
+The sanitization function applies the following transformations in order:
+
+1. **Strips all `style` attributes** -- removes inline font sizes, colors, margins, and other visual overrides from the source application.
+2. **Strips all `class` attributes** -- removes source-specific CSS class names.
+3. **Collapses nested `<span>` elements** -- Google Docs wraps text in deeply nested spans that carry no semantic meaning. These are collapsed to their text content.
+4. **Normalizes heading levels** -- Google Docs uses inconsistent heading levels. The sanitizer inspects relative font sizes before stripping styles, then maps to appropriate `<h1>`-`<h6>` elements.
+5. **Preserves only semantic attributes** -- `href` on `<a>`, `src` and `alt` on `<img>`. All other attributes are stripped.
+6. **Strips dangerous elements entirely** -- `<script>`, `<style>`, `<iframe>`, and `<object>` tags are removed including their content.
+7. **Applies the element allowlist** -- any element not on the allowlist is replaced with its text content.
+
+## Element allowlist
+
+Only these HTML elements survive sanitization. Everything else is stripped to its text content:
+
+| Category | Elements |
+|---|---|
+| Block | `p`, `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `blockquote`, `pre`, `hr` |
+| Inline | `strong`, `em`, `u`, `s`, `code`, `br` |
+| Lists | `ul`, `ol`, `li` |
+| Links & media | `a`, `img` |
+| Tables | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
+
+<Callout type="info">
+The allowlist is intentionally strict. It is easier to add an element to the allowlist than to recover from an XSS vulnerability caused by a denylist approach missing a dangerous element.
+</Callout>
+
+## Examples
+
+### Pasting from Google Docs
+
+**Input HTML (simplified):**
+```html
+<span style="font-size:26pt;font-family:Arial;">My Heading</span>
+<p style="line-height:1.38;margin-top:0pt;">
+  <span style="font-size:11pt;font-weight:700;">Bold text</span>
+  <span style="font-size:11pt;">and regular text</span>
+</p>
+```
+
+**Sanitized output:**
+```html
+<h1>My Heading</h1>
+<p><strong>Bold text</strong>and regular text</p>
+```
+
+### Pasting HTML with scripts
+
+**Input:**
+```html
+<p>Hello <script>alert('xss')</script>world</p>
+<div onclick="stealCookies()">Click me</div>
+```
+
+**Sanitized output:**
+```html
+<p>Hello world</p>
+<p>Click me</p>
+```
+
+The `<script>` tag and its content are removed entirely. The `<div>` is not on the allowlist, so it is stripped to its text content and wrapped in a paragraph. The `onclick` attribute is removed.
+
+## Interaction with other plugins
+
+- **ImagePlugin**: If the `ClipboardData` contains image files, the `PastePlugin` does not process them. The `ImagePlugin` handles file-based image pastes via its own `PASTE_COMMAND` handler.
+- **CodeBlockNode**: When pasting inside a code block, the plugin defers to plain text handling to preserve the raw text without any HTML parsing.
+
+<Callout type="warn">
+The `PastePlugin` uses a strict allowlist, not a denylist. If you need to support additional HTML elements (for example, `<details>` or `<summary>`), you will need to extend the sanitizer. See the [Paste Handling Guide](/docs/guides/paste-handling) for instructions.
+</Callout>
+
+## Related
+
+- [Paste Handling Guide](/docs/guides/paste-handling) -- Extended guide with customization
+- [Custom Plugins Guide](/docs/guides/custom-plugins) -- Building your own plugins
