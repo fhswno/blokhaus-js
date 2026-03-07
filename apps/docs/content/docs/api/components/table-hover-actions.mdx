@@ -1,0 +1,151 @@
+---
+title: TableHoverActions
+description: Visual row/column handles and resize controls for tables.
+---
+
+`TableHoverActions` renders interactive handles around tables when the user hovers over them. It provides row and column handles with context menus, "+" buttons for adding rows/columns, column resize via drag, and a table grip handle for selecting the entire table. It is completely disabled on touch devices.
+
+## Import
+
+```tsx
+import { TableHoverActions } from '@scribex/core';
+```
+
+## Props
+
+`TableHoverActions` accepts no props. It automatically detects mouse hover on table elements within the editor.
+
+## Basic usage
+
+Add `TableHoverActions` alongside `TablePlugin` and `TableActionMenu` as children of `EditorRoot`:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  TablePlugin,
+  TableActionMenu,
+  TableHoverActions,
+  SlashMenu,
+  InputRulePlugin,
+} from '@scribex/core';
+
+export default function EditorPage() {
+  return (
+    <EditorRoot namespace="my-editor" className="min-h-[400px] p-4 border rounded">
+      <SlashMenu />
+      <InputRulePlugin />
+      <TablePlugin />
+      <TableActionMenu />
+      <TableHoverActions />
+    </EditorRoot>
+  );
+}
+```
+
+## Features
+
+### Row handles
+
+Small handles appear to the left of each table row. Clicking a row handle opens a context menu with:
+
+| Action | Description |
+|---|---|
+| **Insert row above** | Adds a new row above the target row |
+| **Insert row below** | Adds a new row below the target row |
+| **Delete row** | Removes the target row (disabled if it is the only remaining row) |
+
+The handles display a horizontal bar icon that highlights on hover.
+
+### Column handles
+
+Handles appear above each column. Clicking a column handle opens a context menu with:
+
+| Action | Description |
+|---|---|
+| **Insert column left** | Adds a new column to the left of the target column |
+| **Insert column right** | Adds a new column to the right of the target column |
+| **Delete column** | Removes the target column (disabled if it is the only remaining column) |
+
+The handles display a vertical bar icon that highlights on hover.
+
+### Add row button
+
+A "+" button appears below the last row of the table. Clicking it appends a new row to the bottom of the table. The button spans the full width of the table and features a dashed border that highlights on hover.
+
+### Add column button
+
+A "+" button appears to the right of the last column. Clicking it appends a new column to the right side of the table. The button spans the full height of the table with a dashed border.
+
+### Column resize
+
+When the mouse is within 12px of a column border (between adjacent columns in the first row), a resize handle appears. Dragging the handle resizes the column:
+
+- A semi-transparent guide line follows the cursor during the drag to indicate the new column position.
+- The minimum column width is 40px.
+- On mouse release, the new column widths are persisted to the Lexical `TableNode` via `setColWidths()`.
+- The cursor changes to `col-resize` during the drag, and text selection is disabled to prevent interference.
+- After resize completes, column handles are rebuilt to reflect the new widths.
+
+### Table grip handle
+
+A six-dot grip icon appears at the top-left corner of the table (outside the table bounds). Clicking it selects the entire table as a `NodeSelection`, which allows:
+
+- Deleting the table with Backspace or Delete
+- Other operations that act on the selected node
+
+The tooltip reads "Click to select table, then press Delete to remove".
+
+## Touch device behavior
+
+The component checks for touch devices on mount:
+
+```ts
+window.matchMedia('(pointer: coarse)').matches
+```
+
+If the device is a touch device, the component renders nothing (`null`). All table hover interactions are desktop-only.
+
+## Performance
+
+`TableHoverActions` is built imperatively for performance:
+
+- Row and column handles are constructed as raw HTML strings (`innerHTML`) rather than React elements, avoiding React reconciliation overhead when rebuilding handles on table change.
+- Mouse tracking uses `requestAnimationFrame` throttling to avoid layout thrashing.
+- All overlay elements (handles, buttons, resize handle, guide line) are always present in the DOM and toggled via `visibility: hidden/visible`, avoiding mount/unmount costs.
+- Event listeners are attached directly to DOM elements for row/column handle clicks.
+- The component maintains a reference to the currently hovered table to avoid redundant handle rebuilds when the mouse moves within the same table.
+
+## Handle visibility
+
+The handles and buttons remain visible as long as the mouse is within a 40px margin around the active table's bounding rectangle. Moving outside this margin hides all overlays and clears the active table reference.
+
+## Context menu styling
+
+The row and column context menus use the same popover styling as other Scribex menus:
+
+- `--scribex-popover-bg` -- menu background
+- `--scribex-popover-border` -- menu border
+- `--scribex-popover-shadow` -- menu shadow
+- `--scribex-foreground` -- item text color
+- `--scribex-destructive` -- destructive action text color
+- `--scribex-hover-bg` -- item hover background
+
+Menus close on outside click or Escape key press.
+
+## Notes
+
+- `TableHoverActions` is a client component (`'use client'`).
+- It renders into a React Portal on `document.body`.
+- All row/column insertion and deletion operations are performed inside `editor.update()` for clean undo history.
+- The component resolves the Lexical `TableNode` key from the hovered DOM `<table>` element via `$getNearestNodeFromDOMNode()`. It handles cases where the `<table>` element maps to either the `TableNode` directly or its parent.
+- The "Delete row" action is prevented when there is only one remaining row. Similarly, "Delete column" is prevented for the last remaining column.
+- After row/column operations, `editor.focus()` is called to maintain editor focus.
+- Column widths are stored on the `TableNode` and applied via `<colgroup>` `<col>` elements, ensuring widths persist across serialization.
+
+## Related
+
+- [TablePlugin](/docs/api/plugins/table-plugin) -- Registers the table node and handles commands
+- [TableActionMenu](/docs/api/components/table-action-menu) -- Right-click context menu for table operations
+- [Tables guide](/docs/guides/tables) -- Complete table usage guide
