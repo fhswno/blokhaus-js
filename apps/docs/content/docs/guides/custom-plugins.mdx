@@ -1,0 +1,392 @@
+---
+title: Custom Plugins
+description: Build your own Lexical plugins that integrate with Scribex.
+---
+
+Scribex follows a composable plugin architecture. Every feature is an independent React component passed as a child to `EditorRoot`. Plugins render `null` and register Lexical listeners to extend editor behavior. This page explains how to build your own.
+
+## Plugin architecture
+
+A Scribex plugin is a React component that:
+
+1. Renders `null` (it has no visual output).
+2. Uses `useLexicalComposerContext()` to access the Lexical editor instance.
+3. Registers one or more Lexical listeners inside `useEffect`.
+4. Cleans up listeners by returning the unregister function from `useEffect`.
+
+```tsx title="plugins/MyPlugin.tsx"
+'use client';
+
+import { useEffect } from 'react';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+
+export function MyPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    // Register a listener — returns an unregister function
+    const unregister = editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        // Read from the editor state here
+      });
+    });
+
+    return unregister;
+  }, [editor]);
+
+  return null;
+}
+```
+
+Then use it by passing it as a child of `EditorRoot`:
+
+```tsx title="app/page.tsx"
+<EditorRoot namespace="my-editor">
+  <MyPlugin />
+  {/* other plugins */}
+</EditorRoot>
+```
+
+## Accessing the editor
+
+Every plugin starts by calling `useLexicalComposerContext()`:
+
+```tsx
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+
+const [editor] = useLexicalComposerContext();
+```
+
+This hook must be called inside a component that is a descendant of `EditorRoot` (which wraps `LexicalComposer`). It returns the `LexicalEditor` instance scoped to that specific editor, ensuring multi-editor isolation works correctly.
+
+## Registering commands
+
+Lexical uses a command system for actions like formatting, inserting nodes, and handling keyboard shortcuts. Register a command listener to intercept or dispatch commands:
+
+```tsx title="plugins/LogBoldPlugin.tsx"
+'use client';
+
+import { useEffect } from 'react';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { FORMAT_TEXT_COMMAND, COMMAND_PRIORITY_LOW } from 'lexical';
+
+export function LogBoldPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerCommand(
+      FORMAT_TEXT_COMMAND,
+      (format) => {
+        if (format === 'bold') {
+          console.log('Bold formatting applied');
+        }
+        // Return false to let other handlers also process this command
+        return false;
+      },
+      COMMAND_PRIORITY_LOW,
+    );
+  }, [editor]);
+
+  return null;
+}
+```
+
+### Command priorities
+
+Lexical processes command handlers from highest to lowest priority. Once a handler returns `true`, subsequent handlers are skipped.
+
+| Priority | Use case |
+|---|---|
+| `COMMAND_PRIORITY_CRITICAL` | Framework-level interceptors (rarely used) |
+| `COMMAND_PRIORITY_HIGH` | Handlers that must override defaults (e.g., mention keyboard nav) |
+| `COMMAND_PRIORITY_NORMAL` | Standard feature handlers |
+| `COMMAND_PRIORITY_LOW` | Plugins that observe but do not block |
+| `COMMAND_PRIORITY_EDITOR` | Default editor behavior (lowest) |
+
+### Dispatching commands
+
+To trigger a command from your own code:
+
+```tsx
+editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+```
+
+### Creating custom commands
+
+Define your own commands using `createCommand`:
+
+```tsx title="commands.ts"
+import { createCommand, type LexicalCommand } from 'lexical';
+
+export const MY_CUSTOM_COMMAND: LexicalCommand<{ message: string }> =
+  createCommand('MY_CUSTOM_COMMAND');
+```
+
+Then register and dispatch it like any built-in command.
+
+## Registering node transforms
+
+Node transforms run whenever a specific node type is created or modified. They are useful for input rules, auto-formatting, and validation:
+
+```tsx title="plugins/AutoCapitalizePlugin.tsx"
+'use client';
+
+import { useEffect } from 'react';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { TextNode } from 'lexical';
+
+export function AutoCapitalizePlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerNodeTransform(TextNode, (textNode) => {
+      const text = textNode.getTextContent();
+      // Capitalize the first letter of each sentence
+      const parent = textNode.getParent();
+      if (!parent) return;
+
+      const isFirstChild = parent.getFirstChild() === textNode;
+      if (isFirstChild && text.length > 0) {
+        const first = text[0];
+        if (first && first !== first.toUpperCase()) {
+          textNode.setTextContent(first.toUpperCase() + text.slice(1));
+        }
+      }
+    });
+  }, [editor]);
+
+  return null;
+}
+```
+
+Node transforms run inside an `editor.update()` context, so you can mutate the AST directly. Do not wrap mutations in another `editor.update()` call inside a transform -- that would create a nested update, which is not supported.
+
+## Registering update listeners
+
+Update listeners fire after every editor state change. They are read-only by design -- use them to observe the state, not to modify it.
+
+```tsx title="plugins/WordCountPlugin.tsx"
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $getRoot } from 'lexical';
+
+export function WordCountPlugin({
+  onCount,
+}: {
+  onCount?: (count: number) => void;
+}) {
+  const [editor] = useLexicalComposerContext();
+  const [wordCount, setWordCount] = useState(0);
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const root = $getRoot();
+        const text = root.getTextContent();
+        const words = text.trim().split(/\s+/).filter(Boolean);
+        const count = words.length;
+        setWordCount(count);
+        onCount?.(count);
+      });
+    });
+  }, [editor, onCount]);
+
+  // This plugin does render UI -- that's fine too
+  return (
+    <div className="text-xs text-scribex-muted-foreground p-2">
+      {wordCount} words
+    </div>
+  );
+}
+```
+
+## Example: Auto-save plugin
+
+Here is a practical plugin that auto-saves the editor state to `localStorage` with debouncing:
+
+```tsx title="plugins/AutoSavePlugin.tsx"
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+
+interface AutoSavePluginProps {
+  /** localStorage key to save to */
+  storageKey: string;
+  /** Debounce delay in milliseconds. Default: 1000 */
+  debounceMs?: number;
+  /** Called after each successful save */
+  onSave?: (serializedState: string) => void;
+}
+
+export function AutoSavePlugin({
+  storageKey,
+  debounceMs = 1000,
+  onSave,
+}: AutoSavePluginProps) {
+  const [editor] = useLexicalComposerContext();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        const json = JSON.stringify(editorState.toJSON());
+        try {
+          localStorage.setItem(storageKey, json);
+          onSave?.(json);
+        } catch (error) {
+          console.error('[AutoSave] Failed to save:', error);
+        }
+      }, debounceMs);
+    });
+  }, [editor, storageKey, debounceMs, onSave]);
+
+  return null;
+}
+```
+
+Usage:
+
+```tsx
+<EditorRoot
+  namespace="my-editor"
+  initialState={
+    typeof window !== 'undefined'
+      ? localStorage.getItem('my-editor-state')
+      : null
+  }
+>
+  <AutoSavePlugin
+    storageKey="my-editor-state"
+    debounceMs={500}
+    onSave={() => console.log('Saved')}
+  />
+</EditorRoot>
+```
+
+## Example: Character limit plugin
+
+A plugin that prevents the user from typing beyond a character limit:
+
+```tsx title="plugins/CharacterLimitPlugin.tsx"
+'use client';
+
+import { useEffect } from 'react';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $getRoot, $getSelection, $isRangeSelection } from 'lexical';
+import { trimTextContentFromAnchor } from '@lexical/selection';
+
+interface CharacterLimitPluginProps {
+  maxLength: number;
+}
+
+export function CharacterLimitPlugin({ maxLength }: CharacterLimitPluginProps) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      const isComposing =
+        (editor as unknown as { _compositionKey: string | null })
+          ._compositionKey !== null;
+      if (isComposing) return;
+
+      editorState.read(() => {
+        const root = $getRoot();
+        const text = root.getTextContent();
+        if (text.length <= maxLength) return;
+
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return;
+          trimTextContentFromAnchor(
+            editor,
+            selection.anchor,
+            text.length - maxLength,
+          );
+        });
+      });
+    });
+  }, [editor, maxLength]);
+
+  return null;
+}
+```
+
+## Common mistakes to avoid
+
+### Nested `editor.update()` calls
+
+Never call `editor.update()` inside another `editor.update()` or inside a node transform. Nested updates cause unpredictable behavior.
+
+```tsx
+// WRONG -- nested update
+editor.update(() => {
+  editor.update(() => {
+    // This will break
+  });
+});
+
+// CORRECT -- single update
+editor.update(() => {
+  // All mutations in one call
+});
+```
+
+### Updating inside update listeners
+
+Never call `editor.update()` inside `editor.registerUpdateListener()`. This creates an infinite loop.
+
+```tsx
+// WRONG -- infinite loop
+editor.registerUpdateListener(() => {
+  editor.update(() => {
+    // This triggers another update listener, which triggers another update...
+  });
+});
+
+// CORRECT -- use a node transform or command instead
+editor.registerNodeTransform(TextNode, (textNode) => {
+  // Mutations inside transforms are safe
+});
+```
+
+### Missing cleanup
+
+Always return the unregister function from `useEffect`. Failing to do so causes memory leaks and stale listeners.
+
+```tsx
+// WRONG -- no cleanup
+useEffect(() => {
+  editor.registerUpdateListener(() => {});
+}, [editor]);
+
+// CORRECT -- return unregister function
+useEffect(() => {
+  return editor.registerUpdateListener(() => {});
+}, [editor]);
+```
+
+### Forgetting `'use client'`
+
+All plugins that use hooks or browser APIs must include the `'use client'` directive at the top of the file. Scribex is built for Next.js App Router, where components are server components by default.
+
+### Accessing `window` at module load time
+
+Never access `window` or `document` at the top level of a module. This breaks server-side rendering. Always access browser APIs inside `useEffect` or behind a `typeof window !== 'undefined'` check.
+
+```tsx
+// WRONG -- breaks SSR
+const isMobile = window.matchMedia('(pointer: coarse)').matches;
+
+// CORRECT -- check inside useEffect
+useEffect(() => {
+  const isMobile = window.matchMedia('(pointer: coarse)').matches;
+  // ...
+}, []);
+```
