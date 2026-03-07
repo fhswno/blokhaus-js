@@ -1,0 +1,776 @@
+---
+title: Custom Slash Items
+description: Add custom items to the slash command menu.
+---
+
+The slash menu is extensible by design. You pass additional `SlashMenuItem` objects to the `SlashMenu` component, and they appear alongside the built-in items. This page shows four practical examples: a YouTube embed, a timestamp inserter, a content template, and an API data fetcher.
+
+## The `SlashMenuItem` interface
+
+```ts
+interface SlashMenuItem {
+  /** Unique identifier for the item */
+  id: string;
+  /** Display label shown in the menu */
+  label: string;
+  /** Short description shown alongside the label */
+  description: string;
+  /** Icon component rendered next to the label */
+  icon: React.ComponentType<{ size?: number }>;
+  /** Called when the item is selected */
+  onSelect: () => void;
+  /** Extra search terms for fuzzy matching */
+  keywords?: string[];
+}
+```
+
+Pass custom items via the `items` prop on `SlashMenu`. They are appended after the default items:
+
+```tsx
+<SlashMenu items={customItems} />
+```
+
+Because `onSelect` is called outside of the `EditorRoot` context, items that need to mutate the editor must capture the editor instance via `useLexicalComposerContext` from a component rendered inside `EditorRoot`.
+
+---
+
+## Example 1: YouTube Embed
+
+This item opens an inline input for a YouTube URL, parses it, and inserts a `VideoNode` using the `INSERT_VIDEO_COMMAND`.
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { useState, useCallback } from 'react';
+import {
+  EditorRoot,
+  SlashMenu,
+  InputRulePlugin,
+  VideoPlugin,
+  INSERT_VIDEO_COMMAND,
+} from '@scribex/core';
+import type { SlashMenuItem } from '@scribex/core';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { Youtube } from 'lucide-react';
+
+function useYouTubeSlashItem(): SlashMenuItem[] {
+  const [editor] = useLexicalComposerContext();
+
+  return [
+    {
+      id: 'youtube-embed',
+      label: 'YouTube Video',
+      description: 'Embed a YouTube video by URL',
+      icon: ({ size }) => <Youtube size={size} />,
+      keywords: ['video', 'embed', 'youtube', 'movie', 'clip'],
+      onSelect: () => {
+        const url = window.prompt('Paste a YouTube URL:');
+        if (!url) return;
+
+        // Basic YouTube URL validation
+        const youtubeRegex =
+          /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+        const match = url.match(youtubeRegex);
+
+        if (!match) {
+          alert('Invalid YouTube URL. Please paste a valid YouTube link.');
+          return;
+        }
+
+        editor.dispatchCommand(INSERT_VIDEO_COMMAND, { url });
+      },
+    },
+  ];
+}
+
+function EditorWithYouTube() {
+  const youtubeItems = useYouTubeSlashItem();
+
+  return (
+    <>
+      <SlashMenu items={youtubeItems} />
+      <InputRulePlugin />
+      <VideoPlugin />
+    </>
+  );
+}
+
+export default function Page() {
+  return (
+    <EditorRoot namespace="youtube-editor" className="min-h-[500px] p-4 border rounded-lg">
+      <EditorWithYouTube />
+    </EditorRoot>
+  );
+}
+```
+
+Type `/youtube` in the editor and the item appears. Selecting it opens a browser prompt for the URL.
+
+For a better UX, replace `window.prompt` with a Radix `Popover` inline input. See the [full-featured example](/docs/examples/full-featured) for a pattern using Radix UI.
+
+---
+
+## Example 2: Timestamp
+
+Insert the current date and time as a formatted text node. This is useful for meeting notes, journals, and logs.
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  SlashMenu,
+  InputRulePlugin,
+} from '@scribex/core';
+import type { SlashMenuItem } from '@scribex/core';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import {
+  $getSelection,
+  $isRangeSelection,
+  $createParagraphNode,
+  $createTextNode,
+} from 'lexical';
+import { Clock } from 'lucide-react';
+
+function useTimestampSlashItem(): SlashMenuItem[] {
+  const [editor] = useLexicalComposerContext();
+
+  return [
+    {
+      id: 'timestamp',
+      label: 'Timestamp',
+      description: 'Insert the current date and time',
+      icon: ({ size }) => <Clock size={size} />,
+      keywords: ['date', 'time', 'now', 'today', 'clock'],
+      onSelect: () => {
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return;
+
+          const now = new Date();
+          const formatted = now.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+
+          // Replace the current block with the timestamp
+          const anchorNode = selection.anchor.getNode();
+          const topLevelElement = anchorNode.getTopLevelElement();
+
+          if (topLevelElement) {
+            const paragraph = $createParagraphNode();
+            paragraph.append($createTextNode(formatted));
+            topLevelElement.replace(paragraph);
+            paragraph.selectEnd();
+          }
+        });
+      },
+    },
+  ];
+}
+
+function EditorWithTimestamp() {
+  const timestampItems = useTimestampSlashItem();
+
+  return (
+    <>
+      <SlashMenu items={timestampItems} />
+      <InputRulePlugin />
+    </>
+  );
+}
+
+export default function Page() {
+  return (
+    <EditorRoot namespace="timestamp-editor" className="min-h-[500px] p-4 border rounded-lg">
+      <EditorWithTimestamp />
+    </EditorRoot>
+  );
+}
+```
+
+Type `/time` or `/date` to find the Timestamp item via keyword matching.
+
+---
+
+## Example 3: Content Template
+
+Insert pre-defined content blocks -- useful for meeting notes, bug reports, product specs, or any repeatable structure.
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  SlashMenu,
+  InputRulePlugin,
+  ListPlugin,
+} from '@scribex/core';
+import type { SlashMenuItem } from '@scribex/core';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import {
+  $getSelection,
+  $isRangeSelection,
+  $getRoot,
+  $createParagraphNode,
+  $createTextNode,
+} from 'lexical';
+import { $createHeadingNode } from '@lexical/rich-text';
+import { $createListNode, $createListItemNode } from '@lexical/list';
+import { FileText, Bug, ClipboardList } from 'lucide-react';
+
+function useTemplateSlashItems(): SlashMenuItem[] {
+  const [editor] = useLexicalComposerContext();
+
+  const insertTemplate = (buildNodes: () => void) => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) return;
+
+      // Remove the current empty paragraph (where "/" was typed)
+      const anchorNode = selection.anchor.getNode();
+      const topLevelElement = anchorNode.getTopLevelElement();
+      if (topLevelElement) {
+        topLevelElement.remove();
+      }
+
+      buildNodes();
+    });
+  };
+
+  return [
+    {
+      id: 'template-meeting-notes',
+      label: 'Meeting Notes',
+      description: 'Template for meeting notes with agenda and action items',
+      icon: ({ size }) => <ClipboardList size={size} />,
+      keywords: ['template', 'meeting', 'notes', 'agenda', 'minutes'],
+      onSelect: () => {
+        insertTemplate(() => {
+          const root = $getRoot();
+
+          // Title
+          const heading = $createHeadingNode('h2');
+          heading.append($createTextNode('Meeting Notes'));
+          root.append(heading);
+
+          // Date
+          const dateParagraph = $createParagraphNode();
+          const dateStr = new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+          dateParagraph.append($createTextNode(`Date: ${dateStr}`));
+          root.append(dateParagraph);
+
+          // Attendees
+          const attendeesHeading = $createHeadingNode('h3');
+          attendeesHeading.append($createTextNode('Attendees'));
+          root.append(attendeesHeading);
+
+          const attendeesList = $createListNode('bullet');
+          const attendeeItem = $createListItemNode();
+          attendeeItem.append($createTextNode(''));
+          attendeesList.append(attendeeItem);
+          root.append(attendeesList);
+
+          // Agenda
+          const agendaHeading = $createHeadingNode('h3');
+          agendaHeading.append($createTextNode('Agenda'));
+          root.append(agendaHeading);
+
+          const agendaList = $createListNode('number');
+          const agendaItem = $createListItemNode();
+          agendaItem.append($createTextNode(''));
+          agendaList.append(agendaItem);
+          root.append(agendaList);
+
+          // Discussion
+          const discussionHeading = $createHeadingNode('h3');
+          discussionHeading.append($createTextNode('Discussion'));
+          root.append(discussionHeading);
+
+          const discussionParagraph = $createParagraphNode();
+          discussionParagraph.append($createTextNode(''));
+          root.append(discussionParagraph);
+
+          // Action Items
+          const actionsHeading = $createHeadingNode('h3');
+          actionsHeading.append($createTextNode('Action Items'));
+          root.append(actionsHeading);
+
+          const actionsList = $createListNode('check');
+          const actionItem = $createListItemNode();
+          actionItem.append($createTextNode(''));
+          actionsList.append(actionItem);
+          root.append(actionsList);
+
+          // Focus the first attendee item
+          attendeeItem.selectEnd();
+        });
+      },
+    },
+    {
+      id: 'template-bug-report',
+      label: 'Bug Report',
+      description: 'Structured bug report with steps to reproduce',
+      icon: ({ size }) => <Bug size={size} />,
+      keywords: ['template', 'bug', 'report', 'issue', 'defect'],
+      onSelect: () => {
+        insertTemplate(() => {
+          const root = $getRoot();
+
+          const heading = $createHeadingNode('h2');
+          heading.append($createTextNode('Bug Report'));
+          root.append(heading);
+
+          const sections = [
+            { title: 'Summary', placeholder: 'Brief description of the bug' },
+            { title: 'Steps to Reproduce', placeholder: '' },
+            { title: 'Expected Behavior', placeholder: 'What should happen' },
+            { title: 'Actual Behavior', placeholder: 'What actually happens' },
+            { title: 'Environment', placeholder: 'OS, browser, version, etc.' },
+          ];
+
+          let firstParagraph: ReturnType<typeof $createParagraphNode> | null = null;
+
+          for (const section of sections) {
+            const sectionHeading = $createHeadingNode('h3');
+            sectionHeading.append($createTextNode(section.title));
+            root.append(sectionHeading);
+
+            if (section.title === 'Steps to Reproduce') {
+              const list = $createListNode('number');
+              const item = $createListItemNode();
+              item.append($createTextNode(''));
+              list.append(item);
+              root.append(list);
+            } else {
+              const paragraph = $createParagraphNode();
+              paragraph.append($createTextNode(section.placeholder));
+              root.append(paragraph);
+              if (!firstParagraph) firstParagraph = paragraph;
+            }
+          }
+
+          firstParagraph?.selectEnd();
+        });
+      },
+    },
+    {
+      id: 'template-spec',
+      label: 'Product Spec',
+      description: 'Product specification template with goals and scope',
+      icon: ({ size }) => <FileText size={size} />,
+      keywords: ['template', 'spec', 'product', 'prd', 'requirements', 'specification'],
+      onSelect: () => {
+        insertTemplate(() => {
+          const root = $getRoot();
+
+          const heading = $createHeadingNode('h2');
+          heading.append($createTextNode('Product Specification'));
+          root.append(heading);
+
+          const sections = [
+            'Overview',
+            'Goals',
+            'Non-Goals',
+            'User Stories',
+            'Technical Approach',
+            'Open Questions',
+            'Timeline',
+          ];
+
+          for (const section of sections) {
+            const sectionHeading = $createHeadingNode('h3');
+            sectionHeading.append($createTextNode(section));
+            root.append(sectionHeading);
+
+            const paragraph = $createParagraphNode();
+            paragraph.append($createTextNode(''));
+            root.append(paragraph);
+          }
+        });
+      },
+    },
+  ];
+}
+
+function EditorWithTemplates() {
+  const templateItems = useTemplateSlashItems();
+
+  return (
+    <>
+      <SlashMenu items={templateItems} />
+      <InputRulePlugin />
+      <ListPlugin />
+    </>
+  );
+}
+
+export default function Page() {
+  return (
+    <EditorRoot namespace="template-editor" className="min-h-[500px] p-4 border rounded-lg">
+      <EditorWithTemplates />
+    </EditorRoot>
+  );
+}
+```
+
+Type `/meeting`, `/bug`, or `/spec` to quickly insert structured templates.
+
+---
+
+## Example 4: Fetch Data from an API
+
+Insert dynamic content from an external API. This example fetches a random quote and inserts it as a blockquote.
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  SlashMenu,
+  InputRulePlugin,
+} from '@scribex/core';
+import type { SlashMenuItem } from '@scribex/core';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import {
+  $getSelection,
+  $isRangeSelection,
+  $createParagraphNode,
+  $createTextNode,
+} from 'lexical';
+import { $createQuoteNode } from '@lexical/rich-text';
+import { Quote, Globe } from 'lucide-react';
+
+function useApiDataSlashItems(): SlashMenuItem[] {
+  const [editor] = useLexicalComposerContext();
+
+  return [
+    {
+      id: 'random-quote',
+      label: 'Random Quote',
+      description: 'Fetch and insert an inspirational quote',
+      icon: ({ size }) => <Quote size={size} />,
+      keywords: ['quote', 'inspiration', 'random', 'fetch'],
+      onSelect: async () => {
+        try {
+          // Fetch a random quote from a public API
+          const response = await fetch('https://api.quotable.io/random');
+          if (!response.ok) throw new Error('Failed to fetch quote');
+
+          const data = await response.json();
+          const quoteText = `"${data.content}" -- ${data.author}`;
+
+          editor.update(() => {
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)) return;
+
+            const anchorNode = selection.anchor.getNode();
+            const topLevelElement = anchorNode.getTopLevelElement();
+
+            const quote = $createQuoteNode();
+            quote.append($createTextNode(quoteText));
+
+            if (topLevelElement) {
+              topLevelElement.replace(quote);
+            }
+
+            quote.selectEnd();
+          });
+        } catch (error) {
+          console.error('Failed to fetch quote:', error);
+          alert('Could not fetch a quote. Please try again.');
+        }
+      },
+    },
+    {
+      id: 'api-weather',
+      label: 'Current Weather',
+      description: 'Insert current weather for a location',
+      icon: ({ size }) => <Globe size={size} />,
+      keywords: ['weather', 'temperature', 'forecast', 'api'],
+      onSelect: async () => {
+        const city = window.prompt('Enter a city name:', 'New York');
+        if (!city) return;
+
+        try {
+          // Using Open-Meteo (free, no API key required)
+          // First, geocode the city
+          const geoResponse = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`,
+          );
+          const geoData = await geoResponse.json();
+
+          if (!geoData.results?.length) {
+            alert(`Could not find location: ${city}`);
+            return;
+          }
+
+          const { latitude, longitude, name, country } = geoData.results[0];
+
+          // Fetch current weather
+          const weatherResponse = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=fahrenheit`,
+          );
+          const weatherData = await weatherResponse.json();
+          const weather = weatherData.current_weather;
+
+          const weatherText = `Weather in ${name}, ${country}: ${weather.temperature}°F, wind ${weather.windspeed} mph`;
+
+          editor.update(() => {
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)) return;
+
+            const anchorNode = selection.anchor.getNode();
+            const topLevelElement = anchorNode.getTopLevelElement();
+
+            const paragraph = $createParagraphNode();
+            paragraph.append($createTextNode(weatherText));
+
+            if (topLevelElement) {
+              topLevelElement.replace(paragraph);
+            }
+
+            paragraph.selectEnd();
+          });
+        } catch (error) {
+          console.error('Failed to fetch weather:', error);
+          alert('Could not fetch weather data. Please try again.');
+        }
+      },
+    },
+  ];
+}
+
+function EditorWithApiData() {
+  const apiItems = useApiDataSlashItems();
+
+  return (
+    <>
+      <SlashMenu items={apiItems} />
+      <InputRulePlugin />
+    </>
+  );
+}
+
+export default function Page() {
+  return (
+    <EditorRoot namespace="api-editor" className="min-h-[500px] p-4 border rounded-lg">
+      <EditorWithApiData />
+    </EditorRoot>
+  );
+}
+```
+
+Type `/quote` for a random quote or `/weather` for current weather data.
+
+---
+
+## Combining all custom items
+
+Here is a complete example that combines all four custom items into a single editor:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import {
+  EditorRoot,
+  SlashMenu,
+  InputRulePlugin,
+  VideoPlugin,
+  ListPlugin,
+  PastePlugin,
+  FloatingToolbar,
+  INSERT_VIDEO_COMMAND,
+} from '@scribex/core';
+import type { SlashMenuItem } from '@scribex/core';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import {
+  $getSelection,
+  $isRangeSelection,
+  $getRoot,
+  $createParagraphNode,
+  $createTextNode,
+} from 'lexical';
+import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
+import { $createListNode, $createListItemNode } from '@lexical/list';
+import { Youtube, Clock, ClipboardList, Quote } from 'lucide-react';
+
+function useAllCustomItems(): SlashMenuItem[] {
+  const [editor] = useLexicalComposerContext();
+
+  return [
+    {
+      id: 'youtube-embed',
+      label: 'YouTube Video',
+      description: 'Embed a YouTube video by URL',
+      icon: ({ size }) => <Youtube size={size} />,
+      keywords: ['video', 'embed', 'youtube'],
+      onSelect: () => {
+        const url = window.prompt('Paste a YouTube URL:');
+        if (!url) return;
+        editor.dispatchCommand(INSERT_VIDEO_COMMAND, { url });
+      },
+    },
+    {
+      id: 'timestamp',
+      label: 'Timestamp',
+      description: 'Insert the current date and time',
+      icon: ({ size }) => <Clock size={size} />,
+      keywords: ['date', 'time', 'now', 'today'],
+      onSelect: () => {
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return;
+
+          const formatted = new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+
+          const anchorNode = selection.anchor.getNode();
+          const topLevelElement = anchorNode.getTopLevelElement();
+          if (topLevelElement) {
+            const paragraph = $createParagraphNode();
+            paragraph.append($createTextNode(formatted));
+            topLevelElement.replace(paragraph);
+            paragraph.selectEnd();
+          }
+        });
+      },
+    },
+    {
+      id: 'template-meeting',
+      label: 'Meeting Notes',
+      description: 'Insert a meeting notes template',
+      icon: ({ size }) => <ClipboardList size={size} />,
+      keywords: ['template', 'meeting', 'notes'],
+      onSelect: () => {
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return;
+
+          const anchorNode = selection.anchor.getNode();
+          const topLevelElement = anchorNode.getTopLevelElement();
+          if (topLevelElement) topLevelElement.remove();
+
+          const root = $getRoot();
+
+          const heading = $createHeadingNode('h2');
+          heading.append($createTextNode('Meeting Notes'));
+          root.append(heading);
+
+          const dateParagraph = $createParagraphNode();
+          dateParagraph.append(
+            $createTextNode(new Date().toLocaleDateString()),
+          );
+          root.append(dateParagraph);
+
+          for (const section of ['Attendees', 'Agenda', 'Action Items']) {
+            const sectionH = $createHeadingNode('h3');
+            sectionH.append($createTextNode(section));
+            root.append(sectionH);
+
+            const list = $createListNode('bullet');
+            const item = $createListItemNode();
+            item.append($createTextNode(''));
+            list.append(item);
+            root.append(list);
+          }
+        });
+      },
+    },
+    {
+      id: 'random-quote',
+      label: 'Random Quote',
+      description: 'Fetch and insert an inspirational quote',
+      icon: ({ size }) => <Quote size={size} />,
+      keywords: ['quote', 'inspiration', 'random'],
+      onSelect: async () => {
+        try {
+          const res = await fetch('https://api.quotable.io/random');
+          const data = await res.json();
+
+          editor.update(() => {
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)) return;
+
+            const anchorNode = selection.anchor.getNode();
+            const topLevelElement = anchorNode.getTopLevelElement();
+
+            const quote = $createQuoteNode();
+            quote.append(
+              $createTextNode(`"${data.content}" -- ${data.author}`),
+            );
+
+            if (topLevelElement) topLevelElement.replace(quote);
+            quote.selectEnd();
+          });
+        } catch {
+          alert('Could not fetch quote.');
+        }
+      },
+    },
+  ];
+}
+
+function EditorPlugins() {
+  const customItems = useAllCustomItems();
+
+  return (
+    <>
+      <FloatingToolbar />
+      <SlashMenu items={customItems} />
+      <InputRulePlugin />
+      <ListPlugin />
+      <VideoPlugin />
+      <PastePlugin />
+    </>
+  );
+}
+
+export default function Page() {
+  return (
+    <main className="max-w-3xl mx-auto py-12 px-4">
+      <h1 className="text-2xl font-bold mb-6">Editor with Custom Slash Items</h1>
+      <EditorRoot
+        namespace="custom-slash-editor"
+        className="relative min-h-[500px] p-4 border rounded-lg"
+        placeholder="Type / to see custom commands..."
+      >
+        <EditorPlugins />
+      </EditorRoot>
+    </main>
+  );
+}
+```
+
+## Key patterns
+
+1. **Use a custom hook.** Define `useCustomSlashItems()` inside a component rendered within `EditorRoot`. This gives you access to `useLexicalComposerContext()` for editor mutations.
+
+2. **All mutations go through `editor.update()`.** Never manipulate the DOM directly. Always use Lexical's node creation and manipulation APIs inside an `editor.update()` callback.
+
+3. **Check the selection.** Always verify `$getSelection()` returns a non-null `RangeSelection` before mutating. Other selection types (NodeSelection, GridSelection) have different semantics.
+
+4. **Async operations are supported.** The `onSelect` callback can be `async`. Fetch data from an API, then call `editor.update()` when the data arrives.
+
+5. **Keywords enable discovery.** Add relevant keywords to each item so users can find them by typing related terms after `/`.
+
+## Next steps
+
+- [Slash Menu guide](/docs/guides/slash-menu) -- Full reference for the slash menu system
+- [Input Rules guide](/docs/guides/input-rules) -- Markdown shortcuts that work without the slash menu
+- [Full-Featured Editor](/docs/examples/full-featured) -- All features enabled in one editor
