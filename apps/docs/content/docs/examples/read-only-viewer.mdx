@@ -3,7 +3,7 @@ title: Read-Only Viewer
 description: Display saved editor content in a non-editable view.
 ---
 
-A common pattern is to save editor content in one place and display it in another -- a blog post editor and its public-facing page, a CMS and a marketing site, a note-taking app and a shared link. Scribex handles this with `editable={false}` on `EditorRoot`.
+A common pattern is to save editor content in one place and display it in another -- a blog post editor and its public-facing page, a CMS and a marketing site, a note-taking app and a shared link. Blokhaus handles this with `editable={false}` on `EditorRoot`.
 
 ## Basic read-only viewer
 
@@ -12,7 +12,7 @@ Pass `editable={false}` and `autoFocus={false}` to render saved content without 
 ```tsx title="app/posts/[slug]/page.tsx"
 "use client";
 
-import { EditorRoot } from "@scribex/core";
+import { EditorRoot } from "@blokhaus/core";
 
 interface ContentViewerProps {
   content: string; // Serialized Lexical JSON from your database
@@ -80,7 +80,7 @@ export default async function PostPage({ params }: PageProps) {
 ```tsx title="app/posts/[slug]/content-viewer.tsx"
 "use client";
 
-import { EditorRoot } from "@scribex/core";
+import { EditorRoot } from "@blokhaus/core";
 
 export function ContentViewer({ content }: { content: string }) {
   return (
@@ -105,14 +105,14 @@ For offline-first applications or prototypes, load saved state from localStorage
 "use client";
 
 import { useState, useEffect } from "react";
-import { EditorRoot } from "@scribex/core";
+import { EditorRoot } from "@blokhaus/core";
 
 export default function LocalViewerPage() {
   const [content, setContent] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("scribex-editor-state");
+    const saved = localStorage.getItem("blokhaus-editor-state");
     setContent(saved);
     setIsLoaded(true);
   }, []);
@@ -150,7 +150,7 @@ export default function LocalViewerPage() {
 
 ## Side-by-side editor and preview
 
-A useful pattern is showing an editable editor alongside a live read-only preview. Because Scribex supports multiple editor instances on the same page (each with a unique `namespace`), this works out of the box:
+A useful pattern is showing an editable editor alongside a live read-only preview. Because Blokhaus supports multiple editor instances on the same page (each with a unique `namespace`), this works out of the box:
 
 ```tsx title="app/editor/page.tsx"
 "use client";
@@ -163,7 +163,7 @@ import {
   InputRulePlugin,
   PastePlugin,
   useEditorState,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 function EditorStateCapture({
   onUpdate,
