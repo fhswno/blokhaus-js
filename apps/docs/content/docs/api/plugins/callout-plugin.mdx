@@ -8,7 +8,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 ## Import
 
 ```tsx
-import { CalloutPlugin } from "@scribex/core";
+import { CalloutPlugin } from "@blokhaus/core";
 ```
 
 ## Overview
@@ -62,7 +62,7 @@ import {
   CalloutPlugin,
   InputRulePlugin,
   SlashMenu,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -111,7 +111,7 @@ const customPresets = [
 ### Creating a callout programmatically
 
 ```tsx
-import { INSERT_CALLOUT_COMMAND } from "@scribex/core";
+import { INSERT_CALLOUT_COMMAND } from "@blokhaus/core";
 
 // Insert with defaults
 editor.dispatchCommand(INSERT_CALLOUT_COMMAND, {});
@@ -182,7 +182,7 @@ When `CalloutPlugin` is mounted, a "Callout" item appears in the slash menu. Sel
 ## Type guards and helpers
 
 ```tsx
-import { $isCalloutNode, $createCalloutNode } from "@scribex/core";
+import { $isCalloutNode, $createCalloutNode } from "@blokhaus/core";
 
 // Check if a node is a callout
 if ($isCalloutNode(node)) {
@@ -204,7 +204,7 @@ const callout = $createCalloutNode("🔥", "danger");
 <Callout type="warn">
   When providing custom `presets`, the built-in presets are completely replaced.
   If you want to extend the defaults, import `DEFAULT_CALLOUT_PRESETS` from
-  `@scribex/core` and spread it into your custom array.
+  `@blokhaus/core` and spread it into your custom array.
 </Callout>
 
 ## Related
