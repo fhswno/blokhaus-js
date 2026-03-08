@@ -8,7 +8,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 ## Import
 
 ```tsx
-import { ColorPlugin } from "@scribex/core";
+import { ColorPlugin } from "@blokhaus/core";
 ```
 
 ## Overview
@@ -24,7 +24,7 @@ The `ColorPlugin` accepts no props. It registers commands and handles their exec
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, ColorPlugin, FloatingToolbar } from "@scribex/core";
+import { EditorRoot, ColorPlugin, FloatingToolbar } from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -49,13 +49,13 @@ export default function EditorPage() {
 ### Setting text color
 
 ```tsx
-import { SET_TEXT_COLOR_COMMAND } from "@scribex/core";
+import { SET_TEXT_COLOR_COMMAND } from "@blokhaus/core";
 
 // Apply a red text color
 editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, "#ef4444");
 
 // Apply a color using CSS variable
-editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, "var(--scribex-destructive)");
+editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, "var(--blokhaus-destructive)");
 
 // Remove text color (revert to default)
 editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, "");
@@ -64,7 +64,7 @@ editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, "");
 ### Setting highlight color
 
 ```tsx
-import { SET_HIGHLIGHT_COLOR_COMMAND } from "@scribex/core";
+import { SET_HIGHLIGHT_COLOR_COMMAND } from "@blokhaus/core";
 
 // Apply a yellow highlight
 editor.dispatchCommand(SET_HIGHLIGHT_COLOR_COMMAND, "#fef08a");
@@ -76,7 +76,7 @@ editor.dispatchCommand(SET_HIGHLIGHT_COLOR_COMMAND, "");
 ### Setting font family
 
 ```tsx
-import { SET_FONT_FAMILY_COMMAND } from "@scribex/core";
+import { SET_FONT_FAMILY_COMMAND } from "@blokhaus/core";
 
 // Apply a monospace font
 editor.dispatchCommand(SET_FONT_FAMILY_COMMAND, "ui-monospace, monospace");
@@ -99,7 +99,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import {
   SET_TEXT_COLOR_COMMAND,
   SET_HIGHLIGHT_COLOR_COMMAND,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 const TEXT_COLORS = [
   { label: "Default", value: "" },
@@ -132,7 +132,7 @@ export function ColorPicker() {
               key={color.label}
               className="w-5 h-5 rounded-full border"
               style={{
-                backgroundColor: color.value || "var(--scribex-foreground)",
+                backgroundColor: color.value || "var(--blokhaus-foreground)",
               }}
               onClick={() =>
                 editor.dispatchCommand(SET_TEXT_COLOR_COMMAND, color.value)
