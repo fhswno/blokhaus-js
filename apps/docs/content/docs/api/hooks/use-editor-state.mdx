@@ -10,7 +10,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 ## Import
 
 ```tsx
-import { useEditorState } from "@scribex/core";
+import { useEditorState } from "@blokhaus/core";
 ```
 
 ## Signature
@@ -51,7 +51,7 @@ This hook must be used inside an `EditorRoot` component. It calls `useLexicalCom
 ```tsx title="components/StateViewer.tsx"
 "use client";
 
-import { useEditorState } from "@scribex/core";
+import { useEditorState } from "@blokhaus/core";
 
 function StateViewer() {
   const { serializedState } = useEditorState();
@@ -72,7 +72,7 @@ When you provide an `onChange` callback, the hook avoids triggering React re-ren
 "use client";
 
 import { useCallback } from "react";
-import { useEditorState } from "@scribex/core";
+import { useEditorState } from "@blokhaus/core";
 
 function AutoSave() {
   const handleChange = useCallback((json: string) => {
@@ -96,7 +96,7 @@ The hook must be rendered as a child (or deeper descendant) of `EditorRoot`:
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, useEditorState } from "@scribex/core";
+import { EditorRoot, useEditorState } from "@blokhaus/core";
 
 function StatePersistence() {
   useEditorState({
