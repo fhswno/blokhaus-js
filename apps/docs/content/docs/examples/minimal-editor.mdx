@@ -1,18 +1,18 @@
 ---
 title: Minimal Editor
-description: The simplest possible Scribex editor setup.
+description: The simplest possible Blokhaus editor setup.
 ---
 
-Scribex is designed to be incrementally adoptable. You can start with a bare-bones editor in under 10 lines of code, then progressively add features by composing plugins as React children.
+Blokhaus is designed to be incrementally adoptable. You can start with a bare-bones editor in under 10 lines of code, then progressively add features by composing plugins as React children.
 
 ## The absolute minimum
 
-The smallest possible Scribex editor requires only `EditorRoot`. This gives you a rich text area with undo/redo history and auto-focus -- nothing else.
+The smallest possible Blokhaus editor requires only `EditorRoot`. This gives you a rich text area with undo/redo history and auto-focus -- nothing else.
 
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot } from "@scribex/core";
+import { EditorRoot } from "@blokhaus/core";
 
 export default function MinimalEditorPage() {
   return (
@@ -36,7 +36,7 @@ The `InputRulePlugin` enables markdown-style shortcuts. Type `# ` for a heading,
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, InputRulePlugin } from "@scribex/core";
+import { EditorRoot, InputRulePlugin } from "@blokhaus/core";
 
 export default function EditorWithShortcutsPage() {
   return (
@@ -75,7 +75,7 @@ The `PastePlugin` intercepts paste events and sanitizes incoming HTML. Without i
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, InputRulePlugin, PastePlugin } from "@scribex/core";
+import { EditorRoot, InputRulePlugin, PastePlugin } from "@blokhaus/core";
 
 export default function MinimalEditorPage() {
   return (
@@ -94,7 +94,7 @@ export default function MinimalEditorPage() {
 }
 ```
 
-This is the recommended baseline for any Scribex editor. Two plugins, zero configuration, and you have markdown shortcuts plus safe paste handling.
+This is the recommended baseline for any Blokhaus editor. Two plugins, zero configuration, and you have markdown shortcuts plus safe paste handling.
 
 ## Persisting state
 
@@ -109,7 +109,7 @@ import {
   InputRulePlugin,
   PastePlugin,
   useEditorState,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 function StatePersistence() {
   const { serializedState } = useEditorState({
@@ -163,13 +163,13 @@ import {
   InputRulePlugin,
   PastePlugin,
   useEditorState,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 function EditorState() {
   useEditorState({
     debounceMs: 300,
     onChange: (json) => {
-      localStorage.setItem("scribex-minimal", json);
+      localStorage.setItem("blokhaus-minimal", json);
     },
   });
   return null;
@@ -178,7 +178,7 @@ function EditorState() {
 export default function Page() {
   const [initialState] = useState(() => {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("scribex-minimal");
+    return localStorage.getItem("blokhaus-minimal");
   });
 
   return (

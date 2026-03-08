@@ -1,13 +1,13 @@
 ---
 title: Custom Plugins
-description: Build your own Lexical plugins that integrate with Scribex.
+description: Build your own Lexical plugins that integrate with Blokhaus.
 ---
 
-Scribex follows a composable plugin architecture. Every feature is an independent React component passed as a child to `EditorRoot`. Plugins render `null` and register Lexical listeners to extend editor behavior. This page explains how to build your own.
+Blokhaus follows a composable plugin architecture. Every feature is an independent React component passed as a child to `EditorRoot`. Plugins render `null` and register Lexical listeners to extend editor behavior. This page explains how to build your own.
 
 ## Plugin architecture
 
-A Scribex plugin is a React component that:
+A Blokhaus plugin is a React component that:
 
 1. Renders `null` (it has no visual output).
 2. Uses `useLexicalComposerContext()` to access the Lexical editor instance.
@@ -195,7 +195,7 @@ export function WordCountPlugin({
 
   // This plugin does render UI -- that's fine too
   return (
-    <div className="text-xs text-scribex-muted-foreground p-2">
+    <div className="text-xs text-blokhaus-muted-foreground p-2">
       {wordCount} words
     </div>
   );
@@ -374,7 +374,7 @@ useEffect(() => {
 
 ### Forgetting `'use client'`
 
-All plugins that use hooks or browser APIs must include the `'use client'` directive at the top of the file. Scribex is built for Next.js App Router, where components are server components by default.
+All plugins that use hooks or browser APIs must include the `'use client'` directive at the top of the file. Blokhaus is built for Next.js App Router, where components are server components by default.
 
 ### Accessing `window` at module load time
 
