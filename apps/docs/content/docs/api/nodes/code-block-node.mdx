@@ -14,8 +14,8 @@ import {
   CodeBlockNode,
   $createCodeBlockNode,
   $isCodeBlockNode,
-} from "@scribex/core";
-import type { CodeBlockPayload } from "@scribex/core";
+} from "@blokhaus/core";
+import type { CodeBlockPayload } from "@blokhaus/core";
 ```
 
 ## CodeBlockPayload
@@ -136,7 +136,7 @@ The `CodeBlockNode` component fetches syntax highlighting from a server endpoint
 
 ## Copy behavior
 
-The copy button writes both `text/plain` (raw code) and `text/html` (wrapped in `<pre><code>`) to the clipboard. This means pasting into another Scribex editor recreates the code block, while pasting into a plain text field gives the raw code.
+The copy button writes both `text/plain` (raw code) and `text/html` (wrapped in `<pre><code>`) to the clipboard. This means pasting into another Blokhaus editor recreates the code block, while pasting into a plain text field gives the raw code.
 
 The textarea's native copy/cut operations are also intercepted to include HTML alongside plain text.
 
