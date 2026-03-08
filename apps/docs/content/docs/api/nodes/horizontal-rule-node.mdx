@@ -12,7 +12,7 @@ import {
   HorizontalRuleNode,
   $createHorizontalRuleNode,
   $isHorizontalRuleNode,
-} from "@scribex/core";
+} from "@blokhaus/core";
 ```
 
 ## Functions
@@ -62,7 +62,7 @@ The node has no data fields -- it is purely structural.
 
 The horizontal rule is click-selectable. When selected:
 
-- A `2px solid` line in the `--scribex-ring` color replaces the default `1px solid` `--scribex-border` line.
+- A `2px solid` line in the `--blokhaus-ring` color replaces the default `1px solid` `--blokhaus-border` line.
 - Pressing `Backspace` or `Delete` removes the divider from the AST.
 
 The divider has `12px` vertical padding to provide a comfortable click target.
@@ -71,8 +71,8 @@ The divider has `12px` vertical padding to provide a comfortable click target.
 
 The divider renders as:
 
-- **Default state**: `1px solid` using the `--scribex-border` CSS variable.
-- **Selected state**: `2px solid` using the `--scribex-ring` CSS variable.
+- **Default state**: `1px solid` using the `--blokhaus-border` CSS variable.
+- **Selected state**: `2px solid` using the `--blokhaus-ring` CSS variable.
 - A `0.15s` CSS transition on `border-color` provides a smooth selection feedback.
 
 ## Input rule trigger
