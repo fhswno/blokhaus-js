@@ -3,7 +3,7 @@ title: Full-Featured Editor
 description: A complete Notion-style editor with all features enabled.
 ---
 
-This example shows a production-ready Scribex editor with every available plugin and UI component. It includes formatting toolbar, slash menu, drag-and-drop blocks, image and video uploads, AI content generation, mentions, tables, code blocks, callouts, toggles, emoji picker, text color, text direction, block selection, word count, and state persistence.
+This example shows a production-ready Blokhaus editor with every available plugin and UI component. It includes formatting toolbar, slash menu, drag-and-drop blocks, image and video uploads, AI content generation, mentions, tables, code blocks, callouts, toggles, emoji picker, text color, text direction, block selection, word count, and state persistence.
 
 ## Complete editor page
 
@@ -44,8 +44,8 @@ import {
 
   // Helpers
   $createMentionNode,
-} from "@scribex/core";
-import type { AIProvider, MentionProvider, UploadHandler } from "@scribex/core";
+} from "@blokhaus/core";
+import type { AIProvider, MentionProvider, UploadHandler } from "@blokhaus/core";
 
 // ---------------------------------------------------------------------------
 // Upload handler -- replace with your real upload endpoint
@@ -230,18 +230,18 @@ function WordCounter() {
 export default function FullFeaturedEditorPage() {
   const [initialState] = useState(() => {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("scribex-full-featured");
+    return localStorage.getItem("blokhaus-full-featured");
   });
 
   const handleSave = useCallback((json: string) => {
-    localStorage.setItem("scribex-full-featured", json);
+    localStorage.setItem("blokhaus-full-featured", json);
   }, []);
 
   return (
     <main className="max-w-3xl mx-auto py-12 px-4">
       <h1 className="text-2xl font-bold mb-2">Full-Featured Editor</h1>
       <p className="text-gray-500 mb-6">
-        Every Scribex plugin enabled. Type <code>/</code> for commands,{" "}
+        Every Blokhaus plugin enabled. Type <code>/</code> for commands,{" "}
         <code>@</code> to mention someone, or <code>#</code> for tags.
       </p>
 
