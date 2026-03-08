@@ -25,7 +25,7 @@ import {
   ColorPlugin,
   BlockSelectionPlugin,
   useEditorState,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 function Editor() {
   const { serializedState } = useEditorState({
@@ -81,7 +81,7 @@ export default function EditorPage() {
 
 ## 2. Understanding the architecture
 
-Scribex follows a composable plugin architecture. Every feature is an independent React component passed as a child to `EditorRoot`:
+Blokhaus follows a composable plugin architecture. Every feature is an independent React component passed as a child to `EditorRoot`:
 
 - **`EditorRoot`** — Wraps Lexical's `LexicalComposer` with all registered nodes
 - **UI Components** — Visual elements like toolbars and menus
