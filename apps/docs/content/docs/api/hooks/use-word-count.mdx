@@ -10,7 +10,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 ## Import
 
 ```tsx
-import { useWordCount } from "@scribex/core";
+import { useWordCount } from "@blokhaus/core";
 ```
 
 ## Signature
@@ -46,7 +46,7 @@ This hook must be used inside an `EditorRoot` component. It calls `useLexicalCom
 ```tsx title="components/WordCounter.tsx"
 "use client";
 
-import { useWordCount } from "@scribex/core";
+import { useWordCount } from "@blokhaus/core";
 
 function WordCounter() {
   const { words, characters } = useWordCount();
@@ -64,7 +64,7 @@ function WordCounter() {
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, InputRulePlugin, useWordCount } from "@scribex/core";
+import { EditorRoot, InputRulePlugin, useWordCount } from "@blokhaus/core";
 
 function StatusBar() {
   const { words, characters } = useWordCount(500);
