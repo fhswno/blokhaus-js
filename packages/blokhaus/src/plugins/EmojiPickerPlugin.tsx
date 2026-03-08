@@ -1,0 +1,544 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { createPortal } from "react-dom";
+
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import {
+  $getSelection,
+  $isRangeSelection,
+  $isTextNode,
+  COMMAND_PRIORITY_HIGH,
+  COMMAND_PRIORITY_LOW,
+  KEY_ARROW_DOWN_COMMAND,
+  KEY_ARROW_UP_COMMAND,
+  KEY_ENTER_COMMAND,
+  KEY_ESCAPE_COMMAND,
+  KEY_TAB_COMMAND,
+  TextNode,
+} from "lexical";
+
+import { OPEN_EMOJI_PICKER_COMMAND } from "../commands";
+
+import type { EmojiItem } from "../data/emoji-list";
+import { DEFAULT_EMOJIS } from "../data/emoji-list";
+
+export interface EmojiPickerPluginProps {
+  /** Override the built-in emoji list. */
+  emojis?: EmojiItem[];
+  /** Max results shown in dropdown (default: 8). */
+  maxResults?: number;
+  /** Custom render function for each emoji row. */
+  renderItem?: (item: EmojiItem, isSelected: boolean) => React.ReactNode;
+  /** Custom render function for the dropdown container. */
+  renderDropdown?: (props: {
+    children: React.ReactNode;
+    position: { top: number; left: number };
+  }) => React.ReactNode;
+}
+
+export function EmojiPickerPlugin({
+  emojis,
+  maxResults = 8,
+  renderItem,
+  renderDropdown,
+}: EmojiPickerPluginProps = {}) {
+  const [editor] = useLexicalComposerContext();
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<EmojiItem[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
+    null,
+  );
+  const triggerOffsetRef = useRef<number>(0);
+  const openedViaCommandRef = useRef(false);
+  const emojiList = emojis ?? DEFAULT_EMOJIS;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setPortalContainer(document.body);
+  }, []);
+
+  const close = useCallback(() => {
+    setIsOpen(false);
+    setQuery("");
+    setResults([]);
+    setSelectedIndex(0);
+    openedViaCommandRef.current = false;
+  }, []);
+
+  const filterEmojis = useCallback(
+    (q: string): EmojiItem[] => {
+      if (!q) return [];
+      const lower = q.toLowerCase();
+      return emojiList
+        .filter(
+          (e) =>
+            e.name.includes(lower) ||
+            e.keywords.some((k) => k.includes(lower)),
+        )
+        .slice(0, maxResults);
+    },
+    [emojiList, maxResults],
+  );
+
+  // Handle OPEN_EMOJI_PICKER_COMMAND — open picker at cursor with all emojis
+  useEffect(() => {
+    return editor.registerCommand(
+      OPEN_EMOJI_PICKER_COMMAND,
+      () => {
+        const domSelection = window.getSelection();
+        if (domSelection && domSelection.rangeCount > 0) {
+          const range = domSelection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          setPosition({ top: rect.bottom + 4, left: rect.left });
+        }
+
+        openedViaCommandRef.current = true;
+        setQuery("");
+        setResults(emojiList.slice(0, maxResults));
+        setSelectedIndex(0);
+        setIsOpen(true);
+        return true;
+      },
+      COMMAND_PRIORITY_LOW,
+    );
+  }, [editor, emojiList, maxResults]);
+
+  // Track text changes to detect : trigger and query text
+  useEffect(() => {
+    let emojiRafId = 0;
+
+    const unregister = editor.registerUpdateListener(({ editorState }) => {
+      // Coalesce rapid updates into a single RAF frame
+      if (emojiRafId !== 0) cancelAnimationFrame(emojiRafId);
+      emojiRafId = requestAnimationFrame(() => {
+        emojiRafId = 0;
+
+      // Command-opened mode: use typed text as search query
+      if (openedViaCommandRef.current) {
+        editorState.read(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
+            if (isOpen) close();
+            return;
+          }
+
+          const anchor = selection.anchor;
+          const node = anchor.getNode();
+
+          // Get typed text — entire text content of the current node
+          const queryText = $isTextNode(node)
+            ? node.getTextContent().slice(0, anchor.offset)
+            : "";
+
+          if (queryText.length === 0) {
+            // No query yet — show initial emojis
+            setResults(emojiList.slice(0, maxResults));
+            setSelectedIndex(0);
+            return;
+          }
+
+          // Filter by typed text — keep picker open even with no results
+          const filtered = filterEmojis(queryText);
+          setQuery(queryText);
+          setResults(filtered);
+          setSelectedIndex(0);
+        });
+        return;
+      }
+
+      editorState.read(() => {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
+          if (isOpen) close();
+          return;
+        }
+
+        const anchor = selection.anchor;
+        const node = anchor.getNode();
+        if (!$isTextNode(node)) {
+          if (isOpen) close();
+          return;
+        }
+
+        const text = node.getTextContent();
+        const offset = anchor.offset;
+
+        // Fast path: skip scanning if no colon in text at all
+        if (!isOpen && !text.includes(":")) {
+          return;
+        }
+
+        // Look backwards from cursor for ':'
+        let colonIndex = -1;
+
+        for (let i = offset - 1; i >= 0; i--) {
+          const char = text[i];
+          if (char === undefined) break;
+
+          if (char === ":") {
+            if (i === 0 || text[i - 1] === " " || text[i - 1] === "\n") {
+              colonIndex = i;
+            }
+            break;
+          }
+
+          if (char === " " || char === "\n") {
+            break;
+          }
+        }
+
+        if (colonIndex === -1) {
+          if (isOpen) close();
+          return;
+        }
+
+        const queryText = text.slice(colonIndex + 1, offset);
+
+        if (queryText.length < 1) {
+          if (isOpen) close();
+          return;
+        }
+
+        const filtered = filterEmojis(queryText);
+        if (filtered.length === 0) {
+          if (isOpen) close();
+          return;
+        }
+
+        // Only measure DOM when actually showing the picker
+        const domSelection = window.getSelection();
+        if (domSelection && domSelection.rangeCount > 0) {
+          const range = domSelection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          setPosition({
+            top: rect.bottom + 4,
+            left: rect.left,
+          });
+        }
+
+        triggerOffsetRef.current = colonIndex;
+        setQuery(queryText);
+        setResults(filtered);
+        setSelectedIndex(0);
+        setIsOpen(true);
+      });
+
+      });
+    });
+
+    return () => {
+      unregister();
+      if (emojiRafId !== 0) cancelAnimationFrame(emojiRafId);
+    };
+  }, [editor, isOpen, close, filterEmojis]);
+
+  // Select an emoji — either replace :query text or insert at cursor
+  const selectItem = useCallback(
+    (item: EmojiItem) => {
+      if (openedViaCommandRef.current) {
+        // Opened via command — focus editor, remove any typed query, insert emoji
+        editor.focus(() => {
+          editor.update(() => {
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)) return;
+
+            const anchor = selection.anchor;
+            const node = anchor.getNode();
+
+            // Remove the typed search query text before inserting
+            if ($isTextNode(node)) {
+              const text = node.getTextContent();
+              const offset = anchor.offset;
+              const after = text.slice(offset);
+              node.setTextContent(item.emoji + after);
+              node.select(item.emoji.length, item.emoji.length);
+            } else {
+              selection.insertRawText(item.emoji);
+            }
+          });
+        });
+      } else {
+        // Opened via : trigger — replace :query with emoji
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return;
+
+          const anchor = selection.anchor;
+          const node = anchor.getNode();
+          if (!$isTextNode(node)) return;
+
+          const text = node.getTextContent();
+          const offset = anchor.offset;
+          const triggerIndex = triggerOffsetRef.current;
+
+          const before = text.slice(0, triggerIndex);
+          const after = text.slice(offset);
+
+          node.setTextContent(before + item.emoji + after);
+
+          const newOffset = before.length + item.emoji.length;
+          node.select(newOffset, newOffset);
+        });
+      }
+
+      close();
+    },
+    [editor, close],
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const unregisterDown = editor.registerCommand(
+      KEY_ARROW_DOWN_COMMAND,
+      (event) => {
+        if (!isOpen || results.length === 0) return false;
+        event?.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % results.length);
+        return true;
+      },
+      COMMAND_PRIORITY_HIGH,
+    );
+
+    const unregisterUp = editor.registerCommand(
+      KEY_ARROW_UP_COMMAND,
+      (event) => {
+        if (!isOpen || results.length === 0) return false;
+        event?.preventDefault();
+        setSelectedIndex(
+          (prev) => (prev - 1 + results.length) % results.length,
+        );
+        return true;
+      },
+      COMMAND_PRIORITY_HIGH,
+    );
+
+    const unregisterEnter = editor.registerCommand(
+      KEY_ENTER_COMMAND,
+      (event) => {
+        if (!isOpen || results.length === 0) return false;
+        event?.preventDefault();
+        const item = results[selectedIndex];
+        if (item) selectItem(item);
+        return true;
+      },
+      COMMAND_PRIORITY_HIGH,
+    );
+
+    const unregisterTab = editor.registerCommand(
+      KEY_TAB_COMMAND,
+      (event) => {
+        if (!isOpen || results.length === 0) return false;
+        event?.preventDefault();
+        const item = results[selectedIndex];
+        if (item) selectItem(item);
+        return true;
+      },
+      COMMAND_PRIORITY_HIGH,
+    );
+
+    const unregisterEscape = editor.registerCommand(
+      KEY_ESCAPE_COMMAND,
+      (event) => {
+        if (!isOpen) return false;
+        event?.preventDefault();
+        close();
+        return true;
+      },
+      COMMAND_PRIORITY_HIGH,
+    );
+
+    return () => {
+      unregisterDown();
+      unregisterUp();
+      unregisterEnter();
+      unregisterTab();
+      unregisterEscape();
+    };
+  }, [editor, isOpen, results, selectedIndex, selectItem, close]);
+
+  if (!portalContainer || !isOpen) return null;
+  if (results.length === 0 && !openedViaCommandRef.current) return null;
+
+  // Custom dropdown render
+  if (renderDropdown) {
+    return createPortal(
+      renderDropdown({
+        position,
+        children: results.map((item, index) => (
+          <div
+            key={item.name}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              selectItem(item);
+            }}
+            onMouseEnter={() => setSelectedIndex(index)}
+          >
+            {renderItem ? (
+              renderItem(item, index === selectedIndex)
+            ) : (
+              <DefaultEmojiRow item={item} isSelected={index === selectedIndex} />
+            )}
+          </div>
+        )),
+      }),
+      portalContainer,
+    );
+  }
+
+  return createPortal(
+    <EmojiDropdown
+      items={results}
+      selectedIndex={selectedIndex}
+      position={position}
+      onSelect={selectItem}
+      onHover={setSelectedIndex}
+      renderItem={renderItem}
+    />,
+    portalContainer,
+  );
+}
+
+function DefaultEmojiRow({
+  item,
+  isSelected,
+}: {
+  item: EmojiItem;
+  isSelected: boolean;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "6px 10px",
+        borderRadius: "6px",
+        cursor: "pointer",
+        backgroundColor: isSelected
+          ? "var(--blokhaus-hover-bg)"
+          : "transparent",
+        transition: "background-color 0.1s",
+      }}
+    >
+      <span style={{ fontSize: "20px", lineHeight: 1 }}>{item.emoji}</span>
+      <span
+        style={{
+          fontSize: "13px",
+          color: "var(--blokhaus-foreground, #0f172a)",
+          fontWeight: isSelected ? 500 : 400,
+        }}
+      >
+        {item.name.replace(/_/g, " ")}
+      </span>
+    </div>
+  );
+}
+
+function EmojiDropdown({
+  items,
+  selectedIndex,
+  position,
+  onSelect,
+  onHover,
+  renderItem,
+}: {
+  items: EmojiItem[];
+  selectedIndex: number;
+  position: { top: number; left: number };
+  onSelect: (item: EmojiItem) => void;
+  onHover: (index: number) => void;
+  renderItem?: (item: EmojiItem, isSelected: boolean) => React.ReactNode;
+}) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const selected = list.children[selectedIndex] as HTMLElement | undefined;
+    if (selected) {
+      selected.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedIndex]);
+
+  return (
+    <div
+      ref={listRef}
+      data-testid="emoji-picker-dropdown"
+      style={{
+        position: "fixed",
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        zIndex: 60,
+        minWidth: "220px",
+        maxWidth: "320px",
+        maxHeight: "280px",
+        overflowY: "auto",
+        borderRadius: "10px",
+        border: "1px solid var(--blokhaus-border, #e2e8f0)",
+        backgroundColor: "var(--blokhaus-popover-bg)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        boxShadow: "var(--blokhaus-popover-shadow)",
+        fontFamily: "var(--blokhaus-font-sans, system-ui, sans-serif)",
+        animation: "blokhaus-emoji-enter 0.15s ease-out",
+        padding: "4px",
+      }}
+    >
+      {items.length === 0 ? (
+        <div
+          style={{
+            padding: "12px 10px",
+            fontSize: "13px",
+            color: "var(--blokhaus-text-tertiary, #999)",
+            textAlign: "center",
+          }}
+        >
+          No matching emojis
+        </div>
+      ) : (
+        items.map((item, index) => (
+          <div
+            key={item.name}
+            data-testid={`emoji-item-${item.name}`}
+            role="option"
+            aria-selected={index === selectedIndex}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onSelect(item);
+            }}
+            onMouseEnter={() => onHover(index)}
+          >
+            {renderItem ? (
+              renderItem(item, index === selectedIndex)
+            ) : (
+              <DefaultEmojiRow item={item} isSelected={index === selectedIndex} />
+            )}
+          </div>
+        ))
+      )}
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes blokhaus-emoji-enter {
+              from {
+                opacity: 0;
+                transform: translateY(-4px) scale(0.98);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+              }
+            }
+          `,
+        }}
+      />
+    </div>
+  );
+}
