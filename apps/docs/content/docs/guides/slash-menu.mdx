@@ -10,7 +10,7 @@ The slash menu is a command palette that opens when the user types `/` at the st
 Add the `SlashMenu` component as a child of `EditorRoot`:
 
 ```tsx title="app/editor/page.tsx"
-import { EditorRoot, SlashMenu, InputRulePlugin } from "@scribex/core";
+import { EditorRoot, SlashMenu, InputRulePlugin } from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -106,8 +106,8 @@ The slash menu ships with a comprehensive set of default items, organized by cat
 Pass additional items via the `items` prop. Custom items are appended after the default items:
 
 ```tsx
-import { SlashMenu } from "@scribex/core";
-import type { SlashMenuItem } from "@scribex/core";
+import { SlashMenu } from "@blokhaus/core";
+import type { SlashMenuItem } from "@blokhaus/core";
 import { Wand2 } from "lucide-react";
 
 const customItems: SlashMenuItem[] = [
@@ -140,7 +140,7 @@ Most useful custom items will mutate the editor state. Access the editor instanc
 ```tsx
 "use client";
 
-import { useLexicalComposerContext } from "@scribex/core";
+import { useLexicalComposerContext } from "@blokhaus/core";
 import {
   $getSelection,
   $isRangeSelection,
@@ -207,7 +207,7 @@ The slash menu supports full keyboard navigation:
 | Enter     | Select the highlighted item         |
 | Escape    | Close the menu without selecting    |
 
-The selected item is highlighted with the `--scribex-accent` color and auto-scrolls into view when navigating with arrow keys.
+The selected item is highlighted with the `--blokhaus-accent` color and auto-scrolls into view when navigating with arrow keys.
 
 ## Category grouping
 
@@ -230,7 +230,7 @@ Each category has a distinct icon color scheme for visual differentiation.
 You can open the slash menu from your own code by dispatching the command:
 
 ```tsx
-import { OPEN_SLASH_MENU_COMMAND } from "@scribex/core";
+import { OPEN_SLASH_MENU_COMMAND } from "@blokhaus/core";
 
 editor.dispatchCommand(OPEN_SLASH_MENU_COMMAND, undefined);
 ```
@@ -255,16 +255,16 @@ Several items display a markdown shortcut hint on the right side of the row. The
 
 ## Styling
 
-The slash menu renders in a React Portal attached to `document.body`. It uses inline styles with CSS custom properties from the Scribex theme:
+The slash menu renders in a React Portal attached to `document.body`. It uses inline styles with CSS custom properties from the Blokhaus theme:
 
-- `--scribex-popover-bg` -- Background color
-- `--scribex-popover-border` -- Border color
-- `--scribex-popover-shadow` -- Box shadow
-- `--scribex-accent` -- Selected item background
-- `--scribex-accent-foreground` -- Selected item text color
-- `--scribex-text-tertiary` -- Category headers and shortcut hints
-- `--scribex-separator` -- Divider between sections
-- `--scribex-muted` -- Icon tile background
+- `--blokhaus-popover-bg` -- Background color
+- `--blokhaus-popover-border` -- Border color
+- `--blokhaus-popover-shadow` -- Box shadow
+- `--blokhaus-accent` -- Selected item background
+- `--blokhaus-accent-foreground` -- Selected item text color
+- `--blokhaus-text-tertiary` -- Category headers and shortcut hints
+- `--blokhaus-separator` -- Divider between sections
+- `--blokhaus-muted` -- Icon tile background
 
 The menu has a frosted glass effect via `backdrop-filter: blur(24px) saturate(190%)` and a subtle entrance animation.
 

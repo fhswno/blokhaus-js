@@ -10,7 +10,7 @@ When users paste content from external sources -- Google Docs, Microsoft Word, w
 Add the `PastePlugin` as a child of `EditorRoot`:
 
 ```tsx title="app/editor/page.tsx"
-import { EditorRoot, PastePlugin, ImagePlugin } from "@scribex/core";
+import { EditorRoot, PastePlugin, ImagePlugin } from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -142,7 +142,7 @@ Note that `b`, `i`, `del`, and `strike` are on the allowlist but are normalized 
 The sanitization function is exported separately for use in custom paste handlers or server-side processing:
 
 ```tsx
-import { sanitizePastedHTML } from "@scribex/core";
+import { sanitizePastedHTML } from "@blokhaus/core";
 
 const dirtyHTML = '<div style="font-size: 26pt; color: red;">Hello</div>';
 const cleanHTML = sanitizePastedHTML(dirtyHTML);
@@ -185,7 +185,7 @@ Make sure both `PastePlugin` and `ImagePlugin` are included in your editor if yo
 The `sanitizePastedHTML` function is a pure function that takes an HTML string and returns a sanitized HTML string. It uses `DOMParser` internally, so it can be tested in any browser-like environment:
 
 ```ts
-import { sanitizePastedHTML } from "@scribex/core";
+import { sanitizePastedHTML } from "@blokhaus/core";
 
 // Google Docs heading
 const gdocsHTML = '<span style="font-size: 26pt;">My Title</span>';
