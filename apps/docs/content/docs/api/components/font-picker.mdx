@@ -8,8 +8,8 @@ description: Font family picker component.
 ## Import
 
 ```tsx
-import { FontPicker } from "@scribex/core";
-import type { FontFamilyEntry } from "@scribex/core";
+import { FontPicker } from "@blokhaus/core";
+import type { FontFamilyEntry } from "@blokhaus/core";
 ```
 
 ## Props
@@ -28,7 +28,7 @@ The `FontPicker` is typically used inside the `FloatingToolbar` and does not nee
 "use client";
 
 import { useState } from "react";
-import { FontPicker } from "@scribex/core";
+import { FontPicker } from "@blokhaus/core";
 
 function CustomFontControl() {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,17 +68,17 @@ The default set includes four options:
 
 | Label   | CSS Value                   | Preview Font Stack          |
 | ------- | --------------------------- | --------------------------- |
-| Default | (removes font override)     | `var(--scribex-font-sans)`  |
-| Serif   | `var(--scribex-font-serif)` | `var(--scribex-font-serif)` |
-| Mono    | `var(--scribex-font-mono)`  | `var(--scribex-font-mono)`  |
-| Hand    | `var(--scribex-font-hand)`  | `var(--scribex-font-hand)`  |
+| Default | (removes font override)     | `var(--blokhaus-font-sans)`  |
+| Serif   | `var(--blokhaus-font-serif)` | `var(--blokhaus-font-serif)` |
+| Mono    | `var(--blokhaus-font-mono)`  | `var(--blokhaus-font-mono)`  |
+| Hand    | `var(--blokhaus-font-hand)`  | `var(--blokhaus-font-hand)`  |
 
 ## Custom font families
 
 Override the defaults by passing a custom `FontFamilyEntry[]`:
 
 ```tsx
-import type { FontFamilyEntry } from "@scribex/core";
+import type { FontFamilyEntry } from "@blokhaus/core";
 
 const customFonts: FontFamilyEntry[] = [
   { label: "Default", value: "", preview: "system-ui, sans-serif" },
@@ -133,8 +133,8 @@ After dispatching the command, the picker calls `editor.focus()` to return focus
 
 ## Visual indicators
 
-- The active font is highlighted with a subtle background color (`--scribex-hover-bg`).
-- A checkmark icon appears to the right of the active font label, colored with `--scribex-accent`.
+- The active font is highlighted with a subtle background color (`--blokhaus-hover-bg`).
+- A checkmark icon appears to the right of the active font label, colored with `--blokhaus-accent`.
 - Each font label is rendered in its own `preview` font stack, giving users an immediate visual preview of what the font looks like.
 
 ## Notes
@@ -142,7 +142,7 @@ After dispatching the command, the picker calls `editor.focus()` to return focus
 - `FontPicker` is a client component (`'use client'`).
 - It must be rendered within a `LexicalComposer` context (i.e., inside `EditorRoot`).
 - The component uses `onMouseDown` with `e.preventDefault()` on the container to prevent the editor from losing focus when interacting with the picker.
-- Font values use CSS variable references by default (e.g., `var(--scribex-font-serif)`) so that the actual font stacks can be customized via `tokens.css` without modifying the picker.
+- Font values use CSS variable references by default (e.g., `var(--blokhaus-font-serif)`) so that the actual font stacks can be customized via `tokens.css` without modifying the picker.
 - The minimum width of the picker dropdown is 160px.
 
 ## Related
