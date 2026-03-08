@@ -10,8 +10,8 @@ import { Callout } from "fumadocs-ui/components/callout";
 ## Import
 
 ```tsx
-import { CalloutNode, $createCalloutNode, $isCalloutNode } from "@scribex/core";
-import type { CalloutPayload } from "@scribex/core";
+import { CalloutNode, $createCalloutNode, $isCalloutNode } from "@blokhaus/core";
+import type { CalloutPayload } from "@blokhaus/core";
 ```
 
 ## CalloutPayload
@@ -104,21 +104,21 @@ Because `CalloutNode` extends `ElementNode`, the serialized form includes a `chi
 The callout uses theme-based CSS classes:
 
 - The base class comes from `config.theme.callout`.
-- If the color preset is not `"default"`, an additional class `scribex-callout--{preset}` is added.
+- If the color preset is not `"default"`, an additional class `blokhaus-callout--{preset}` is added.
 
 Color presets map to CSS variables defined in `tokens.css`:
 
 ```css
 /* Example: warning preset */
-.scribex-callout--warning {
-  background: var(--scribex-callout-warning-bg);
-  border-left-color: var(--scribex-callout-warning-border);
+.blokhaus-callout--warning {
+  background: var(--blokhaus-callout-warning-bg);
+  border-left-color: var(--blokhaus-callout-warning-border);
 }
 ```
 
 ## Default presets
 
-Scribex ships with six built-in callout presets:
+Blokhaus ships with six built-in callout presets:
 
 | ID        | Label   | Default Emoji | Background | Border    |
 | --------- | ------- | ------------- | ---------- | --------- |
