@@ -8,7 +8,7 @@ description: A floating format toolbar that appears on text selection.
 ## Import
 
 ```tsx
-import { FloatingToolbar } from "@scribex/core";
+import { FloatingToolbar } from "@blokhaus/core";
 ```
 
 ## Props
@@ -25,7 +25,7 @@ Add `FloatingToolbar` as a child of `EditorRoot`:
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, FloatingToolbar, InputRulePlugin } from "@scribex/core";
+import { EditorRoot, FloatingToolbar, InputRulePlugin } from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -63,7 +63,7 @@ Undo and Redo buttons are automatically disabled when there is nothing to undo o
 | Strikethrough | `strikethrough` | Cmd+Shift+S |
 | Inline Code   | `code`          | Cmd+E       |
 
-Active formats are visually highlighted with the `--scribex-accent` color.
+Active formats are visually highlighted with the `--blokhaus-accent` color.
 
 ### Link
 
@@ -95,8 +95,8 @@ Toggles the current block's text direction between LTR and RTL. The icon changes
 Pass a custom `ColorPalette` to override the default colors:
 
 ```tsx
-import { FloatingToolbar } from "@scribex/core";
-import type { ColorPalette } from "@scribex/core";
+import { FloatingToolbar } from "@blokhaus/core";
+import type { ColorPalette } from "@blokhaus/core";
 
 const customPalette: ColorPalette = {
   text: [
@@ -118,8 +118,8 @@ const customPalette: ColorPalette = {
 Pass a custom `FontFamilyEntry[]` to override the default fonts:
 
 ```tsx
-import { FloatingToolbar } from "@scribex/core";
-import type { FontFamilyEntry } from "@scribex/core";
+import { FloatingToolbar } from "@blokhaus/core";
+import type { FontFamilyEntry } from "@blokhaus/core";
 
 const customFonts: FontFamilyEntry[] = [
   { label: "Default", value: "", preview: "system-ui, sans-serif" },
@@ -165,15 +165,15 @@ The toolbar hides when:
 
 ## Styling
 
-The toolbar uses inline styles with CSS custom properties from the Scribex theme:
+The toolbar uses inline styles with CSS custom properties from the Blokhaus theme:
 
-- `--scribex-popover-bg` -- toolbar background
-- `--scribex-popover-border` -- toolbar border
-- `--scribex-popover-shadow` -- toolbar shadow
-- `--scribex-accent` -- active button background
-- `--scribex-accent-foreground` -- active button text/icon color
-- `--scribex-icon-secondary` -- inactive button icon color
-- `--scribex-separator` -- divider color between button groups
+- `--blokhaus-popover-bg` -- toolbar background
+- `--blokhaus-popover-border` -- toolbar border
+- `--blokhaus-popover-shadow` -- toolbar shadow
+- `--blokhaus-accent` -- active button background
+- `--blokhaus-accent-foreground` -- active button text/icon color
+- `--blokhaus-icon-secondary` -- inactive button icon color
+- `--blokhaus-separator` -- divider color between button groups
 
 The toolbar includes a frosted glass effect via `backdrop-filter: blur(20px) saturate(180%)`.
 
