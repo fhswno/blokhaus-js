@@ -1,5 +1,5 @@
 {
-  "name": "scribex-playground",
+  "name": "blokhaus-playground",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@scribex/core": "workspace:*",
+    "@blokhaus/core": "workspace:*",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
