@@ -1,0 +1,183 @@
+:root {
+  /* Surface */
+  --blokhaus-background: hsl(0 0% 100%);
+  --blokhaus-foreground: hsl(222.2 84% 4.9%);
+
+  /* Editor chrome */
+  --blokhaus-border: hsl(214.3 31.8% 91.4%);
+  --blokhaus-ring: hsl(221.2 83.2% 53.3%);
+  --blokhaus-muted: hsl(210 40% 96.1%);
+  --blokhaus-muted-foreground: hsl(215.4 16.3% 46.9%);
+
+  /* Interactive */
+  --blokhaus-accent: hsl(221.2 83.2% 53.3%);
+  --blokhaus-accent-foreground: hsl(0 0% 100%);
+
+  /* Status */
+  --blokhaus-destructive: hsl(0 84.2% 60.2%);
+  --blokhaus-ai-stream: hsl(220 60% 50%);
+
+  /* Radius */
+  --blokhaus-radius: 0.5rem;
+
+  /* Typography */
+  --blokhaus-font-sans: ui-sans-serif, system-ui, sans-serif;
+  --blokhaus-font-serif: Georgia, "Times New Roman", serif;
+  --blokhaus-font-mono: ui-monospace, monospace;
+  --blokhaus-font-hand: "Caveat", cursive;
+
+  /* Text colors */
+  --blokhaus-text-gray: #9b9a97;
+  --blokhaus-text-brown: #64473a;
+  --blokhaus-text-orange: #d9730d;
+  --blokhaus-text-yellow: #dfab01;
+  --blokhaus-text-green: #0f7b6c;
+  --blokhaus-text-blue: #0b6e99;
+  --blokhaus-text-purple: #6940a5;
+  --blokhaus-text-pink: #ad1a72;
+  --blokhaus-text-red: #e03e3e;
+
+  /* Highlight / background colors */
+  --blokhaus-highlight-gray: #ebeced;
+  --blokhaus-highlight-brown: #e9e5e3;
+  --blokhaus-highlight-orange: #faebdd;
+  --blokhaus-highlight-yellow: #fbf3db;
+  --blokhaus-highlight-green: #ddedea;
+  --blokhaus-highlight-blue: #ddebf1;
+  --blokhaus-highlight-purple: #eae4f2;
+  --blokhaus-highlight-pink: #f4dfeb;
+  --blokhaus-highlight-red: #fbe4e4;
+
+  /* Table */
+  --blokhaus-table-border: hsl(214.3 31.8% 91.4%);
+  --blokhaus-table-header-bg: hsl(210 40% 96.1%);
+  --blokhaus-table-selection: hsla(221.2 83.2% 53.3% / 0.1);
+  --blokhaus-table-resize-handle: hsl(221.2 83.2% 53.3%);
+
+  /* Table cell background colors */
+  --blokhaus-cell-bg-gray: #f1f1ef;
+  --blokhaus-cell-bg-brown: #f4f0ee;
+  --blokhaus-cell-bg-orange: #fbecdd;
+  --blokhaus-cell-bg-yellow: #fbf3db;
+  --blokhaus-cell-bg-green: #edf3ec;
+  --blokhaus-cell-bg-blue: #e7f3f8;
+  --blokhaus-cell-bg-purple: #f4f0f7;
+  --blokhaus-cell-bg-pink: #f9f0f5;
+  --blokhaus-cell-bg-red: #fdebec;
+
+  /* Callout presets */
+  --blokhaus-callout-default-bg: #f1f1ef;
+  --blokhaus-callout-default-border: #d4d4d4;
+  --blokhaus-callout-info-bg: #ddebf1;
+  --blokhaus-callout-info-border: #0b6e99;
+  --blokhaus-callout-warning-bg: #fbf3db;
+  --blokhaus-callout-warning-border: #dfab01;
+  --blokhaus-callout-error-bg: #fbe4e4;
+  --blokhaus-callout-error-border: #e03e3e;
+  --blokhaus-callout-success-bg: #ddedea;
+  --blokhaus-callout-success-border: #0f7b6c;
+  --blokhaus-callout-purple-bg: #eae4f2;
+  --blokhaus-callout-purple-border: #6940a5;
+
+  /* Block selection */
+  --blokhaus-block-selection: rgba(45, 133, 255, 0.08);
+
+  /* Loading / overlay */
+  --blokhaus-loading-overlay: rgba(0, 0, 0, 0.1);
+
+  /* AI preview */
+  --blokhaus-ai-stream-bg: rgba(51, 102, 204, 0.05);
+
+  /* Popover / floating UI chrome */
+  --blokhaus-popover-bg: rgba(255, 255, 255, 0.96);
+  --blokhaus-popover-border: rgba(0, 0, 0, 0.12);
+  --blokhaus-popover-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 8px 40px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --blokhaus-icon-secondary: rgba(0, 0, 0, 0.55);
+  --blokhaus-separator: rgba(0, 0, 0, 0.1);
+  --blokhaus-text-tertiary: rgba(0, 0, 0, 0.3);
+  --blokhaus-hover-bg: rgba(0, 0, 0, 0.04);
+}
+
+.dark {
+  --blokhaus-background: hsl(222.2 84% 4.9%);
+  --blokhaus-foreground: hsl(210 40% 98%);
+  --blokhaus-border: hsl(217.2 32.6% 17.5%);
+  --blokhaus-ring: hsl(224.3 76.3% 48%);
+  --blokhaus-muted: hsl(217.2 32.6% 17.5%);
+  --blokhaus-muted-foreground: hsl(215 20.2% 65.1%);
+  --blokhaus-accent: hsl(224.3 76.3% 48%);
+  --blokhaus-accent-foreground: hsl(210 40% 98%);
+  --blokhaus-destructive: hsl(0 62.8% 30.6%);
+  --blokhaus-ai-stream: hsl(220 60% 50%);
+
+  /* Text colors — brighter for dark backgrounds */
+  --blokhaus-text-gray: #979a9b;
+  --blokhaus-text-brown: #937264;
+  --blokhaus-text-orange: #ffa344;
+  --blokhaus-text-yellow: #ffdc49;
+  --blokhaus-text-green: #4dab9a;
+  --blokhaus-text-blue: #529cca;
+  --blokhaus-text-purple: #9a6dd7;
+  --blokhaus-text-pink: #d44c91;
+  --blokhaus-text-red: #ff7369;
+
+  /* Highlight / background colors — muted for dark backgrounds */
+  --blokhaus-highlight-gray: hsl(0 0% 20%);
+  --blokhaus-highlight-brown: hsl(20 15% 18%);
+  --blokhaus-highlight-orange: hsl(30 30% 18%);
+  --blokhaus-highlight-yellow: hsl(45 30% 18%);
+  --blokhaus-highlight-green: hsl(160 20% 16%);
+  --blokhaus-highlight-blue: hsl(200 25% 18%);
+  --blokhaus-highlight-purple: hsl(270 20% 20%);
+  --blokhaus-highlight-pink: hsl(330 20% 20%);
+  --blokhaus-highlight-red: hsl(0 25% 20%);
+
+  /* Table */
+  --blokhaus-table-border: hsl(217.2 32.6% 22%);
+  --blokhaus-table-header-bg: hsl(217.2 32.6% 15%);
+  --blokhaus-table-selection: hsla(224.3 76.3% 48% / 0.15);
+  --blokhaus-table-resize-handle: hsl(224.3 76.3% 48%);
+
+  /* Table cell background colors */
+  --blokhaus-cell-bg-gray: hsl(0 0% 15%);
+  --blokhaus-cell-bg-brown: hsl(20 10% 14%);
+  --blokhaus-cell-bg-orange: hsl(30 20% 14%);
+  --blokhaus-cell-bg-yellow: hsl(45 20% 14%);
+  --blokhaus-cell-bg-green: hsl(160 15% 13%);
+  --blokhaus-cell-bg-blue: hsl(200 18% 14%);
+  --blokhaus-cell-bg-purple: hsl(270 15% 16%);
+  --blokhaus-cell-bg-pink: hsl(330 15% 16%);
+  --blokhaus-cell-bg-red: hsl(0 18% 16%);
+
+  /* Callout presets */
+  --blokhaus-callout-default-bg: hsl(0 0% 15%);
+  --blokhaus-callout-default-border: hsl(0 0% 35%);
+  --blokhaus-callout-info-bg: hsl(200 25% 18%);
+  --blokhaus-callout-info-border: hsl(200 60% 45%);
+  --blokhaus-callout-warning-bg: hsl(45 30% 18%);
+  --blokhaus-callout-warning-border: hsl(45 80% 50%);
+  --blokhaus-callout-error-bg: hsl(0 25% 20%);
+  --blokhaus-callout-error-border: hsl(0 70% 55%);
+  --blokhaus-callout-success-bg: hsl(160 20% 16%);
+  --blokhaus-callout-success-border: hsl(160 60% 42%);
+  --blokhaus-callout-purple-bg: hsl(270 20% 20%);
+  --blokhaus-callout-purple-border: hsl(270 55% 55%);
+
+  /* Block selection */
+  --blokhaus-block-selection: rgba(55, 131, 249, 0.15);
+
+  /* Loading / overlay */
+  --blokhaus-loading-overlay: rgba(255, 255, 255, 0.08);
+
+  /* AI preview */
+  --blokhaus-ai-stream-bg: rgba(100, 150, 255, 0.08);
+
+  /* Popover / floating UI chrome */
+  --blokhaus-popover-bg: rgba(30, 30, 34, 0.88);
+  --blokhaus-popover-border: rgba(255, 255, 255, 0.08);
+  --blokhaus-popover-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --blokhaus-icon-secondary: rgba(255, 255, 255, 0.55);
+  --blokhaus-separator: rgba(255, 255, 255, 0.1);
+  --blokhaus-text-tertiary: rgba(255, 255, 255, 0.3);
+  --blokhaus-hover-bg: rgba(255, 255, 255, 0.06);
+}
