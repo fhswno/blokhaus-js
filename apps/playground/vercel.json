@@ -1,0 +1,5 @@
+{
+  "installCommand": "yarn install --no-lockfile",
+  "buildCommand": "next build",
+  "framework": "nextjs"
+}
