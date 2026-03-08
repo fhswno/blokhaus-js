@@ -54,7 +54,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "release": "bun run typecheck && bun run build && npm publish --access public"
   },
   "peerDependencies": {
     "react": ">=18",
