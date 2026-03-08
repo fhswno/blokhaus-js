@@ -8,7 +8,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 ## Import
 
 ```tsx
-import { LinkPlugin } from "@scribex/core";
+import { LinkPlugin } from "@blokhaus/core";
 ```
 
 ## Overview
@@ -65,7 +65,7 @@ interface LinkPluginConfig {
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, LinkPlugin, FloatingToolbar } from "@scribex/core";
+import { EditorRoot, LinkPlugin, FloatingToolbar } from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -102,7 +102,7 @@ export default function EditorPage() {
 <LinkPlugin
   config={{
     renderLinkInput: ({ url, onSubmit, onCancel, onRemove }) => (
-      <div className="flex flex-col gap-2 p-3 bg-scribex-background border rounded shadow-lg">
+      <div className="flex flex-col gap-2 p-3 bg-blokhaus-background border rounded shadow-lg">
         <input
           type="url"
           defaultValue={url}
@@ -117,14 +117,14 @@ export default function EditorPage() {
         <div className="flex gap-2">
           <button
             onClick={() => onSubmit(url)}
-            className="text-sm text-scribex-accent"
+            className="text-sm text-blokhaus-accent"
           >
             Apply
           </button>
           {url && (
             <button
               onClick={onRemove}
-              className="text-sm text-scribex-destructive"
+              className="text-sm text-blokhaus-destructive"
             >
               Remove link
             </button>

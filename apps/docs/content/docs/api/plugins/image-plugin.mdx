@@ -8,7 +8,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 ## Import
 
 ```tsx
-import { ImagePlugin } from "@scribex/core";
+import { ImagePlugin } from "@blokhaus/core";
 ```
 
 ## Overview
@@ -35,7 +35,7 @@ type UploadHandler = (file: File) => Promise<string>;
 // Rejects with an error if the upload fails.
 ```
 
-Scribex provides no default implementation. You supply your own upload logic, keeping the library decoupled from any specific storage backend.
+Blokhaus provides no default implementation. You supply your own upload logic, keeping the library decoupled from any specific storage backend.
 
 ## Usage
 
@@ -44,7 +44,7 @@ Scribex provides no default implementation. You supply your own upload logic, ke
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, ImagePlugin } from "@scribex/core";
+import { EditorRoot, ImagePlugin } from "@blokhaus/core";
 
 const uploadHandler = async (file: File): Promise<string> => {
   const formData = new FormData();
@@ -97,7 +97,7 @@ export default function EditorPage() {
 ### Programmatic image insertion
 
 ```tsx
-import { INSERT_IMAGE_COMMAND } from "@scribex/core";
+import { INSERT_IMAGE_COMMAND } from "@blokhaus/core";
 
 // Trigger upload from a custom file input
 function handleFileSelect(file: File) {
