@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@scribex/core'],
+  transpilePackages: ['@blokhaus/core'],
 };
 
 export default nextConfig;
