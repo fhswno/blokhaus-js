@@ -1,9 +1,9 @@
 ---
 title: Types
-description: All TypeScript types and interfaces exported by Scribex.
+description: All TypeScript types and interfaces exported by Blokhaus.
 ---
 
-This page documents every TypeScript type and interface exported from `@scribex/core`. All types are available as named type exports.
+This page documents every TypeScript type and interface exported from `@blokhaus/core`. All types are available as named type exports.
 
 ## Import
 
@@ -40,7 +40,7 @@ import type {
   VideoEmbedInfo,
   VideoEmbedRenderProps,
   VideoFileRenderProps,
-} from "@scribex/core";
+} from "@blokhaus/core";
 ```
 
 ---
@@ -61,7 +61,7 @@ The function receives a `File` object and must return a promise that resolves to
 
 ### AIProvider
 
-The provider interface for custom AI backends. Scribex does not ship a built-in AI provider -- you must supply one.
+The provider interface for custom AI backends. Blokhaus does not ship a built-in AI provider -- you must supply one.
 
 ```ts
 interface AIProvider {
