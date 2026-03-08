@@ -3,7 +3,7 @@ title: AI Integration
 description: Add AI-powered content generation to your editor.
 ---
 
-Scribex provides a provider-agnostic AI integration system. You supply an `AIProvider` that returns a `ReadableStream` of text, and Scribex handles the streaming UI, accept/discard flow, and history management.
+Blokhaus provides a provider-agnostic AI integration system. You supply an `AIProvider` that returns a `ReadableStream` of text, and Blokhaus handles the streaming UI, accept/discard flow, and history management.
 
 ## Core concepts
 
@@ -53,8 +53,8 @@ interface AIGenerateConfig {
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, AIPlugin } from "@scribex/core";
-import type { AIProvider } from "@scribex/core";
+import { EditorRoot, AIPlugin } from "@blokhaus/core";
+import type { AIProvider } from "@blokhaus/core";
 
 const myProvider: AIProvider = {
   name: "My AI",
@@ -316,7 +316,7 @@ You can trigger AI generation programmatically using Lexical commands:
 import {
   OPEN_AI_PROMPT_COMMAND,
   INSERT_AI_PREVIEW_COMMAND,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 // Open the prompt input
 editor.dispatchCommand(OPEN_AI_PROMPT_COMMAND, undefined);
