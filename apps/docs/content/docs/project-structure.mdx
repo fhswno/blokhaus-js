@@ -1,12 +1,12 @@
 ---
 title: Project Structure
-description: Understand how the Scribex library is organized.
+description: Understand how the Blokhaus library is organized.
 ---
 
 ## Library layout
 
 ```
-packages/scribex/src/
+packages/blokhaus/src/
 ├── index.ts              # Public API surface — all exports
 ├── types.ts              # TypeScript interfaces and types
 ├── commands.ts           # Lexical command definitions
@@ -84,17 +84,17 @@ packages/scribex/src/
 
 ### Nodes
 
-Custom Lexical nodes define new content types in the editor's AST. Every node must be registered in the `ALL_NODES` array. Scribex pre-registers all built-in nodes automatically.
+Custom Lexical nodes define new content types in the editor's AST. Every node must be registered in the `ALL_NODES` array. Blokhaus pre-registers all built-in nodes automatically.
 
 ### The public API
 
-Everything you need is exported from `@scribex/core`. The `index.ts` file is the single entry point:
+Everything you need is exported from `@blokhaus/core`. The `index.ts` file is the single entry point:
 
 ```ts
-import { EditorRoot, FloatingToolbar, ImagePlugin } from "@scribex/core";
-import type { UploadHandler, AIProvider } from "@scribex/core";
+import { EditorRoot, FloatingToolbar, ImagePlugin } from "@blokhaus/core";
+import type { UploadHandler, AIProvider } from "@blokhaus/core";
 ```
 
 ### Zero imports from apps
 
-The library (`packages/scribex/`) has zero imports from `apps/`. It is fully self-contained. The playground and docs apps import from the library, never the other way around.
+The library (`packages/blokhaus/`) has zero imports from `apps/`. It is fully self-contained. The playground and docs apps import from the library, never the other way around.
