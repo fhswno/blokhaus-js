@@ -16,13 +16,13 @@ export default function Layout({ children }: { children: ReactNode }) {
     <DocsLayout
       tree={source.pageTree}
       nav={{
-        title: <span className="font-medium tracking-tight">scribex</span>,
+        title: <span className="font-medium tracking-tight">blokhaus</span>,
       }}
       sidebar={{
         banner: (
           <div className="flex items-center gap-2 px-2 pb-2">
             <span className="text-sm font-medium text-fd-foreground">
-              scribex
+              blokhaus
             </span>
             <span className="rounded border border-fd-border px-1.5 py-0.5 text-[10px] text-fd-muted-foreground">
               v0.0.1
@@ -32,7 +32,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         footer: (
           <div className="flex items-center justify-between border-t border-fd-border px-2 pt-3 text-xs text-fd-muted-foreground">
             <a
-              href="https://github.com/fhswno/scribex-js"
+              href="https://github.com/fhswno/blokhaus-js"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 transition-colors hover:text-fd-foreground"
