@@ -5,7 +5,7 @@ description: ToggleContainerNode, ToggleTitleNode, and ToggleContentNode for col
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Scribex's toggle (collapsible/accordion) feature is implemented with three cooperating `ElementNode` subclasses. They form a strict parent-child hierarchy in the AST:
+Blokhaus's toggle (collapsible/accordion) feature is implemented with three cooperating `ElementNode` subclasses. They form a strict parent-child hierarchy in the AST:
 
 ```
 ToggleContainerNode
@@ -28,8 +28,8 @@ import {
   ToggleContentNode,
   $createToggleContentNode,
   $isToggleContentNode,
-} from "@scribex/core";
-import type { ToggleContainerPayload } from "@scribex/core";
+} from "@blokhaus/core";
+import type { ToggleContainerPayload } from "@blokhaus/core";
 ```
 
 ---
@@ -195,7 +195,7 @@ import {
   $createToggleContainerNode,
   $createToggleTitleNode,
   $createToggleContentNode,
-} from "@scribex/core";
+} from "@blokhaus/core";
 import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
 
 editor.update(() => {
