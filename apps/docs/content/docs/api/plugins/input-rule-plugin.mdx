@@ -8,7 +8,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 ## Import
 
 ```tsx
-import { InputRulePlugin } from "@scribex/core";
+import { InputRulePlugin } from "@blokhaus/core";
 ```
 
 ## Overview
@@ -70,7 +70,7 @@ These rules are registered by default and do not need to be passed via the `rule
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, InputRulePlugin, SlashMenu } from "@scribex/core";
+import { EditorRoot, InputRulePlugin, SlashMenu } from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -90,8 +90,8 @@ export default function EditorPage() {
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, InputRulePlugin } from "@scribex/core";
-import type { InputRule } from "@scribex/core";
+import { EditorRoot, InputRulePlugin } from "@blokhaus/core";
+import type { InputRule } from "@blokhaus/core";
 import { $createParagraphNode } from "lexical";
 
 const customRules: InputRule[] = [

@@ -15,7 +15,7 @@ import {
   TogglePlugin,
   InputRulePlugin,
   SlashMenu,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -46,7 +46,7 @@ Type `/toggle` (or `/collapse`, `/accordion`, `/details`, `/fold`) to find the T
 Dispatch the `INSERT_TOGGLE_COMMAND` to insert a toggle from your own UI:
 
 ```tsx
-import { INSERT_TOGGLE_COMMAND } from "@scribex/core";
+import { INSERT_TOGGLE_COMMAND } from "@blokhaus/core";
 
 function InsertToggleButton() {
   const [editor] = useLexicalComposerContext();
@@ -128,7 +128,7 @@ import {
   $createToggleContainerNode,
   $createToggleTitleNode,
   $createToggleContentNode,
-} from "@scribex/core";
+} from "@blokhaus/core";
 import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
 
 editor.update(() => {
@@ -156,7 +156,7 @@ import {
   $isToggleContainerNode,
   $isToggleTitleNode,
   $isToggleContentNode,
-} from '@scribex/core';
+} from '@blokhaus/core';
 
 editor.read(() => {
   const node = /* ... */;
