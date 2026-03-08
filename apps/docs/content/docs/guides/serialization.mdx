@@ -3,7 +3,7 @@ title: Serialization
 description: Serialize editor state to JSON and Markdown.
 ---
 
-Scribex provides two serialization formats: **JSON** for persistence and **Markdown** for AI context and interoperability. JSON preserves the full Lexical AST including all formatting, node types, and metadata. Markdown provides a human-readable representation used primarily for sending editor content to AI models.
+Blokhaus provides two serialization formats: **JSON** for persistence and **Markdown** for AI context and interoperability. JSON preserves the full Lexical AST including all formatting, node types, and metadata. Markdown provides a human-readable representation used primarily for sending editor content to AI models.
 
 ## JSON serialization
 
@@ -14,7 +14,7 @@ Use the `useEditorState` hook to read the serialized JSON state. The hook deboun
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, useEditorState } from "@scribex/core";
+import { EditorRoot, useEditorState } from "@blokhaus/core";
 
 function Editor() {
   const { serializedState } = useEditorState({
@@ -151,7 +151,7 @@ function Editor() {
 This function converts an array of Lexical nodes into a Markdown string. It is a pure function with no side effects -- call it inside `editor.read()`:
 
 ```tsx
-import { serializeNodesToMarkdown } from "@scribex/core";
+import { serializeNodesToMarkdown } from "@blokhaus/core";
 import { $getRoot } from "lexical";
 
 // Read the entire document as Markdown
@@ -204,7 +204,7 @@ Text formatting is applied based on the Lexical format bitmask:
 The primary use case for Markdown serialization is preparing context for AI models. Before an AI generation request, the surrounding editor content is serialized to Markdown:
 
 ```tsx
-import { serializeNodesToMarkdown } from "@scribex/core";
+import { serializeNodesToMarkdown } from "@blokhaus/core";
 
 // Inside the AI integration:
 editor.read(() => {
@@ -235,7 +235,7 @@ Markdown is used instead of raw Lexical JSON because:
 This function parses a Markdown string and creates Lexical nodes. It must be called inside `editor.update()` because it creates Lexical nodes that require an active editor context:
 
 ```tsx
-import { $parseMarkdownToLexicalNodes } from "@scribex/core";
+import { $parseMarkdownToLexicalNodes } from "@blokhaus/core";
 import { $getRoot } from "lexical";
 
 editor.update(() => {

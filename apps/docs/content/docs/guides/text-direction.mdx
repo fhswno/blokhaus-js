@@ -3,7 +3,7 @@ title: Text Direction
 description: Support RTL and LTR text with per-block direction control.
 ---
 
-Scribex supports both left-to-right (LTR) and right-to-left (RTL) text direction. Direction can be set at the document level via the `EditorRoot` `dir` prop, or per-block using the `DirectionPlugin`. New paragraphs automatically inherit the direction of their preceding sibling, so users writing in Hebrew, Arabic, or other RTL languages get a seamless experience.
+Blokhaus supports both left-to-right (LTR) and right-to-left (RTL) text direction. Direction can be set at the document level via the `EditorRoot` `dir` prop, or per-block using the `DirectionPlugin`. New paragraphs automatically inherit the direction of their preceding sibling, so users writing in Hebrew, Arabic, or other RTL languages get a seamless experience.
 
 ## Setup
 
@@ -15,7 +15,7 @@ import {
   DirectionPlugin,
   FloatingToolbar,
   SlashMenu,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -78,7 +78,7 @@ The `dir` attribute is also set on the editor's wrapper `<div>`, so CSS layout r
 Dispatch the `SET_BLOCK_DIRECTION_COMMAND` to change the direction of the currently selected block(s):
 
 ```tsx
-import { SET_BLOCK_DIRECTION_COMMAND } from "@scribex/core";
+import { SET_BLOCK_DIRECTION_COMMAND } from "@blokhaus/core";
 
 // Set the current block to RTL
 editor.dispatchCommand(SET_BLOCK_DIRECTION_COMMAND, "rtl");
@@ -230,7 +230,7 @@ The resulting JSON state:
 
 ## Direction-aware UI components
 
-Several Scribex components adapt to text direction:
+Several Blokhaus components adapt to text direction:
 
 ### OverlayPortal (drag handle)
 
