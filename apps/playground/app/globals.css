@@ -2,13 +2,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@source "../../../packages/scribex/src";
+@source "../../../packages/blokhaus/src";
 
-@import "../../../packages/scribex/src/styles/tokens.css";
+@import "../../../packages/blokhaus/src/styles/tokens.css";
 
 :root {
-  --scribex-font-serif: var(--font-lora), Georgia, "Times New Roman", serif;
-  --scribex-font-hand: var(--font-caveat), "Caveat", cursive;
+  --blokhaus-font-serif: var(--font-lora), Georgia, "Times New Roman", serif;
+  --blokhaus-font-hand: var(--font-caveat), "Caveat", cursive;
 }
 
 @theme {
@@ -16,20 +16,20 @@
   --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
 }
 
-.scribex-placeholder {
+.blokhaus-placeholder {
   position: absolute;
   top: 0;
   inset-inline: 0;
   padding: inherit;
   pointer-events: none;
   user-select: none;
-  color: var(--scribex-muted-foreground);
+  color: var(--blokhaus-muted-foreground);
   opacity: 0.4;
   font-weight: 400;
   text-align: start;
 }
 
-.scribex-h1 {
+.blokhaus-h1 {
   font-size: 2em;
   font-weight: 700;
   line-height: 1.2;
@@ -37,7 +37,7 @@
   margin-bottom: 0.25em;
 }
 
-.scribex-h2 {
+.blokhaus-h2 {
   font-size: 1.5em;
   font-weight: 600;
   line-height: 1.3;
@@ -45,7 +45,7 @@
   margin-bottom: 0.25em;
 }
 
-.scribex-h3 {
+.blokhaus-h3 {
   font-size: 1.25em;
   font-weight: 600;
   line-height: 1.4;
@@ -53,49 +53,49 @@
   margin-bottom: 0.25em;
 }
 
-.scribex-quote {
-  border-inline-start: 3px solid var(--scribex-border);
+.blokhaus-quote {
+  border-inline-start: 3px solid var(--blokhaus-border);
   padding-inline-start: 1em;
-  color: var(--scribex-muted-foreground);
+  color: var(--blokhaus-muted-foreground);
   margin: 0.5em 0;
 }
 
-.scribex-ul {
+.blokhaus-ul {
   list-style-type: disc;
   padding-inline-start: 1.5em;
   margin: 0.25em 0;
 }
 
-.scribex-ol {
+.blokhaus-ol {
   list-style-type: decimal;
   padding-inline-start: 1.5em;
   margin: 0.25em 0;
 }
 
-.scribex-listitem {
+.blokhaus-listitem {
   margin: 0.125em 0;
 }
 
-.scribex-nested-listitem {
+.blokhaus-nested-listitem {
   list-style-type: none;
 }
 
-.scribex-checklist {
+.blokhaus-checklist {
   list-style-type: none;
   padding-inline-start: 0.5em;
 }
 
 /* Checklist items — checkbox via ::before */
-.scribex-listitem-unchecked,
-.scribex-listitem-checked {
+.blokhaus-listitem-unchecked,
+.blokhaus-listitem-checked {
   display: flex;
   align-items: flex-start;
   list-style-type: none;
   position: relative;
 }
 
-.scribex-listitem-unchecked::before,
-.scribex-listitem-checked::before {
+.blokhaus-listitem-unchecked::before,
+.blokhaus-listitem-checked::before {
   content: '';
   display: inline-block;
   flex-shrink: 0;
@@ -107,95 +107,100 @@
   cursor: pointer;
 }
 
-.scribex-listitem-unchecked::before {
-  border: 2px solid var(--scribex-border);
+.blokhaus-listitem-unchecked::before {
+  border: 2px solid var(--blokhaus-border);
   background: transparent;
 }
 
-.scribex-listitem-checked::before {
-  border: 2px solid var(--scribex-accent);
-  background: var(--scribex-accent);
+.blokhaus-listitem-checked::before {
+  border: 2px solid var(--blokhaus-accent);
+  background: var(--blokhaus-accent);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 10px;
 }
 
-.scribex-listitem-checked {
+.blokhaus-listitem-checked {
   text-decoration: line-through;
-  color: var(--scribex-muted-foreground);
+  color: var(--blokhaus-muted-foreground);
 }
 
-.scribex-link {
-  color: var(--scribex-accent);
+.blokhaus-link {
+  color: var(--blokhaus-accent);
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--scribex-accent) 40%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--blokhaus-accent) 40%, transparent);
   text-underline-offset: 2px;
   cursor: pointer;
   transition: text-decoration-color 0.15s ease;
 }
 
-.scribex-link:hover {
-  text-decoration-color: var(--scribex-accent);
+.blokhaus-link:hover {
+  text-decoration-color: var(--blokhaus-accent);
 }
 
-.scribex-bold {
+.blokhaus-bold {
   font-weight: 700;
 }
 
-.scribex-italic {
+.blokhaus-italic {
   font-style: italic;
 }
 
-.scribex-underline {
+.blokhaus-underline {
   text-decoration: underline;
 }
 
-.scribex-strikethrough {
+.blokhaus-strikethrough {
   text-decoration: line-through;
 }
 
-.scribex-code {
-  font-family: var(--scribex-font-mono);
-  background-color: var(--scribex-muted);
+.blokhaus-code {
+  font-family: var(--blokhaus-font-mono);
+  background-color: var(--blokhaus-muted);
   padding: 0.125em 0.25em;
   border-radius: 0.25em;
   font-size: 0.9em;
 }
 
-.scribex-code-block {
-  font-family: var(--scribex-font-mono);
-  background-color: var(--scribex-muted);
+.blokhaus-code-block {
+  font-family: var(--blokhaus-font-mono);
+  background-color: var(--blokhaus-muted);
   border-radius: 0.5rem;
   margin: 0.5em 0;
   overflow: hidden;
 }
 
 /* Shiki output styling — reset pre/code defaults */
-.scribex-code-block pre {
+.blokhaus-code-block pre {
   margin: 0;
   padding: 0;
   background: transparent !important;
 }
 
-.scribex-code-block code {
+.blokhaus-code-block code {
   font-family: inherit;
   font-size: 13px;
   line-height: 1.6;
 }
 
-.scribex-paragraph {
+.blokhaus-paragraph {
   margin: 0.25em 0;
 }
 
-[data-scribex-root] [dir="rtl"] {
+/* Remove top margin on the first paragraph so placeholder aligns with cursor */
+.blokhaus-paragraph:first-child {
+  margin-top: 0;
+}
+
+[data-blokhaus-root] [dir="rtl"] {
   text-align: right;
 }
-[data-scribex-root] [dir="ltr"] {
+[data-blokhaus-root] [dir="ltr"] {
   text-align: left;
 }
 
-.scribex-table {
+.blokhaus-table {
   border-collapse: collapse;
   width: 100%;
   margin: 0.5em 0;
@@ -203,47 +208,47 @@
   overflow: hidden;
 }
 
-.scribex-table-row {
+.blokhaus-table-row {
 }
 
-.scribex-table-cell {
-  border: 1px solid var(--scribex-table-border);
+.blokhaus-table-cell {
+  border: 1px solid var(--blokhaus-table-border);
   padding: 8px 12px;
   vertical-align: top;
   min-width: 60px;
   position: relative;
 }
 
-.scribex-table-cell-header {
-  border: 1px solid var(--scribex-table-border);
+.blokhaus-table-cell-header {
+  border: 1px solid var(--blokhaus-table-border);
   padding: 8px 12px;
   vertical-align: top;
   min-width: 60px;
   position: relative;
-  background-color: var(--scribex-table-header-bg);
+  background-color: var(--blokhaus-table-header-bg);
   font-weight: 600;
 }
 
-.scribex-table-selection {
-  background-color: var(--scribex-table-selection);
+.blokhaus-table-selection {
+  background-color: var(--blokhaus-table-selection);
 }
 
 /* Table cell paragraph — no margins inside cells */
-.scribex-table-cell .scribex-paragraph,
-.scribex-table-cell-header .scribex-paragraph {
+.blokhaus-table-cell .blokhaus-paragraph,
+.blokhaus-table-cell-header .blokhaus-paragraph {
   margin: 0;
 }
 
 /* Table node-selected state (for delete via keyboard) */
-.scribex-table:has(:focus-visible),
-table.scribex-table[style*="outline"] {
-  outline: 2px solid var(--scribex-accent);
+.blokhaus-table:has(:focus-visible),
+table.blokhaus-table[style*="outline"] {
+  outline: 2px solid var(--blokhaus-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 /* Column resize handle */
-.scribex-table-cell-resizer {
+.blokhaus-table-cell-resizer {
   position: absolute;
   top: 0;
   inset-inline-end: -2px;
@@ -253,26 +258,26 @@ table.scribex-table[style*="outline"] {
   z-index: 10;
 }
 
-.scribex-table-cell-resizer:hover,
-.scribex-table-cell-resizer.active {
-  background-color: var(--scribex-table-resize-handle);
+.blokhaus-table-cell-resizer:hover,
+.blokhaus-table-cell-resizer.active {
+  background-color: var(--blokhaus-table-resize-handle);
 }
 
-.scribex-callout {
+.blokhaus-callout {
   display: flex;
   align-items: flex-start;
   gap: 0.5em;
   padding: 1em 1em 1em 0.875em;
   margin: 0.5em 0;
   border-radius: 3px;
-  background-color: var(--scribex-callout-default-bg);
+  background-color: var(--blokhaus-callout-default-bg);
   position: relative;
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
 /* Emoji icon — sits on the same baseline as the first line of text */
-.scribex-callout > [data-callout-emoji-display] {
+.blokhaus-callout > [data-callout-emoji-display] {
   flex-shrink: 0;
   user-select: none;
   cursor: default;
@@ -281,7 +286,7 @@ table.scribex-table[style*="outline"] {
   text-align: center;
 }
 
-.scribex-callout .scribex-paragraph {
+.blokhaus-callout .blokhaus-paragraph {
   margin: 0;
   min-height: 1.5em;
   overflow-wrap: break-word;
@@ -289,40 +294,40 @@ table.scribex-table[style*="outline"] {
 }
 
 /* Content area fills remaining width */
-.scribex-callout > :not([data-callout-emoji-display]) {
+.blokhaus-callout > :not([data-callout-emoji-display]) {
   flex: 1;
   min-width: 0;
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
-.scribex-callout--info {
-  background-color: var(--scribex-callout-info-bg);
+.blokhaus-callout--info {
+  background-color: var(--blokhaus-callout-info-bg);
 }
 
-.scribex-callout--warning {
-  background-color: var(--scribex-callout-warning-bg);
+.blokhaus-callout--warning {
+  background-color: var(--blokhaus-callout-warning-bg);
 }
 
-.scribex-callout--error {
-  background-color: var(--scribex-callout-error-bg);
+.blokhaus-callout--error {
+  background-color: var(--blokhaus-callout-error-bg);
 }
 
-.scribex-callout--success {
-  background-color: var(--scribex-callout-success-bg);
+.blokhaus-callout--success {
+  background-color: var(--blokhaus-callout-success-bg);
 }
 
-.scribex-callout--purple {
-  background-color: var(--scribex-callout-purple-bg);
+.blokhaus-callout--purple {
+  background-color: var(--blokhaus-callout-purple-bg);
 }
 
-.scribex-toggle-container {
+.blokhaus-toggle-container {
   margin: 0.25em 0;
   border: none;
   background: transparent;
 }
 
-.scribex-toggle-title {
+.blokhaus-toggle-title {
   display: block;
   padding: 2px 8px;
   padding-inline-start: 24px;
@@ -331,21 +336,21 @@ table.scribex-table[style*="outline"] {
   font-weight: 400;
   font-size: 1em;
   line-height: 1.5;
-  color: var(--scribex-foreground);
+  color: var(--blokhaus-foreground);
   list-style: none;
   position: relative;
   min-height: 1.5em;
   background: transparent;
-  caret-color: var(--scribex-foreground);
+  caret-color: var(--blokhaus-foreground);
 }
 
 /* Hide native details marker */
-.scribex-toggle-title::-webkit-details-marker {
+.blokhaus-toggle-title::-webkit-details-marker {
   display: none;
 }
 
 /* Custom disclosure triangle */
-.scribex-toggle-title::before {
+.blokhaus-toggle-title::before {
   content: '';
   position: absolute;
   inset-inline-start: 2px;
@@ -361,24 +366,24 @@ table.scribex-table[style*="outline"] {
 }
 
 /* Rotated triangle when open — native <details> (Firefox/Safari) */
-details.scribex-toggle-container[open] > .scribex-toggle-title::before {
+details.blokhaus-toggle-container[open] > .blokhaus-toggle-title::before {
   transform: rotate(90deg);
 }
 
 /* Rotated triangle when open — Chrome (div with data-open) */
-div.scribex-toggle-container[data-open="true"] > .scribex-toggle-title::before {
+div.blokhaus-toggle-container[data-open="true"] > .blokhaus-toggle-title::before {
   transform: rotate(90deg);
 }
 
-.scribex-toggle-title:hover {
-  background-color: var(--scribex-hover-bg, rgba(0, 0, 0, 0.04));
+.blokhaus-toggle-title:hover {
+  background-color: var(--blokhaus-hover-bg, rgba(0, 0, 0, 0.04));
 }
 
 /* Placeholder for empty title */
-.scribex-toggle-title[data-placeholder]:has(> br:only-child)::after,
-.scribex-toggle-title[data-placeholder]:empty::after {
+.blokhaus-toggle-title[data-placeholder]:has(> br:only-child)::after,
+.blokhaus-toggle-title[data-placeholder]:empty::after {
   content: attr(data-placeholder);
-  color: var(--scribex-muted-foreground);
+  color: var(--blokhaus-muted-foreground);
   opacity: 0.4;
   pointer-events: none;
   font-weight: 400;
@@ -387,33 +392,33 @@ div.scribex-toggle-container[data-open="true"] > .scribex-toggle-title::before {
   top: 2px;
 }
 
-.scribex-toggle-content {
+.blokhaus-toggle-content {
   padding: 2px 8px 4px 8px;
   padding-inline-start: 24px;
 }
 
-.scribex-toggle-content .scribex-paragraph {
+.blokhaus-toggle-content .blokhaus-paragraph {
   margin: 0;
   min-height: 1.5em;
 }
 
 /* Hide content when closed — native <details> (Firefox/Safari) */
-details.scribex-toggle-container:not([open]) > .scribex-toggle-content {
+details.blokhaus-toggle-container:not([open]) > .blokhaus-toggle-content {
   display: none;
 }
 
 /* Hide content when closed — Chrome (div with data-open) */
-div.scribex-toggle-container[data-open="false"] > .scribex-toggle-content {
+div.blokhaus-toggle-container[data-open="false"] > .blokhaus-toggle-content {
   display: none;
 }
 
 /* Dark mode triangle color */
-.dark .scribex-toggle-title::before {
+.dark .blokhaus-toggle-title::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2394a3b8' d='M6 3l5 5-5 5z'/%3E%3C/svg%3E");
 }
 
 [data-block-selected="true"] {
-  background-color: var(--scribex-block-selection);
+  background-color: var(--blokhaus-block-selection);
   border-radius: 4px;
 }
 
