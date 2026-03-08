@@ -5,7 +5,7 @@ description: VideoNode and LoadingVideoNode for video content.
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Scribex provides two nodes for video handling: `VideoNode` for permanent video embeds and uploaded files, and `LoadingVideoNode` for optimistic previews during file upload. Together they implement the video upload and embed flow described in the [Video Embeds guide](/docs/guides/video-embeds).
+Blokhaus provides two nodes for video handling: `VideoNode` for permanent video embeds and uploaded files, and `LoadingVideoNode` for optimistic previews during file upload. Together they implement the video upload and embed flow described in the [Video Embeds guide](/docs/guides/video-embeds).
 
 ---
 
@@ -16,8 +16,8 @@ A `DecoratorNode` that renders either an `<iframe>` (for embedded videos from Yo
 ### Import
 
 ```tsx
-import { VideoNode, $createVideoNode, $isVideoNode } from "@scribex/core";
-import type { VideoPayload } from "@scribex/core";
+import { VideoNode, $createVideoNode, $isVideoNode } from "@blokhaus/core";
+import type { VideoPayload } from "@blokhaus/core";
 ```
 
 ### VideoPayload
@@ -47,7 +47,7 @@ interface VideoPayload {
 Creates a new `VideoNode`. Must be called inside `editor.update()`.
 
 ```ts
-import { parseVideoEmbed } from "@scribex/core";
+import { parseVideoEmbed } from "@blokhaus/core";
 
 editor.update(() => {
   const embedInfo = parseVideoEmbed(
@@ -122,7 +122,7 @@ import {
   LoadingVideoNode,
   $createLoadingVideoNode,
   $isLoadingVideoNode,
-} from "@scribex/core";
+} from "@blokhaus/core";
 ```
 
 ### Functions
