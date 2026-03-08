@@ -1,12 +1,12 @@
-# Contributing to Scribex
+# Contributing to Blokhaus
 
 Thanks for considering contributing. Here's what you need to know.
 
 ## Setup
 
 ```bash
-git clone https://github.com/fhswno/scribex-js.git
-cd scribex-js
+git clone https://github.com/fhswno/blokhaus-js.git
+cd blokhaus-js
 bun install
 bun dev
 ```
@@ -16,7 +16,7 @@ Requires [Bun](https://bun.sh) v1.0+.
 ## Development Workflow
 
 1. Create a branch from `main`
-2. Make your changes in `packages/scribex/src/`
+2. Make your changes in `packages/blokhaus/src/`
 3. Test in the playground at `http://localhost:3000`
 4. Run checks before opening a PR:
 
@@ -35,23 +35,23 @@ bun test         # Must pass all Playwright tests
 - All AST mutations go through `editor.update()`. Never mutate the DOM directly.
 - Never nest `editor.update()` calls.
 - Always check `$getSelection()` for null before using it.
-- Register custom nodes in `packages/scribex/src/nodes/index.ts`.
+- Register custom nodes in `packages/blokhaus/src/nodes/index.ts`.
 
 **Styling**
 - Never hardcode color values. Use CSS variables from `tokens.css`.
-- Prefix all new tokens with `--scribex-`.
+- Prefix all new tokens with `--blokhaus-`.
 
 **Components**
 - Named exports only (no default exports).
 - Client components must have `'use client'` at the top.
-- No imports from `apps/` inside `packages/scribex/`.
+- No imports from `apps/` inside `packages/blokhaus/`.
 
 ## Adding a New Plugin
 
-1. Create `packages/scribex/src/plugins/YourPlugin.tsx`
-2. If it needs custom nodes, add them to `packages/scribex/src/nodes/`
-3. Register new nodes in `ALL_NODES` array (`packages/scribex/src/nodes/index.ts`)
-4. Export from `packages/scribex/src/index.ts`
+1. Create `packages/blokhaus/src/plugins/YourPlugin.tsx`
+2. If it needs custom nodes, add them to `packages/blokhaus/src/nodes/`
+3. Register new nodes in `ALL_NODES` array (`packages/blokhaus/src/nodes/index.ts`)
+4. Export from `packages/blokhaus/src/index.ts`
 5. Wire it up in `apps/playground/app/page.tsx` to demo it
 6. Write Playwright tests in `apps/playground/e2e/tests/`
 
@@ -92,7 +92,7 @@ refactor: extract portal logic into shared hook
 ## Project Structure
 
 ```
-packages/scribex/src/
+packages/blokhaus/src/
 ├── components/    # React components (EditorRoot, FloatingToolbar, etc.)
 ├── plugins/       # Lexical plugins (InputRulePlugin, ImagePlugin, etc.)
 ├── nodes/         # Custom Lexical nodes (ImageNode, MentionNode, etc.)
