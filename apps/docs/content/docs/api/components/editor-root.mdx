@@ -3,12 +3,12 @@ title: EditorRoot
 description: The root editor component that wraps Lexical's LexicalComposer.
 ---
 
-`EditorRoot` is the foundational component of every Scribex editor instance. It wraps Lexical's `LexicalComposer` with all registered custom nodes, sets up the rich text plugin, history tracking, and auto-focus. All other Scribex components and plugins must be rendered as children of `EditorRoot`.
+`EditorRoot` is the foundational component of every Blokhaus editor instance. It wraps Lexical's `LexicalComposer` with all registered custom nodes, sets up the rich text plugin, history tracking, and auto-focus. All other Blokhaus components and plugins must be rendered as children of `EditorRoot`.
 
 ## Import
 
 ```tsx
-import { EditorRoot } from "@scribex/core";
+import { EditorRoot } from "@blokhaus/core";
 ```
 
 ## Props
@@ -35,7 +35,7 @@ import {
   FloatingToolbar,
   SlashMenu,
   InputRulePlugin,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 export default function EditorPage() {
   return (
@@ -54,7 +54,7 @@ export default function EditorPage() {
 
 ## With plugins as children
 
-Every feature in Scribex is a composable plugin passed as a React child. There is no prop explosion -- you only include what you need:
+Every feature in Blokhaus is a composable plugin passed as a React child. There is no prop explosion -- you only include what you need:
 
 ```tsx title="app/editor/page.tsx"
 "use client";
@@ -73,7 +73,7 @@ import {
   ColorPlugin,
   BlockSelectionPlugin,
   useEditorState,
-} from "@scribex/core";
+} from "@blokhaus/core";
 
 function StateTracker() {
   const { serializedState } = useEditorState({
@@ -131,7 +131,7 @@ Multiple `EditorRoot` instances can coexist on the same page. Each must have a u
 ```tsx title="app/document/page.tsx"
 "use client";
 
-import { EditorRoot, FloatingToolbar, InputRulePlugin } from "@scribex/core";
+import { EditorRoot, FloatingToolbar, InputRulePlugin } from "@blokhaus/core";
 
 export default function DocumentPage() {
   return (
@@ -205,10 +205,10 @@ When `dir` is set to `"ltr"` or `"rtl"`, the root node's direction is set once o
 ## Notes
 
 - `EditorRoot` is a client component (`'use client'`). It cannot be used as a Server Component.
-- It wraps `LexicalComposer` with the full `ALL_NODES` registry, which includes all custom Scribex nodes (ImageNode, CodeBlockNode, MentionNode, etc.).
-- The Lexical theme (`scribexTheme`) is applied automatically for consistent CSS class names on editor elements.
+- It wraps `LexicalComposer` with the full `ALL_NODES` registry, which includes all custom Blokhaus nodes (ImageNode, CodeBlockNode, MentionNode, etc.).
+- The Lexical theme (`blokhausTheme`) is applied automatically for consistent CSS class names on editor elements.
 - The `namespace` prop is passed through to `LexicalComposer` and is also rendered as a `data-namespace` attribute on the wrapper `<div>` for DOM identification.
-- The editor container includes `data-scribex-root` for use by `OverlayPortal` and other components that need to find the editor boundary.
+- The editor container includes `data-blokhaus-root` for use by `OverlayPortal` and other components that need to find the editor boundary.
 - Custom error handling can be configured via `onError`. In production, you should replace the default handler with your error tracking service.
 
 ## Related
