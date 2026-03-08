@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install Scribex and its peer dependencies in your Next.js project.
+description: Install Blokhaus and its peer dependencies in your Next.js project.
 ---
 
 ## Prerequisites
@@ -12,20 +12,20 @@ description: Install Scribex and its peer dependencies in your Next.js project.
 ## Install the package
 
 ```bash
-bun add @scribex/core
+bun add @blokhaus/core
 ```
 
 Or with npm/pnpm:
 
 ```bash
-npm install @scribex/core
+npm install @blokhaus/core
 # or
-pnpm add @scribex/core
+pnpm add @blokhaus/core
 ```
 
 ## Peer dependencies
 
-Scribex requires the following peer dependencies. Most Next.js projects already have these installed:
+Blokhaus requires the following peer dependencies. Most Next.js projects already have these installed:
 
 ```bash
 bun add react react-dom next lexical @lexical/react @lexical/rich-text @lexical/history @lexical/selection @lexical/utils @lexical/list @lexical/table @lexical/link
@@ -33,7 +33,7 @@ bun add react react-dom next lexical @lexical/react @lexical/rich-text @lexical/
 
 ## Radix UI primitives
 
-Scribex uses Radix UI for accessible dropdown menus, popovers, and toasts:
+Blokhaus uses Radix UI for accessible dropdown menus, popovers, and toasts:
 
 ```bash
 bun add @radix-ui/react-popover @radix-ui/react-dropdown-menu @radix-ui/react-toast
@@ -47,23 +47,23 @@ bun add lucide-react
 
 ## Copy the theme tokens
 
-Copy the CSS custom properties file into your project. This file defines all design tokens that Scribex components use:
+Copy the CSS custom properties file into your project. This file defines all design tokens that Blokhaus components use:
 
-```css title="styles/scribex-tokens.css"
+```css title="styles/blokhaus-tokens.css"
 :root {
-  --scribex-background: hsl(0 0% 100%);
-  --scribex-foreground: hsl(222.2 84% 4.9%);
-  --scribex-border: hsl(214.3 31.8% 91.4%);
-  --scribex-ring: hsl(221.2 83.2% 53.3%);
-  --scribex-muted: hsl(210 40% 96.1%);
-  --scribex-muted-foreground: hsl(215.4 16.3% 46.9%);
-  --scribex-accent: hsl(221.2 83.2% 53.3%);
-  --scribex-accent-foreground: hsl(0 0% 100%);
-  --scribex-destructive: hsl(0 84.2% 60.2%);
-  --scribex-ai-stream: hsl(262 83% 58%);
-  --scribex-radius: 0.5rem;
-  --scribex-font-sans: ui-sans-serif, system-ui, sans-serif;
-  --scribex-font-mono: ui-monospace, monospace;
+  --blokhaus-background: hsl(0 0% 100%);
+  --blokhaus-foreground: hsl(222.2 84% 4.9%);
+  --blokhaus-border: hsl(214.3 31.8% 91.4%);
+  --blokhaus-ring: hsl(221.2 83.2% 53.3%);
+  --blokhaus-muted: hsl(210 40% 96.1%);
+  --blokhaus-muted-foreground: hsl(215.4 16.3% 46.9%);
+  --blokhaus-accent: hsl(221.2 83.2% 53.3%);
+  --blokhaus-accent-foreground: hsl(0 0% 100%);
+  --blokhaus-destructive: hsl(0 84.2% 60.2%);
+  --blokhaus-ai-stream: hsl(262 83% 58%);
+  --blokhaus-radius: 0.5rem;
+  --blokhaus-font-sans: ui-sans-serif, system-ui, sans-serif;
+  --blokhaus-font-mono: ui-monospace, monospace;
 }
 ```
 
@@ -76,7 +76,7 @@ Create a minimal editor to verify everything is working:
 ```tsx title="app/page.tsx"
 "use client";
 
-import { EditorRoot } from "@scribex/core";
+import { EditorRoot } from "@blokhaus/core";
 
 export default function Page() {
   return (
