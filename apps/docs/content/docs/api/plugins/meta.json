@@ -8,6 +8,7 @@
     "paste-plugin",
     "emoji-picker-plugin",
     "link-plugin",
+    "auto-link-plugin",
     "list-plugin",
     "table-plugin",
     "video-plugin",
