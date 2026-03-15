@@ -16,14 +16,15 @@ import { AutoLinkPlugin } from "@blokhaus/core";
 The `AutoLinkPlugin` automatically detects URLs and email addresses as the user types and converts them into clickable links. It uses Lexical's `AutoLinkNode` (distinct from the regular `LinkNode` used by `LinkPlugin`) to differentiate auto-detected links from manually created ones.
 
 By default, it matches:
+
 - **URLs** -- `https://example.com`, `http://example.com`, `www.example.com`
 - **Emails** -- `user@example.com`
 
 ## Props
 
-| Prop       | Type             | Default           | Description                                     |
-| ---------- | ---------------- | ----------------- | ----------------------------------------------- |
-| `matchers` | `LinkMatcher[]`  | URL + email rules | Custom matchers to use instead of the defaults.  |
+| Prop       | Type            | Default           | Description                                     |
+| ---------- | --------------- | ----------------- | ----------------------------------------------- |
+| `matchers` | `LinkMatcher[]` | URL + email rules | Custom matchers to use instead of the defaults. |
 
 ## Usage
 
@@ -62,22 +63,24 @@ const phoneMatcher = createLinkMatcherWithRegExp(
 );
 
 // Include default matchers + phone matcher
-<AutoLinkPlugin matchers={[...DEFAULT_MATCHERS, phoneMatcher]} />
+<AutoLinkPlugin matchers={[...DEFAULT_MATCHERS, phoneMatcher]} />;
 ```
 
 <Callout type="info">
-  `AutoLinkPlugin` uses `AutoLinkNode` internally, which is distinct from the `LinkNode` used by `LinkPlugin`. Both node types are registered automatically when you use the respective plugins. They can coexist without conflict.
+  `AutoLinkPlugin` uses `AutoLinkNode` internally, which is distinct from the
+  `LinkNode` used by `LinkPlugin`. Both node types are registered automatically
+  when you use the respective plugins. They can coexist without conflict.
 </Callout>
 
 ## Default matchers
 
 The built-in matchers handle two patterns:
 
-| Pattern | Example | Transformed to |
-| ------- | ------- | -------------- |
-| URL     | `https://example.com` | `https://example.com` (unchanged) |
-| URL (www) | `www.example.com` | `https://www.example.com` (https:// prepended) |
-| Email   | `user@example.com` | `mailto:user@example.com` |
+| Pattern   | Example               | Transformed to                                 |
+| --------- | --------------------- | ---------------------------------------------- |
+| URL       | `https://example.com` | `https://example.com` (unchanged)              |
+| URL (www) | `www.example.com`     | `https://www.example.com` (https:// prepended) |
+| Email     | `user@example.com`    | `mailto:user@example.com`                      |
 
 ## Related
 

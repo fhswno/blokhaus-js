@@ -87,7 +87,12 @@ interface AIPluginConfig {
 ```tsx title="app/editor/page.tsx"
 "use client";
 
-import { EditorRoot, AIPlugin, InputRulePlugin, SlashMenu } from "@blokhaus/core";
+import {
+  EditorRoot,
+  AIPlugin,
+  InputRulePlugin,
+  SlashMenu,
+} from "@blokhaus/core";
 import type { AIProvider } from "@blokhaus/core";
 
 const myProvider: AIProvider = {
@@ -107,7 +112,10 @@ const myProvider: AIProvider = {
     return new ReadableStream<string>({
       async pull(controller) {
         const { done, value } = await reader.read();
-        if (done) { controller.close(); return; }
+        if (done) {
+          controller.close();
+          return;
+        }
         controller.enqueue(decoder.decode(value, { stream: true }));
       },
     });

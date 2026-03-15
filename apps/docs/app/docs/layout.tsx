@@ -24,7 +24,16 @@ const Layout = ({ children }: { children: ReactNode }) => {
           url: "https://playground.blokhaus.fhswno.com",
           external: true,
           icon: (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polygon points="6 3 20 12 6 21 6 3" />
             </svg>
           ),
@@ -50,7 +59,17 @@ const Layout = ({ children }: { children: ReactNode }) => {
               className="group flex items-center gap-2.5 rounded-lg border border-fd-border bg-fd-card px-3 py-2.5 transition-all hover:border-fd-primary/50 hover:shadow-md hover:shadow-fd-primary/5"
             >
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-fd-primary/10 transition-colors group-hover:bg-fd-primary/20">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-fd-primary">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-fd-primary"
+                >
                   <polygon points="6 3 20 12 6 21 6 3" />
                 </svg>
               </div>
@@ -62,7 +81,17 @@ const Layout = ({ children }: { children: ReactNode }) => {
                   Live editor demo
                 </span>
               </div>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-auto text-fd-muted-foreground transition-transform group-hover:translate-x-0.5">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="ml-auto text-fd-muted-foreground transition-transform group-hover:translate-x-0.5"
+              >
                 <path d="M7 17l9.2-9.2M17 17V7H7" />
               </svg>
             </a>
