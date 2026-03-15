@@ -3,9 +3,16 @@ title: Quick Start
 description: Build a fully-featured Notion-style editor in under 5 minutes.
 ---
 
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+
 This guide walks you through building a complete block editor with formatting toolbar, slash commands, drag-and-drop, images, and more.
 
-## 1. Create the editor page
+<Steps>
+
+<Step>
+
+## Create the editor page
 
 ```tsx title="app/editor/page.tsx"
 "use client";
@@ -79,17 +86,27 @@ export default function EditorPage() {
 }
 ```
 
-## 2. Understanding the architecture
+</Step>
+
+<Step>
+
+## Understanding the architecture
 
 Blokhaus follows a composable plugin architecture. Every feature is an independent React component passed as a child to `EditorRoot`:
 
-- **`EditorRoot`** — Wraps Lexical's `LexicalComposer` with all registered nodes
-- **UI Components** — Visual elements like toolbars and menus
-- **Plugins** — Headless logic that extends editor behavior (render `null`)
+- **`EditorRoot`** -- Wraps Lexical's `LexicalComposer` with all registered nodes
+- **UI Components** -- Visual elements like toolbars and menus
+- **Plugins** -- Headless logic that extends editor behavior (render `null`)
 
-This means you only include what you need. No prop explosion, no `<Editor enableAI enableImages enableTables />`.
+<Callout type="info">
+  This means you only include what you need. No prop explosion, no `<Editor enableAI enableImages enableTables />`. Remove a line, remove a feature.
+</Callout>
 
-## 3. Add markdown shortcuts
+</Step>
+
+<Step>
+
+## Add markdown shortcuts
 
 The `InputRulePlugin` enables markdown-style shortcuts out of the box:
 
@@ -106,7 +123,11 @@ The `InputRulePlugin` enables markdown-style shortcuts out of the box:
 | ` ``` `      | Code block            |
 | `---`        | Horizontal divider    |
 
-## 4. Persist editor state
+</Step>
+
+<Step>
+
+## Persist editor state
 
 Use the `useEditorState` hook to read the serialized JSON state:
 
@@ -130,9 +151,17 @@ const saved = localStorage.getItem("editor-state");
 </EditorRoot>;
 ```
 
-## 5. Next steps
+<Callout type="warn">
+  The `useEditorState` hook must be rendered **inside** `EditorRoot` since it needs access to the Lexical editor context.
+</Callout>
 
-- [Theming](/docs/guides/theming) — Customize colors, fonts, and spacing
-- [AI Integration](/docs/guides/ai-integration) — Add AI-powered content generation
-- [Mentions](/docs/guides/mentions) — Add @mentions and #tags
-- [API Reference](/docs/api/components/editor-root) — Complete API documentation
+</Step>
+
+</Steps>
+
+## Next steps
+
+- [Theming](/docs/guides/theming) -- Customize colors, fonts, and spacing
+- [AI Integration](/docs/guides/ai-integration) -- Add AI-powered content generation
+- [Mentions](/docs/guides/mentions) -- Add @mentions and #tags
+- [API Reference](/docs/api/components/editor-root) -- Complete API documentation
