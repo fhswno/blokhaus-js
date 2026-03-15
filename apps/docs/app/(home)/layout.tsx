@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 // FUMADOCS
 import { HomeLayout } from "fumadocs-ui/layouts/home";
 
-export default function Layout({ children }: { children: ReactNode }) {
+const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <HomeLayout
       nav={{
@@ -12,6 +12,11 @@ export default function Layout({ children }: { children: ReactNode }) {
       }}
       links={[
         { text: "Docs", url: "/docs" },
+        {
+          text: "Playground",
+          url: "https://playground.blokhaus.fhswno.com",
+          external: true,
+        },
         {
           text: "GitHub",
           url: "https://github.com/fhswno/blokhaus-js",
@@ -27,4 +32,6 @@ export default function Layout({ children }: { children: ReactNode }) {
       {children}
     </HomeLayout>
   );
-}
+};
+
+export default Layout;
