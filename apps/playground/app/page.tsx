@@ -13,6 +13,7 @@ import {
   MobileToolbar,
   EmojiPickerPlugin,
   LinkPlugin,
+  AutoLinkPlugin,
   ColorPlugin,
   ListPlugin,
   TablePlugin,
@@ -319,6 +320,7 @@ function EditorPlugins({
       <PastePlugin />
       <EmojiPickerPlugin />
       <LinkPlugin />
+      <AutoLinkPlugin />
       <MobileToolbar />
     </>
   );
