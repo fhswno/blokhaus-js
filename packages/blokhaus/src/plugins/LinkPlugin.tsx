@@ -126,20 +126,20 @@ export function LinkPlugin({ config = {} }: { config?: LinkPluginConfig } = {}) 
     return { top: 0, left: 0 };
   }, []);
 
-  const findLinkNode = useCallback((): LinkNode | null => {
-    let linkNode: LinkNode | null = null;
+  const findLinkUrl = useCallback((): string | null => {
+    let url: string | null = null;
     editor.read(() => {
       const selection = $getSelection();
       if (!$isRangeSelection(selection)) return;
       const node = selection.anchor.getNode();
       const parent = node.getParent();
       if ($isLinkNode(parent)) {
-        linkNode = parent;
+        url = parent.getURL();
       } else if ($isLinkNode(node)) {
-        linkNode = node;
+        url = node.getURL();
       }
     });
-    return linkNode;
+    return url;
   }, [editor]);
 
   const openInput = useCallback(
@@ -202,9 +202,9 @@ export function LinkPlugin({ config = {} }: { config?: LinkPluginConfig } = {}) 
   }, [editor, closeAll]);
 
   const triggerLinkInput = useCallback(() => {
-    const linkNode = findLinkNode();
-    if (linkNode) {
-      openInput(linkNode.getURL());
+    const url = findLinkUrl();
+    if (url) {
+      openInput(url);
     } else {
       let hasSelection = false;
       editor.read(() => {
@@ -221,7 +221,7 @@ export function LinkPlugin({ config = {} }: { config?: LinkPluginConfig } = {}) 
         openInput();
       }
     }
-  }, [editor, findLinkNode, openInput]);
+  }, [editor, findLinkUrl, openInput]);
 
   // Double-click on a link opens it in a new tab
   useEffect(() => {
@@ -300,9 +300,9 @@ export function LinkPlugin({ config = {} }: { config?: LinkPluginConfig } = {}) 
             // Don't show preview if input is open
             if (showInput) return;
 
-            const linkNode = findLinkNode();
-            if (linkNode) {
-              setCurrentUrl(linkNode.getURL());
+            const url = findLinkUrl();
+            if (url) {
+              setCurrentUrl(url);
               setPreviewPosition(getSelectionPosition());
               setShowPreview(true);
             } else {
@@ -317,7 +317,7 @@ export function LinkPlugin({ config = {} }: { config?: LinkPluginConfig } = {}) 
       },
       COMMAND_PRIORITY_LOW,
     );
-  }, [editor, findLinkNode, getSelectionPosition, showInput, showPreview]);
+  }, [editor, findLinkUrl, getSelectionPosition, showInput, showPreview]);
 
   if (!portalContainer) return null;
 
