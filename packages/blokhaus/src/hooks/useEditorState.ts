@@ -27,19 +27,16 @@ export function useEditorState({
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | null = null;
-    // Keep a ref to the latest editorState so we only serialize once when
-    // the debounce fires, using the most recent state (not every intermediate one).
-    let latestEditorState: import('lexical').EditorState | null = null;
 
-    const unregister = editor.registerUpdateListener(({ editorState }) => {
-      latestEditorState = editorState;
+    const unregister = editor.registerUpdateListener(() => {
       if (timeout) clearTimeout(timeout);
 
       timeout = setTimeout(() => {
-        if (!latestEditorState) return;
-        const json = JSON.stringify(latestEditorState.toJSON());
-        latestEditorState = null;
-        // Only trigger React re-render if no onChange callback is handling it
+        // Use editor.read() to ensure a full active editor context —
+        // required in Lexical 0.40+ for node exportJSON() methods.
+        const json = editor.read(() =>
+          JSON.stringify(editor.getEditorState().toJSON()),
+        );
         if (!onChangeRef.current) {
           setSerializedState(json);
         }
