@@ -15,6 +15,9 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
+// ANALYTICS
+import { Analytics } from "@vercel/analytics/react";
+
 // GLOBALS
 import "./globals.css";
 
@@ -37,6 +40,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <body className="flex min-h-screen flex-col">
         <RootProvider theme={{ defaultTheme: "dark" }}>{children}</RootProvider>
+        <Analytics />
       </body>
     </html>
   );

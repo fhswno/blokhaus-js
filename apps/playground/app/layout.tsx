@@ -2,6 +2,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Lora, Caveat } from "next/font/google";
 
+// ANALYTICS
+import { Analytics } from "@vercel/analytics/react";
+
 // GLOBALS
 import "./globals.css";
 
@@ -51,6 +54,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${lora.variable} ${caveat.variable}`} suppressHydrationWarning>
       <body className="antialiased font-sans min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors">
         {children}
+        <Analytics />
       </body>
     </html>
   );
