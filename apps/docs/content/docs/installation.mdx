@@ -3,47 +3,93 @@ title: Installation
 description: Install Blokhaus and its peer dependencies in your Next.js project.
 ---
 
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+
 ## Prerequisites
 
-- [Bun](https://bun.sh) (recommended) or npm/pnpm/yarn
+- [Node.js](https://nodejs.org) 18+ or [Bun](https://bun.sh)
 - [Next.js](https://nextjs.org) 14+ with App Router
 - React 18+
 
+<Steps>
+
+<Step>
+
 ## Install the package
 
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+
+<Tab value="npm">
+```bash
+npm install @blokhaus/core
+```
+</Tab>
+
+<Tab value="pnpm">
+```bash
+pnpm add @blokhaus/core
+```
+</Tab>
+
+<Tab value="yarn">
+```bash
+yarn add @blokhaus/core
+```
+</Tab>
+
+<Tab value="bun">
 ```bash
 bun add @blokhaus/core
 ```
+</Tab>
 
-Or with npm/pnpm:
+</Tabs>
 
+</Step>
+
+<Step>
+
+## Install peer dependencies
+
+Blokhaus requires Lexical and Radix UI primitives. Most Next.js projects already have React and Next.js installed.
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+
+<Tab value="npm">
 ```bash
-npm install @blokhaus/core
-# or
-pnpm add @blokhaus/core
+npm install lexical @lexical/react @lexical/rich-text @lexical/history @lexical/selection @lexical/utils @lexical/list @lexical/table @lexical/link @radix-ui/react-popover @radix-ui/react-dropdown-menu @radix-ui/react-toast lucide-react
 ```
+</Tab>
 
-## Peer dependencies
-
-Blokhaus requires the following peer dependencies. Most Next.js projects already have these installed:
-
+<Tab value="pnpm">
 ```bash
-bun add react react-dom next lexical @lexical/react @lexical/rich-text @lexical/history @lexical/selection @lexical/utils @lexical/list @lexical/table @lexical/link
+pnpm add lexical @lexical/react @lexical/rich-text @lexical/history @lexical/selection @lexical/utils @lexical/list @lexical/table @lexical/link @radix-ui/react-popover @radix-ui/react-dropdown-menu @radix-ui/react-toast lucide-react
 ```
+</Tab>
 
-## Radix UI primitives
-
-Blokhaus uses Radix UI for accessible dropdown menus, popovers, and toasts:
-
+<Tab value="yarn">
 ```bash
-bun add @radix-ui/react-popover @radix-ui/react-dropdown-menu @radix-ui/react-toast
+yarn add lexical @lexical/react @lexical/rich-text @lexical/history @lexical/selection @lexical/utils @lexical/list @lexical/table @lexical/link @radix-ui/react-popover @radix-ui/react-dropdown-menu @radix-ui/react-toast lucide-react
 ```
+</Tab>
 
-## Icons
-
+<Tab value="bun">
 ```bash
-bun add lucide-react
+bun add lexical @lexical/react @lexical/rich-text @lexical/history @lexical/selection @lexical/utils @lexical/list @lexical/table @lexical/link @radix-ui/react-popover @radix-ui/react-dropdown-menu @radix-ui/react-toast lucide-react
 ```
+</Tab>
+
+</Tabs>
+
+<Callout type="info">
+  If your project already has `react`, `react-dom`, and `next` installed, you don't need to install them again. They're peer dependencies that Blokhaus expects to find.
+</Callout>
+
+</Step>
+
+<Step>
 
 ## Copy the theme tokens
 
@@ -69,6 +115,10 @@ Copy the CSS custom properties file into your project. This file defines all des
 
 Import this file in your root layout or global CSS.
 
+</Step>
+
+<Step>
+
 ## Verify the installation
 
 Create a minimal editor to verify everything is working:
@@ -87,8 +137,12 @@ export default function Page() {
 
 If you see an editable area with the placeholder "Start writing...", the installation is complete.
 
+</Step>
+
+</Steps>
+
 ## Next steps
 
-- [Quick Start](/docs/quick-start) — Build a full-featured editor
-- [Theming](/docs/guides/theming) — Customize the design tokens
-- [Project Structure](/docs/project-structure) — Understand the library layout
+- [Quick Start](/docs/quick-start) -- Build a full-featured editor
+- [Theming](/docs/guides/theming) -- Customize the design tokens
+- [Project Structure](/docs/project-structure) -- Understand the library layout
