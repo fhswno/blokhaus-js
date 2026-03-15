@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
 
 import type {
@@ -80,8 +80,9 @@ export class ImageNode extends DecoratorNode<ReactElement> {
 
   createDOM(_config: EditorConfig): HTMLElement {
     const div = document.createElement("div");
-    div.style.display = "inline-block";
-    div.style.maxWidth = "100%";
+    div.style.display = "flex";
+    div.style.justifyContent = "center";
+    div.style.width = "100%";
     return div;
   }
 
@@ -136,6 +137,11 @@ export class ImageNode extends DecoratorNode<ReactElement> {
     return this.__altText;
   }
 
+  setWidth(width: number): void {
+    const writable = this.getWritable();
+    writable.__width = width;
+  }
+
   decorate(): ReactElement {
     return (
       <ImageComponent
@@ -178,11 +184,24 @@ function ImageComponent({
   const [isSelected, setSelected, clearSelection] =
     useLexicalNodeSelection(nodeKey);
   const imgRef = useRef<HTMLDivElement>(null);
+  const [dragWidth, setDragWidth] = useState<number | null>(null);
+  const isTouchDevice = useRef(false);
+  const isDraggingRef = useRef(false);
+  const dragWidthRef = useRef<number | null>(null);
 
+  // Detect touch device once on mount
+  useEffect(() => {
+    isTouchDevice.current =
+      window.matchMedia("(pointer: coarse)").matches ||
+      navigator.maxTouchPoints > 0;
+  }, []);
+
+  // Click to select
   useEffect(() => {
     return editor.registerCommand(
       CLICK_COMMAND,
       (event: MouseEvent) => {
+        if (isDraggingRef.current) return false;
         if (imgRef.current?.contains(event.target as Node)) {
           if (!event.shiftKey) {
             clearSelection();
@@ -196,6 +215,7 @@ function ImageComponent({
     );
   }, [editor, clearSelection, setSelected]);
 
+  // Delete on backspace/delete
   const onDelete = useCallback(
     (event: KeyboardEvent) => {
       if (isSelected) {
@@ -230,12 +250,93 @@ function ImageComponent({
     };
   }, [editor, onDelete]);
 
+  // Notion-style side handle resize — drag left or right edge
+  const handleResizeMouseDown = useCallback(
+    (e: React.MouseEvent, side: "left" | "right") => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const imgEl = imgRef.current?.querySelector("img");
+      if (!imgEl) return;
+
+      const startX = e.clientX;
+      const startWidth = imgEl.getBoundingClientRect().width;
+      const containerWidth =
+        imgRef.current?.parentElement?.clientWidth ?? Infinity;
+
+      isDraggingRef.current = true;
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        // Dragging left handle outward (left) or right handle outward (right) grows the image.
+        // Both sides contribute symmetrically to keep the image centered.
+        const rawDelta = moveEvent.clientX - startX;
+        const delta = side === "left" ? -rawDelta * 2 : rawDelta * 2;
+        const newWidth = Math.min(
+          containerWidth,
+          Math.max(100, Math.round(startWidth + delta)),
+        );
+        dragWidthRef.current = newWidth;
+        setDragWidth(newWidth);
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+
+        const finalWidth = dragWidthRef.current;
+        isDraggingRef.current = false;
+        dragWidthRef.current = null;
+        setDragWidth(null);
+
+        if (finalWidth != null && finalWidth !== width) {
+          editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            if ($isImageNode(node)) {
+              node.setWidth(finalWidth);
+            }
+          });
+        }
+      };
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    },
+    [editor, nodeKey, width],
+  );
+
+  const showHandles = isSelected && !isTouchDevice.current;
+  const displayWidth =
+    dragWidth != null ? `${dragWidth}px` : width ? `${width}px` : undefined;
+
+  // Notion-style: vertical bar handles on left and right edges
+  const handleStyle = (side: "left" | "right"): React.CSSProperties => ({
+    position: "absolute",
+    top: "50%",
+    transform: "translateY(-50%)",
+    [side]: "-2px",
+    width: "6px",
+    height: "48px",
+    maxHeight: "50%",
+    backgroundColor: "var(--blokhaus-accent, #3b82f6)",
+    borderRadius: "3px",
+    cursor: "col-resize",
+    zIndex: 10,
+    opacity: 0.9,
+    transition: "opacity 100ms ease",
+  });
+
   return (
     <div
       ref={imgRef}
       data-testid="image-node"
       style={{
-        display: "inline-block",
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
         maxWidth: "100%",
         position: "relative",
         cursor: "pointer",
@@ -243,21 +344,38 @@ function ImageComponent({
       role="img"
       aria-label={altText}
     >
-      <img
-        src={src}
-        alt={altText}
-        width={width}
-        height={height}
-        style={{
-          maxWidth: "100%",
-          borderRadius: "var(--blokhaus-radius, 0.5rem)",
-          outline: isSelected
-            ? "2px solid var(--blokhaus-ring, #3b82f6)"
-            : "none",
-          outlineOffset: "2px",
-        }}
-        draggable={false}
-      />
+      <div style={{ position: "relative", display: "inline-block", maxWidth: "100%" }}>
+        <img
+          src={src}
+          alt={altText}
+          style={{
+            width: displayWidth,
+            maxWidth: "100%",
+            height: "auto",
+            display: "block",
+            borderRadius: "var(--blokhaus-radius, 0.5rem)",
+            outline: isSelected
+              ? "2px solid var(--blokhaus-ring, #3b82f6)"
+              : "none",
+            outlineOffset: "2px",
+          }}
+          draggable={false}
+        />
+        {showHandles && (
+          <>
+            <div
+              onMouseDown={(e) => handleResizeMouseDown(e, "left")}
+              data-testid="image-resize-left"
+              style={handleStyle("left")}
+            />
+            <div
+              onMouseDown={(e) => handleResizeMouseDown(e, "right")}
+              data-testid="image-resize-right"
+              style={handleStyle("right")}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }
