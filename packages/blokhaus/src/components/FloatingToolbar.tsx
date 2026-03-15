@@ -314,8 +314,18 @@ export function FloatingToolbar({ colorPalette, fontFamilies }: FloatingToolbarP
 
   // Use inline styles for the portal — Tailwind may not scan portalled elements
   const showBelow = position.top > 100; // rough heuristic
-  const transformValue =
-    position.top < 50 ? "translateX(-50%)" : "translate(-50%, -100%)";
+  const translateY = position.top < 50 ? "" : "translateY(-100%)";
+
+  // Clamp horizontal position so toolbar stays within viewport
+  const toolbarRef2 = toolbarRef.current;
+  const toolbarWidth = toolbarRef2?.offsetWidth ?? 430;
+  const margin = 8;
+  const rawLeft = position.left;
+  const halfWidth = toolbarWidth / 2;
+  const clampedLeft = Math.max(
+    margin + halfWidth,
+    Math.min(rawLeft, window.innerWidth - margin - halfWidth),
+  );
 
   return createPortal(
     <div
@@ -337,8 +347,9 @@ export function FloatingToolbar({ colorPalette, fontFamilies }: FloatingToolbarP
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
         boxShadow: "var(--blokhaus-popover-shadow, 0 0 0 0.5px rgba(0,0,0,0.06), 0 8px 40px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.06))",
         top: `${position.top}px`,
-        left: `${position.left}px`,
-        transform: transformValue,
+        left: `${clampedLeft}px`,
+        transform: `translateX(-50%) ${translateY}`,
+        maxWidth: "calc(100vw - 16px)",
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
       }}
