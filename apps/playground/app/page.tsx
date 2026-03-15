@@ -102,37 +102,56 @@ const mistralProvider: AIProvider = {
 };
 
 /**
- * Ollama AI provider — calls the playground's /api/editor/ollama route.
- * The route proxies to a local Ollama instance and returns a plain text stream.
+ * Ollama AI provider — calls the user's local Ollama instance directly from the browser.
+ * Ollama must be running on the user's machine at http://localhost:11434.
  */
 const ollamaProvider: AIProvider = {
   name: "Ollama",
   generate: async ({ prompt, context, config }) => {
-    const response = await fetch("/api/editor/ollama", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt,
-        context,
-        ...(config?.temperature != null && { temperature: config.temperature }),
-        ...(config?.maxTokens != null && { maxTokens: config.maxTokens }),
-        ...(config?.systemPrompt != null && {
-          systemPrompt: config.systemPrompt,
+    const ollamaHost = "http://localhost:11434";
+    const model = "gemma3:4b";
+    const defaultSystemPrompt =
+      "You are a helpful writing assistant. Respond with well-formatted Markdown. Be concise and direct.";
+
+    const fullPrompt = context
+      ? `Context:\n${context}\n\nTask:\n${prompt}`
+      : prompt;
+
+    let response: Response;
+    try {
+      response = await fetch(`${ollamaHost}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          prompt: fullPrompt,
+          system: config?.systemPrompt ?? defaultSystemPrompt,
+          stream: true,
+          ...(config?.temperature != null && {
+            options: {
+              temperature: config.temperature,
+              ...(config?.maxTokens != null && { num_predict: config.maxTokens }),
+            },
+          }),
+          ...(config?.temperature == null && config?.maxTokens != null && {
+            options: { num_predict: config.maxTokens },
+          }),
         }),
-      }),
-    });
+      });
+    } catch {
+      throw new Error(
+        `Cannot connect to Ollama at ${ollamaHost}. Make sure Ollama is running on your machine.`,
+      );
+    }
 
     if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ error: "Unknown error" }));
-      throw new Error(
-        (error as { error?: string }).error ?? `HTTP ${response.status}`,
-      );
+      const errorText = await response.text();
+      throw new Error(`Ollama error: ${response.status} — ${errorText}`);
     }
 
     const reader = response.body!.getReader();
     const decoder = new TextDecoder();
+    let buffer = "";
 
     return new ReadableStream<string>({
       async pull(controller) {
@@ -141,13 +160,28 @@ const ollamaProvider: AIProvider = {
           controller.close();
           return;
         }
-        controller.enqueue(decoder.decode(value, { stream: true }));
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          try {
+            const parsed = JSON.parse(trimmed) as { response?: string };
+            if (parsed.response) {
+              controller.enqueue(parsed.response);
+            }
+          } catch {
+            // Skip malformed JSON lines
+          }
+        }
       },
     });
   },
 };
 
-// Default to Ollama for local development (no API key needed)
 const aiProvider = ollamaProvider;
 
 /** AI plugin configuration — demonstrates the customization surface */
@@ -459,7 +493,7 @@ export default function Page() {
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
               <path d="M4 1.5C4 .67 3.33 0 2.5 0S1 .67 1 1.5v4c0 .83-.67 1.5-1.5 1.5v1C.83 8 1.5 8.67 1.5 9.5v4c0 .83.67 1.5 1.5 1.5h1v-1H3c-.55 0-1-.45-1-1V9.5C2 8.67 1.33 8 .5 8c.83 0 1.5-.67 1.5-1.5V3c0-.55.45-1 1-1h1V1H4zm8 0c0-.83.67-1.5 1.5-1.5S15 .67 15 1.5v4c0 .83.67 1.5 1.5 1.5v1c-.83 0-1.5.67-1.5 1.5v4c0 .83-.67 1.5-1.5 1.5h-1v-1h1c.55 0 1-.45 1-1V9.5c0-.83.67-1.5 1.5-1.5-.83 0-1.5-.67-1.5-1.5V3c0-.55-.45-1-1-1h-1V1h0z" />
             </svg>
-            {sizeKb} KB
+            <span className="hidden sm:inline">{sizeKb} KB</span>
           </button>
           <a
             href="https://github.com/fhswno/blokhaus-js"
@@ -475,17 +509,17 @@ export default function Page() {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-180 px-6 pt-20 pb-48">
+      <main className="mx-auto max-w-180 px-4 sm:px-6 pt-12 sm:pt-20 pb-48">
         <EditorRoot
           namespace="playground-editor"
-          className="relative min-h-[70vh]"
+          className="relative min-h-[50vh] sm:min-h-[70vh]"
         >
           <EditorPlugins namespace="playground-editor" toggleTheme={toggleTheme} />
           <HiddenStateDisplay onStateChange={setEditorState} />
         </EditorRoot>
       </main>
 
-      <div className="mx-auto max-w-180 px-6 pb-20">
+      <div className="mx-auto max-w-180 px-4 sm:px-6 pb-20">
         <div className="border-t border-neutral-100 dark:border-neutral-800 pt-8">
           <button
             onClick={() => setShowDevEditors((d) => !d)}
@@ -521,7 +555,7 @@ export default function Page() {
       </div>
 
       {showJson && (
-        <div className="fixed bottom-0 inset-x-0 z-40 bg-[#1a1a1a] border-t border-[#2a2a2a] shadow-[0_-4px_32px_rgba(0,0,0,0.2)]">
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-[#1a1a1a] border-t border-[#2a2a2a] shadow-[0_-4px_32px_rgba(0,0,0,0.2)]" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
           <div className="flex items-center justify-between px-4 h-9 border-b border-[#2a2a2a]">
             <span className="text-[11px] font-medium text-neutral-500">
               Editor State
